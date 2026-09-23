@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gravitational System About a Common Centre of Mass</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#07111f;color:#e5eefb}body{padding:0}.credit{background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:10px 18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px}.credit strong{color:#fde047}.wrap{max-width:1180px;margin:auto;padding:18px}.title{text-align:center;margin:4px 0 18px}.title h1{margin:0 0 5px;font-size:27px}.title p{margin:0;color:#9fb0c6}.grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.75fr);gap:16px}.card{background:#101c2e;border:1px solid #22344d;border-radius:16px;padding:16px}.canvasWrap{position:relative;min-height:500px;background:radial-gradient(circle at center,#101b34,#020617);border-radius:12px;overflow:hidden}canvas{display:block;width:100%;height:500px}.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{background:#1d4ed8;color:white;border:0;border-radius:9px;padding:9px 11px;font-weight:700;cursor:pointer}.controls{display:grid;gap:14px}.control label{display:flex;justify-content:space-between;gap:12px;font-weight:650}.control input{width:100%;margin-top:8px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#7dd3fc}.values{display:grid;grid-template-columns:1fr auto;gap:8px 14px;font-size:14px}.values span:nth-child(odd){color:#aebed2}.eq{line-height:1.8;background:#0a1525;border-radius:10px;padding:12px;margin-top:14px;color:#dbeafe}.note{font-size:12px;line-height:1.5;color:#9fb0c6;margin-top:12px}.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#bac8da}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}@media(max-width:850px){.grid{grid-template-columns:1fr}.canvasWrap,canvas{height:440px;min-height:440px}}
+</style>
+</head>
+<body>
+<div class="credit"><span>Gravitational System About a Common Centre of Mass</span><span>Created by <strong>Lim Hwee Ke</strong> | EJC Physics</span></div>
+<div class="wrap">
+  <div class="title"><h1>Circular orbits about a common centre of mass</h1><p>Explore how mass ratio and separation affect the barycentre, orbital radii and angular speed.</p></div>
+  <div class="grid">
+    <div class="card">
+      <div class="canvasWrap"><canvas id="canvas"></canvas></div>
+      <div class="legend"><span><i class="dot" style="background:#fb7185"></i>M₁</span><span><i class="dot" style="background:#2dd4bf"></i>M₂</span><span><i class="dot" style="background:#fde047"></i>Centre of mass</span></div>
+      <div class="presets"><button data-preset="large">Large mass ratio</button><button data-preset="moon">Earth–Moon-like ratio</button><button data-preset="binary">Binary pair</button><button data-preset="equal">Equal masses</button></div>
+    </div>
+    <div class="card controls">
+      <div class="control"><label><span>Mass M₁</span><span class="mono" id="m1v"></span></label><input id="m1" type="range" min="1" max="400" step="1" value="100"></div>
+      <div class="control"><label><span>Mass M₂</span><span class="mono" id="m2v"></span></label><input id="m2" type="range" min="1" max="200" step="1" value="10"></div>
+      <div class="control"><label><span>Separation d</span><span class="mono" id="dv"></span></label><input id="d" type="range" min="1" max="6" step="0.1" value="2.5"></div>
+      <div class="control"><label><span>Animation speed</span><span class="mono" id="speedv"></span></label><input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"></div>
+      <div class="values">
+        <span>r₁</span><strong id="r1"></strong><span>r₂</span><strong id="r2"></strong><span>Angular speed, ω</span><strong id="omega"></strong><span>Period, T</span><strong id="period"></strong><span>Gravitational force</span><strong id="force"></strong>
+      </div>
+      <div class="eq"><strong>Model</strong><br>r₁ = M₂d/(M₁+M₂), &nbsp; r₂ = M₁d/(M₁+M₂)<br>ω = √[G(M₁+M₂)/d³]<br>v₁ = ωr₁, &nbsp; v₂ = ωr₂<br>F = GM₁M₂/d²</div>
+      <div class="note">The numerical values are calculated consistently in SI units. Slider masses are in ×10²⁴ kg and separation is in ×10⁸ m. The drawn body sizes and orbital radii are visually scaled so both objects remain visible; they are not drawn to physical scale.</div>
+    </div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);const canvas=$('canvas'),ctx=canvas.getContext('2d');const G=6.67430e-11;let phase=0,last=0;
+function sci(x,n=2){return x.toExponential(n).replace('e+',' × 10^').replace('e-',' × 10^-')}
+function params(){const M1=+$('m1').value*1e24,M2=+$('m2').value*1e24,d=+$('d').value*1e8,total=M1+M2,r1=M2*d/total,r2=M1*d/total,omega=Math.sqrt(G*total/d**3),T=2*Math.PI/omega,F=G*M1*M2/d**2;return{M1,M2,d,r1,r2,omega,T,F}}
+function updateText(){const p=params();$('m1v').textContent=`${$('m1').value} × 10²⁴ kg`;$('m2v').textContent=`${$('m2').value} × 10²⁴ kg`;$('dv').textContent=`${(+$('d').value).toFixed(1)} × 10⁸ m`;$('speedv').textContent=`${(+$('speed').value).toFixed(1)}×`;$('r1').textContent=sci(p.r1)+' m';$('r2').textContent=sci(p.r2)+' m';$('omega').textContent=sci(p.omega)+' rad s⁻¹';$('period').textContent=(p.T/86400).toFixed(2)+' days';$('force').textContent=sci(p.F)+' N'}
+function resize(){const r=canvas.getBoundingClientRect(),dpr=devicePixelRatio||1;canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0)}
+function arrow(x1,y1,x2,y2,color){ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1),s=8;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-s*Math.cos(a-.45),y2-s*Math.sin(a-.45));ctx.lineTo(x2-s*Math.cos(a+.45),y2-s*Math.sin(a+.45));ctx.closePath();ctx.fill()}
+function draw(){const w=canvas.clientWidth,h=canvas.clientHeight,p=params();ctx.clearRect(0,0,w,h);ctx.fillStyle='#07111f';ctx.fillRect(0,0,w,h);const cx=w/2,cy=h/2,maxR=Math.min(w,h)*.34,ratio=p.r1+p.r2,rr1=maxR*p.r1/ratio,rr2=maxR*p.r2/ratio;ctx.strokeStyle='#243b59';ctx.setLineDash([5,6]);ctx.beginPath();ctx.arc(cx,cy,rr1,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,rr2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);const x1=cx-rr1*Math.cos(phase),y1=cy-rr1*Math.sin(phase),x2=cx+rr2*Math.cos(phase),y2=cy+rr2*Math.sin(phase);ctx.strokeStyle='#64748b';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.fillStyle='#fde047';ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();const rad1=Math.max(12,Math.min(34,9+Math.log10(p.M1/1e24+1)*10)),rad2=Math.max(10,Math.min(30,8+Math.log10(p.M2/1e24+1)*10));ctx.fillStyle='#fb7185';ctx.beginPath();ctx.arc(x1,y1,rad1,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2dd4bf';ctx.beginPath();ctx.arc(x2,y2,rad2,0,Math.PI*2);ctx.fill();const tang1=phase+Math.PI/2,tang2=phase-Math.PI/2;arrow(x1,y1,x1+35*Math.cos(tang1),y1+35*Math.sin(tang1),'#f8fafc');arrow(x2,y2,x2+35*Math.cos(tang2),y2+35*Math.sin(tang2),'#f8fafc');ctx.fillStyle='#e2e8f0';ctx.font='13px system-ui';ctx.fillText('M₁',x1+rad1+5,y1);ctx.fillText('M₂',x2+rad2+5,y2);ctx.fillText('CM',cx+9,cy-8)}
+function frame(t){if(last)phase+=(t-last)/1000*(+$('speed').value)*.75;last=t;draw();requestAnimationFrame(frame)}
+['m1','m2','d','speed'].forEach(id=>$(id).addEventListener('input',()=>{updateText();draw()}));document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{const p=b.dataset.preset;if(p==='large'){ $('m1').value=300;$('m2').value=3;$('d').value=3}else if(p==='moon'){ $('m1').value=81;$('m2').value=1;$('d').value=3.8}else if(p==='binary'){ $('m1').value=100;$('m2').value=40;$('d').value=3}else{ $('m1').value=50;$('m2').value=50;$('d').value=2.5}updateText();draw()});addEventListener('resize',()=>{resize();draw()});resize();updateText();requestAnimationFrame(frame);
+</script>
+</body></html>

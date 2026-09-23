@@ -138,10 +138,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-projectile-motion",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "rebuild",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/monkey-and-hunter/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/monkey-and-hunter.html",
-    migrationNote: "The legacy page references missing styles.css and script.js files. Source recovery or rebuild is required."
+    migrationNote: "Rebuilt from the surviving legacy screenshot and learning intent because the original CSS/JS assets were missing; uses a clean projectile-motion model with explicit assumptions."
   },
   {
     id: "legacy-collision",
@@ -216,10 +218,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-gravitational-fields",
     relatedTopicIds: ["9478-circular-motion"],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/gravitational-system-orbit-around-their-common-center-of-mass/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/gravitational-system-orbit-around-their-common-center-of-mass.html",
-    migrationNote: "Encoding damage is present, but the displayed physical scaling also needs a physics-model review before migration; held back from publication."
+    migrationNote: "Reworked the legacy scaled model so all displayed numerical values are calculated consistently in SI units; retained visually scaled drawing sizes for readability."
   },
   {
     id: "legacy-double-slit",
@@ -230,10 +234,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-superposition",
     relatedTopicIds: ["9478-wave-motion"],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/double-slit-interference/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/double-slit-interference.html",
-    migrationNote: "Duplicate shader element IDs were found and should be verified during migration."
+    migrationNote: "Removed the accidentally duplicated WebGL shader/script block and repaired the embedded layout so the simulation fits the library player."
   },
   {
     id: "legacy-electron-angle-b",

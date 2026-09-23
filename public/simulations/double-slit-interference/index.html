@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double-Slit Interference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #020617; font-family: 'Inter', sans-serif; }
+        .ejc-simulation-container { position: relative; height: calc(100vh - 48px); min-height: 540px; overflow: hidden; }
+        .control-panel {
+            position: absolute;
+            top: 18px;
+            left: 20px;
+            width: 300px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+        .control-panel.hidden-panel {
+            transform: translateX(-340px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .show-controls-btn {
+            position: absolute;
+            top: 18px;
+            left: 20px;
+            z-index: 90;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .show-controls-btn:hover { transform: scale(1.05); }
+        
+        .slider-group { margin-bottom: 20px; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #38bdf8; }
+        .label-text { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+        .value-text { font-family: monospace; color: #38bdf8; font-weight: bold; }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Double-Slit Interference</div>
+            <div class="ejc-credit-author">Created by <strong>Wang Guangquan</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+    <button id="showPanelBtn" class="show-controls-btn shadow-xl hidden" title="Show Controls">
+        <span class="text-xl"><i class="fas fa-bars"></i></span>
+    </button>
+
+    <div id="mainPanel" class="control-panel shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <span class="h">λ</span> Ray Interference
+            </h1>
+            <button id="hidePanelBtn" class="text-slate-500 hover:text-white transition-colors" title="Hide Controls">
+                <span class="text-lg"><i class="fas fa-times"></i></span>
+            </button>
+        </div>
+        
+        <div class="slider-group">
+            <div class="flex justify-between mb-2">
+                <span class="label-text">Wavelength (λ)</span>
+                <span id="lambdaVal" class="value-text">500 nm</span>
+            </div>
+            <input type="range" id="lambda" min="400" max="750" value="500">
+        </div>
+
+        <div class="slider-group">
+            <div class="flex justify-between mb-2">
+                <span class="label-text">Slit Separation (d)</span>
+                <span id="dVal" class="value-text">20 μm</span>
+            </div>
+            <input type="range" id="slitDist" min="10" max="80" value="20">
+        </div>
+
+        <div class="slider-group">
+            <div class="flex justify-between mb-2">
+                <span class="label-text">Tilt Angle (θ)</span>
+                <span id="tiltVal" class="value-text">0°</span>
+            </div>
+            <input type="range" id="tiltAngle" min="-30" max="30" value="0">
+        </div>
+
+        <div class="slider-group">
+            <div class="flex justify-between mb-2">
+                <span class="label-text">Optical Material (nΔL)</span>
+                <span id="materialVal" class="value-text">0.0</span>
+            </div>
+            <input type="range" id="materialShift" min="0" max="100" value="0">
+        </div>
+
+        <div class="mt-4 pt-6 border-t border-white/10">
+            <p class="text-[10px] text-slate-500 mb-4 font-bold tracking-widest uppercase">Static Ray Analysis</p>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 text-xs text-slate-400">
+                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                    <span>Central Source</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-slate-400">
+                    <div class="w-4 h-3 bg-blue-500/40 border border-blue-400 rounded-sm"></div>
+                    <span>Optical Material (Top Slit)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <p class="text-[11px] text-blue-300 leading-relaxed">
+                Adding material to the top slit increases the optical path, shifting the central maximum <strong>upward</strong> toward the delay.
+            </p>
+        </div>
+    </div>
+
+    <canvas id="glCanvas"></canvas>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+        attribute vec2 a_position;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        precision highp float;
+
+        uniform vec2 u_resolution;
+        uniform float u_lambda;      
+        uniform float u_d;           
+        uniform float u_tilt;        
+        uniform float u_materialShift; 
+        uniform vec3 u_baseColor;    
+
+        float line_segment(vec2 p, vec2 a, vec2 b) {
+            vec2 ba = b - a;
+            vec2 pa = p - a;
+            float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+            return length(pa - ba * h);
+        }
+
+        void main() {
+            vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+            float aspect = u_resolution.x / u_resolution.y;
+            uv.x *= aspect;
+
+            float sourceX = 0.1 * aspect;
+            vec2 source = vec2(sourceX, 0.5);
+            float barrierX = 0.35 * aspect;
+            float screenX = 0.9 * aspect;
+            
+            float d_off = u_d * 0.0015;
+            vec2 center = vec2(barrierX, 0.5);
+            
+            vec2 rotDir = vec2(-sin(u_tilt), cos(u_tilt));
+            vec2 p1 = center + rotDir * d_off; // Top Slit
+            vec2 p2 = center - rotDir * d_off; // Bottom Slit
+
+            vec3 finalColor = vec3(0.02, 0.02, 0.05);
+
+            // Optical Material Visual (Top Slit)
+            if (u_materialShift > 0.0) {
+                vec2 matCenter = p1 - vec2(0.04, 0.0);
+                float boxW = 0.015;
+                float boxH = 0.03;
+                float dist = max(abs(uv.x - matCenter.x) - boxW, abs(uv.y - matCenter.y) - boxH);
+                
+                if (dist < 0.0) {
+                    finalColor += vec3(0.1, 0.4, 0.7) * (u_materialShift / 100.0 + 0.3);
+                } else if (dist < 0.002) {
+                    finalColor += vec3(0.4, 0.7, 1.0);
+                }
+            }
+
+            // Draw Barrier
+            float barDist = line_segment(uv, center + rotDir * 0.5, center - rotDir * 0.5);
+            if (barDist < 0.003) {
+                if (distance(uv, p1) > 0.015 && distance(uv, p2) > 0.015) {
+                    finalColor = vec3(0.15, 0.18, 0.25);
+                }
+            }
+
+            // Path difference logic
+            float L = screenX - barrierX;
+            // delta_init is path(S -> p1) + delay - path(S -> p2)
+            float delta_init = (distance(source, p1) + (u_materialShift * 0.0005)) - distance(source, p2);
+
+            for (int m = -5; m <= 5; m++) {
+                float mf = float(m);
+                // The condition for bright fringe is delta_init + geometric_delta = m * lambda
+                // geometric_delta approx d * sin(theta) = d * (y - 0.5) / L
+                // y = 0.5 + (m * lambda - delta_init) * L / d
+                // Note: We use the '+' here because delta_init already contains the delay at top. 
+                // To balance it, geometric path from p2 must be larger, shifting y UP.
+                float fringeY = 0.5 + ((mf * u_lambda * 0.0005 + (delta_init * 1.5)) * L / (u_d * 0.01));
+                vec2 target = vec2(screenX, fringeY);
+                
+                float sRay1 = line_segment(uv, source, p1);
+                float sRay2 = line_segment(uv, source, p2);
+                finalColor += u_baseColor * (smoothstep(0.004, 0.0, sRay1) * 0.3);
+                finalColor += u_baseColor * (smoothstep(0.004, 0.0, sRay2) * 0.3);
+
+                float ray1 = line_segment(uv, p1, target);
+                float ray2 = line_segment(uv, p2, target);
+                
+                float rayBrightness = smoothstep(0.003, 0.0, min(ray1, ray2));
+                finalColor += u_baseColor * rayBrightness * 0.8;
+
+                if (uv.x >= screenX && uv.x < screenX + 0.02) {
+                    finalColor += u_baseColor * smoothstep(0.05, 0.0, abs(uv.y - fringeY));
+                }
+            }
+
+            if (abs(uv.x - screenX) < 0.002) {
+                finalColor += vec3(0.3, 0.4, 0.6);
+            }
+
+            float sourceDot = smoothstep(0.012, 0.005, distance(uv, source));
+            finalColor += vec3(1.0) * sourceDot;
+
+            gl_FragColor = vec4(finalColor, 1.0);
+        }
+    </script>
+
+    <script>
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl');
+
+        if (!gl) alert('WebGL not supported');
+
+        const mainPanel = document.getElementById('mainPanel');
+        const showPanelBtn = document.getElementById('showPanelBtn');
+        const hidePanelBtn = document.getElementById('hidePanelBtn');
+
+        hidePanelBtn.onclick = () => {
+            mainPanel.classList.add('hidden-panel');
+            showPanelBtn.classList.remove('hidden');
+        };
+
+        showPanelBtn.onclick = () => {
+            mainPanel.classList.remove('hidden-panel');
+            showPanelBtn.classList.add('hidden');
+        };
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+        }
+
+        const vsSource = document.getElementById('vertexShader').text;
+        const fsSource = document.getElementById('fragmentShader').text;
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, "a_position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        const uniforms = {
+            resolution: gl.getUniformLocation(program, "u_resolution"),
+            lambda: gl.getUniformLocation(program, "u_lambda"),
+            d: gl.getUniformLocation(program, "u_d"),
+            tilt: gl.getUniformLocation(program, "u_tilt"),
+            materialShift: gl.getUniformLocation(program, "u_materialShift"),
+            color: gl.getUniformLocation(program, "u_baseColor")
+        };
+
+        function wavelengthToRGB(lambda) {
+            if (lambda < 440) return [0.6, 0.2, 1.0]; 
+            if (lambda < 490) return [0.2, 0.6, 1.0]; 
+            if (lambda < 510) return [0.2, 1.0, 0.8]; 
+            if (lambda < 580) return [0.2, 1.0, 0.2]; 
+            if (lambda < 645) return [1.0, 0.9, 0.1]; 
+            return [1.0, 0.1, 0.1]; 
+        }
+
+        const controls = {
+            lambda: document.getElementById('lambda'),
+            d: document.getElementById('slitDist'),
+            tilt: document.getElementById('tiltAngle'),
+            material: document.getElementById('materialShift'),
+            lambdaText: document.getElementById('lambdaVal'),
+            dText: document.getElementById('dVal'),
+            tiltText: document.getElementById('tiltVal'),
+            materialText: document.getElementById('materialVal')
+        };
+
+        function resize() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = Math.max(1, Math.floor(rect.width * window.devicePixelRatio));
+            canvas.height = Math.max(1, Math.floor(rect.height * window.devicePixelRatio));
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function render() {
+            const tiltDeg = parseFloat(controls.tilt.value);
+            const materialVal = parseFloat(controls.material.value);
+            
+            controls.lambdaText.innerText = `${controls.lambda.value} nm`;
+            controls.dText.innerText = `${controls.d.value} μm`;
+            controls.tiltText.innerText = `${tiltDeg}°`;
+            controls.materialText.innerText = materialVal.toFixed(1);
+            
+            gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+            gl.uniform1f(uniforms.lambda, parseFloat(controls.lambda.value));
+            gl.uniform1f(uniforms.d, parseFloat(controls.d.value));
+            gl.uniform1f(uniforms.tilt, tiltDeg * Math.PI / 180);
+            gl.uniform1f(uniforms.materialShift, materialVal);
+            
+            const rgb = wavelengthToRGB(parseFloat(controls.lambda.value));
+            gl.uniform3f(uniforms.color, rgb[0], rgb[1], rgb[2]);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+    </script>
+
+    </div>
+    
+
+</body>
+</html>

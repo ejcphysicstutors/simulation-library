@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Monkey and Hunter</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0f172a;color:#e2e8f0}
+    body{overflow:hidden}.app{height:100vh;display:grid;grid-template-columns:minmax(0,1fr) 330px}.stage{position:relative;min-width:0;background:#0b1220}.panel{background:#1e293b;border-left:1px solid #334155;padding:24px;overflow:auto}
+    canvas{display:block;width:100%;height:100%}.legend{position:absolute;left:18px;top:18px;background:rgba(15,23,42,.88);border:1px solid #334155;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7}.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}.line{display:inline-block;width:18px;border-top:2px dashed #22c55e;margin:0 8px 3px 0}
+    h1{margin:0 0 8px;font-size:30px;color:#fff}.intro{margin:0 0 22px;color:#cbd5e1;line-height:1.5}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}button{border:0;border-radius:10px;padding:13px 12px;font-weight:700;cursor:pointer}.fire{background:#2563eb;color:white}.reset{background:#475569;color:white}.control{margin:18px 0}.row{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px}.value{color:#7dd3fc;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}input[type=range]{width:100%}.check{display:flex;gap:10px;align-items:center;margin:14px 0;color:#e2e8f0}.result{margin-top:18px;padding:12px 14px;border-radius:10px;background:#0f172a;border:1px solid #334155;color:#cbd5e1;min-height:48px}.note{font-size:12px;color:#94a3b8;margin-top:12px;line-height:1.5}
+    @media(max-width:850px){body{overflow:auto}.app{height:auto;min-height:100vh;grid-template-columns:1fr}.stage{height:62vh}.panel{border-left:0;border-top:1px solid #334155}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="stage">
+    <canvas id="canvas"></canvas>
+    <div class="legend">
+      <div><span class="sw" style="background:#94a3b8"></span>Hunter</div>
+      <div><span class="sw" style="background:#facc15"></span>Projectile</div>
+      <div><span class="sw" style="background:#ef4444"></span>Target (Monkey)</div>
+      <div><span class="line"></span>Initial line of sight</div>
+    </div>
+  </section>
+  <aside class="panel">
+    <h1>Monkey &amp; Hunter</h1>
+    <p class="intro">A classic projectile-motion problem. At the instant the projectile is fired, the monkey lets go. Both then have the same downward acceleration due to gravity.</p>
+    <div class="buttons"><button class="fire" id="fire">FIRE</button><button class="reset" id="reset">RESET</button></div>
+    <div class="control"><div class="row"><span>Gun angle</span><span class="value" id="angleVal"></span></div><input id="angle" type="range" min="10" max="70" step="1" value="34"></div>
+    <div class="control"><div class="row"><span>Projectile speed</span><span class="value" id="speedVal"></span></div><input id="speed" type="range" min="50" max="250" step="5" value="150"></div>
+    <div class="control"><div class="row"><span>Horizontal distance</span><span class="value" id="distanceVal"></span></div><input id="distance" type="range" min="250" max="800" step="25" value="600"></div>
+    <div class="control"><div class="row"><span>Monkey height</span><span class="value" id="heightVal"></span></div><input id="height" type="range" min="150" max="600" step="25" value="400"></div>
+    <label class="check"><input id="autoAim" type="checkbox" checked> Auto-aim directly at monkey</label>
+    <label class="check"><input id="slow" type="checkbox"> Slow motion</label>
+    <label class="check"><input id="trails" type="checkbox" checked> Show trails</label>
+    <label class="check"><input id="aimLine" type="checkbox" checked> Show aim line</label>
+    <div class="result" id="result">Adjust the controls, then press FIRE.</div>
+    <div class="note">Model assumes uniform gravitational acceleration and neglects air resistance. If the gun is initially aimed directly at the monkey, both projectile and monkey fall by the same vertical amount during the flight.</div>
+  </aside>
+</div>
+<script>
+const c=document.getElementById('canvas'),ctx=c.getContext('2d');
+const byId=id=>document.getElementById(id);
+const els={angle:byId('angle'),speed:byId('speed'),distance:byId('distance'),height:byId('height'),autoAim:byId('autoAim'),slow:byId('slow'),trails:byId('trails'),aimLine:byId('aimLine'),result:byId('result'),angleVal:byId('angleVal'),speedVal:byId('speedVal'),distanceVal:byId('distanceVal'),heightVal:byId('heightVal')};
+const g=9.81;let state=null,raf=null,last=0,trailP=[],trailM=[];
+function resize(){const r=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=Math.max(1,Math.round(r.width*dpr));c.height=Math.max(1,Math.round(r.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);draw()}addEventListener('resize',resize);
+function values(){const D=+els.distance.value,H=+els.height.value;let a=+els.angle.value;if(els.autoAim.checked){a=Math.atan2(H,D)*180/Math.PI;els.angle.value=Math.round(a)}els.angleVal.textContent=`${a.toFixed(0)}°`;els.speedVal.textContent=`${els.speed.value} m/s`;els.distanceVal.textContent=`${D} m`;els.heightVal.textContent=`${H} m`;return{D,H,a,v:+els.speed.value}}
+function map(x,y){const {D,H}=values();const w=c.clientWidth,h=c.clientHeight,pad=70;const sx=(w-2*pad)/Math.max(D*1.12,1),sy=(h-2*pad)/Math.max(H*1.25,1),s=Math.min(sx,sy);return{x:pad+x*s,y:h-pad-y*s,s}}
+function dot(p,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill()}
+function line(a,b,color,dash=[]){ctx.strokeStyle=color;ctx.setLineDash(dash);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([])}
+function draw(){if(!c.clientWidth)return;ctx.clearRect(0,0,c.clientWidth,c.clientHeight);const v=values(),hunter=map(0,0),monkey0=map(v.D,v.H);ctx.strokeStyle='#1e293b';ctx.lineWidth=1;for(let x=0;x<c.clientWidth;x+=52){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.clientHeight);ctx.stroke()}for(let y=0;y<c.clientHeight;y+=52){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.clientWidth,y);ctx.stroke()}if(els.aimLine.checked)line(hunter,monkey0,'#22c55e',[9,8]);dot(hunter,20,'#94a3b8');ctx.fillStyle='#e2e8f0';ctx.fillText('HUNTER',hunter.x-26,hunter.y+36);
+ let mp=monkey0,pp=hunter;if(state){const t=state.t,a=state.a*Math.PI/180;const xp=state.v*Math.cos(a)*t,yp=state.v*Math.sin(a)*t-.5*g*t*t;const ym=state.H-.5*g*t*t;pp=map(xp,yp);mp=map(state.D,ym);if(els.trails.checked){trailP.push({...pp});trailM.push({...mp});trailP=trailP.slice(-160);trailM=trailM.slice(-160);for(let i=1;i<trailP.length;i++)line(trailP[i-1],trailP[i],'rgba(250,204,21,.35)');for(let i=1;i<trailM.length;i++)line(trailM[i-1],trailM[i],'rgba(239,68,68,.35)')}}
+ dot(pp,9,'#facc15');dot(mp,16,'#ef4444');ctx.fillStyle='#111827';ctx.beginPath();ctx.arc(mp.x,mp.y,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8fafc';ctx.font='13px system-ui';ctx.fillText('Monkey',mp.x+20,mp.y+4)}
+function stop(msg){state=null;if(raf)cancelAnimationFrame(raf);raf=null;els.result.textContent=msg;draw()}
+function step(ts){if(!state)return;if(!last)last=ts;const dt=Math.min(.04,(ts-last)/1000)*(els.slow.checked?.22:1);last=ts;state.t+=dt;const a=state.a*Math.PI/180,x=state.v*Math.cos(a)*state.t,y=state.v*Math.sin(a)*state.t-.5*g*state.t*state.t,ym=state.H-.5*g*state.t*state.t;const dx=x-state.D,dy=y-ym;if(Math.hypot(dx,dy)<12){stop('Hit: both projectile and monkey have fallen by the same vertical amount.');return}if(y<0||ym<0||x>state.D*1.25){stop('No hit for this initial aim/speed. Reset or adjust the controls.');return}draw();raf=requestAnimationFrame(step)}
+function fireNow(){const v=values();trailP=[];trailM=[];state={...v,t:0};last=0;els.result.textContent='In flight…';raf=requestAnimationFrame(step)}
+[els.angle,els.speed,els.distance,els.height,els.autoAim,els.aimLine].forEach(e=>e.addEventListener('input',()=>{if(!state)draw()}));
+document.getElementById('fire').onclick=()=>{if(raf)cancelAnimationFrame(raf);fireNow()};document.getElementById('reset').onclick=()=>stop('Adjust the controls, then press FIRE.');resize();
+</script>
+</body>
+</html>
