@@ -3,9 +3,14 @@ export const DEMO_SESSION_COOKIE = "ejc_sim_demo";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 
 export function getStudentDomains(): string[] {
-  return (process.env.NEXT_PUBLIC_STUDENT_EMAIL_DOMAINS ?? "")
+  const configuredDomains =
+    process.env.ALLOWED_EJC_DOMAINS ??
+    process.env.NEXT_PUBLIC_STUDENT_EMAIL_DOMAINS ??
+    "";
+
+  return configuredDomains
     .split(",")
-    .map((domain) => domain.trim().toLowerCase())
+    .map((domain) => domain.trim().toLowerCase().replace(/^@/, ""))
     .filter(Boolean);
 }
 
