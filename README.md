@@ -40,3 +40,18 @@ Privileged Firestore records live at:
 with fields `email`, `role`, `active`, timestamps and the admin who made the change.
 
 The starter catalogue remains intentionally small while legacy simulations are audited and repaired.
+
+## Contributor upload storage
+
+Contributor simulation packages are stored temporarily in a **private Vercel Blob store** under `submissions/<submission-id>/...`.
+
+Before testing uploads in Vercel:
+
+1. Open the project's **Storage** tab.
+2. Create or connect a **Vercel Blob** store with **Private** access.
+3. Connect it to this Vercel project. New stores use Vercel OIDC authentication automatically.
+4. Redeploy after the storage connection is active.
+
+Accepted simulation packages: standalone `.html`/`.htm` files or `.zip` projects, maximum 10 MB.
+
+The uploaded package is staging data. Once the later publish workflow has copied and verified the approved version, the submission blob can be deleted without affecting the published simulation.
