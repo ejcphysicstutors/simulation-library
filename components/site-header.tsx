@@ -21,7 +21,7 @@ export async function SiteHeader() {
           {session?.kind === "google" && (session.role === "contributor" || session.role === "admin") ? (
             <Link href="/contribute">Contribute</Link>
           ) : null}
-          {session?.kind === "google" && session.role === "admin" ? <Link href="/admin/access">Admin</Link> : null}
+          {session?.kind === "google" && session.role === "admin" ? <Link href="/admin/submissions">Admin</Link> : null}
           {session ? (
             <>
               <span className="access-badge">{session.kind === "demo" ? "Demo" : session.role}</span>

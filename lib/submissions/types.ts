@@ -11,6 +11,26 @@ export type SubmissionStatus =
   | "published"
   | "rejected";
 
+export type ValidationSeverity = "pass" | "info" | "warning" | "error";
+
+export type ValidationCheck = {
+  code: string;
+  label: string;
+  severity: ValidationSeverity;
+  message: string;
+  details?: string[];
+};
+
+export type ValidationSummary = {
+  checkedAt: string;
+  errors: number;
+  warnings: number;
+  infos: number;
+  passes: number;
+  entrypoint?: string;
+  checks: ValidationCheck[];
+};
+
 export type SubmissionMetadata = {
   submissionId: string;
   kind: SubmissionKind;
@@ -33,6 +53,10 @@ export type SubmissionRecord = SubmissionMetadata & {
   blobPathname?: string;
   blobContentType?: string;
   blobSize?: number;
+  validation?: ValidationSummary;
+  adminNote?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 };

@@ -39,7 +39,7 @@ export default async function ContributePage() {
             <div className="submission-list">
               {submissions.slice(0, 10).map((submission) => (
                 <article key={submission.submissionId}>
-                  <div><strong>{submission.title}</strong><small>{submission.kind === "update" ? "Update" : "New simulation"} · {submission.originalFilename}</small></div>
+                  <div><strong>{submission.title}</strong><small>{submission.kind === "update" ? "Update" : "New simulation"} · {submission.originalFilename}</small>{submission.adminNote ? <small className="submission-admin-note">Reviewer: {submission.adminNote}</small> : null}</div>
                   <span className={`submission-status status-${submission.status}`}>{STATUS_LABELS[submission.status]}</span>
                 </article>
               ))}

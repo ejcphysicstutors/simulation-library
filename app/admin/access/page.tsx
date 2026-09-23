@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdminAccess } from "@/lib/auth/session";
 import { getInitialAdminEmails } from "@/lib/auth/config";
@@ -25,10 +26,13 @@ export default async function AccessManagementPage() {
 
   return (
     <main className="shell section admin-page">
-      <div className="section-heading compact-heading">
-        <p className="eyebrow">Administration</p>
-        <h1>Access management</h1>
-        <p>Add teachers as contributors or admins. Admin access automatically includes contributor permissions.</p>
+      <div className="admin-title-row">
+        <div className="section-heading compact-heading">
+          <p className="eyebrow">Administration</p>
+          <h1>Access management</h1>
+          <p>Add teachers as contributors or admins. Admin access automatically includes contributor permissions.</p>
+        </div>
+        <Link className="button secondary" href="/admin/submissions">Review submissions</Link>
       </div>
 
       <section className="admin-panel">

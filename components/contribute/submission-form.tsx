@@ -151,10 +151,16 @@ export function SubmissionForm({ topics, simulations }: Props) {
           pathname: prepared.pathname,
         }),
       });
-      const completed = await completeResponse.json() as { error?: string };
+      const completed = await completeResponse.json() as { error?: string; validation?: { errors: number; warnings: number } };
       if (!completeResponse.ok) throw new Error(completed.error || "The upload completed, but the submission could not be finalised.");
 
-      setSuccess("Submitted successfully. It is now waiting for review.");
+      if (completed.validation?.errors) {
+        setSuccess(`Uploaded successfully. Automated checks found ${completed.validation.errors} issue${completed.validation.errors === 1 ? "" : "s"} that need attention before review.`);
+      } else if (completed.validation?.warnings) {
+        setSuccess(`Uploaded and checked. ${completed.validation.warnings} warning${completed.validation.warnings === 1 ? "" : "s"} will be shown to the reviewer.`);
+      } else {
+        setSuccess("Uploaded and checked successfully. It is now waiting for review.");
+      }
       setFile(null);
       setProgress(100);
       router.refresh();

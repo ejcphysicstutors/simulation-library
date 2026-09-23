@@ -3,6 +3,7 @@ import { issueSignedToken, presignUrl } from "@vercel/blob";
 import { getAccessSession } from "@/lib/auth/session";
 import { adminDb } from "@/lib/firebase/admin";
 import { inferPackageType, parseSubmissionMetadata, sanitiseFilename } from "@/lib/submissions/schema";
+import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const UPLOAD_URL_TTL_MS = 15 * 60 * 1000;
@@ -123,11 +124,12 @@ export async function POST(request: Request): Promise<Response> {
       if (data?.blobPathname !== pathname) throw new Error("Upload path does not match the submission record.");
 
       await ref.update({
-        status: "awaiting-review",
+        status: "uploaded",
         updatedAt: new Date().toISOString(),
       });
 
-      return Response.json({ ok: true });
+      const validation = await validateSubmissionRecord(submissionId);
+      return Response.json({ ok: true, validation });
     }
 
     return Response.json({ error: "Unknown upload action." }, { status: 400 });
