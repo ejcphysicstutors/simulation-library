@@ -1,6 +1,5 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 
@@ -105,15 +104,55 @@ export function SubmissionForm({ topics, simulations }: Props) {
     try {
       setBusy(true);
       setProgress(0);
-      await upload(pathname, file, {
-        access: "private",
-        handleUploadUrl: "/api/submissions/upload",
-        multipart: file.size > 4 * 1024 * 1024,
-        clientPayload: JSON.stringify({ metadata, originalFilename: file.name, fileSize: file.size }),
-        onUploadProgress(event) {
-          setProgress(Math.round(event.percentage));
-        },
+      const prepareResponse = await fetch("/api/submissions/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "prepare",
+          metadata,
+          originalFilename: file.name,
+          fileSize: file.size,
+          contentType: file.type || "application/octet-stream",
+        }),
       });
+      const prepared = await prepareResponse.json() as {
+        error?: string;
+        submissionId?: string;
+        pathname?: string;
+        presignedUrl?: string;
+        contentType?: string;
+      };
+      if (!prepareResponse.ok || !prepared.presignedUrl || !prepared.submissionId || !prepared.pathname) {
+        throw new Error(prepared.error || "The private upload URL could not be prepared.");
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", prepared.presignedUrl!, true);
+        xhr.setRequestHeader("Content-Type", prepared.contentType || file.type || "application/octet-stream");
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) setProgress(Math.round((event.loaded / event.total) * 90));
+        };
+        xhr.onerror = () => reject(new Error("The file could not be uploaded to private storage."));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Private storage rejected the upload (${xhr.status}).`));
+        };
+        xhr.send(file);
+      });
+
+      setProgress(95);
+      const completeResponse = await fetch("/api/submissions/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "complete",
+          submissionId: prepared.submissionId,
+          pathname: prepared.pathname,
+        }),
+      });
+      const completed = await completeResponse.json() as { error?: string };
+      if (!completeResponse.ok) throw new Error(completed.error || "The upload completed, but the submission could not be finalised.");
 
       setSuccess("Submitted successfully. It is now waiting for review.");
       setFile(null);
