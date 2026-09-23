@@ -13,13 +13,6 @@ type Props = {
 
 const levelOptions: Array<"All" | SyllabusLevel> = ["All", "H1", "H2", "H3"];
 
-const migrationLabels = {
-  ready: "Ready",
-  "needs-repair": "Repair needed",
-  "needs-review": "Review needed",
-  rebuild: "Rebuild needed"
-} as const;
-
 export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
   const [level, setLevel] = useState<"All" | SyllabusLevel>("All");
   const [topicId, setTopicId] = useState("all");
@@ -106,7 +99,7 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
       <div className="result-summary">
         <strong>{filtered.length}</strong> {filtered.length === 1 ? "simulation" : "simulations"}
         {level !== "All" ? ` for ${level}` : ""}
-        {isDemo ? " · demo view" : " · migration catalogue"}
+        {isDemo ? " · demo view" : ""}
       </div>
 
       {filtered.length === 0 ? (
@@ -122,9 +115,6 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
               <Link className="simulation-card interactive-card" href={`/library/${simulation.slug}`} key={simulation.id}>
                 <div className="card-visual">
                   <span>{topic ? `${topic.name} (${topic.availabilityLabel})` : "Physics"}</span>
-                  <span className={`migration-chip migration-${simulation.migrationStatus}`}>
-                    {simulation.status === "published" ? `Published · v${simulation.publishedVersion ?? 1}` : migrationLabels[simulation.migrationStatus]}
-                  </span>
                 </div>
                 <div className="card-body">
                   <div className="level-row">
@@ -133,7 +123,7 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
                   <h2>{simulation.title}</h2>
                   <p>{simulation.description}</p>
                   <div className="card-footer-row">
-                    <span className="topic-label compact">{topic?.strand} · {topic?.name} {topic ? `(${topic.availabilityLabel})` : ""}</span>
+                    <span className="topic-label compact">{topic?.strand} · {topic?.name}</span>
                     <span className="card-arrow" aria-hidden="true">→</span>
                   </div>
                 </div>

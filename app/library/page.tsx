@@ -11,14 +11,12 @@ export default async function LibraryPage() {
         <div>
           <p className="eyebrow">EJC Physics Simulation Library</p>
           <h1>Explore physics interactively.</h1>
-          <p>
-            Browse the library using the syllabus coverage shown in the official H1/H2/H3 physics framework. Each topic is labelled by the level or levels in which it is covered.
-          </p>
+          <p>Search or browse by level and topic to find an interactive simulation.</p>
         </div>
-        <aside className="catalog-stat" aria-label="Migration catalogue summary">
+        <aside className="catalog-stat" aria-label="Simulation library summary">
           <strong>{simulations.length}</strong>
-          <span>legacy simulations catalogued</span>
-          <small>24 canonical topics across H1/H2/H3</small>
+          <span>simulations</span>
+          <small>across H1, H2 and H3 Physics</small>
         </aside>
       </div>
 
