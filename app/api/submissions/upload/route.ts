@@ -1,4 +1,4 @@
-import { issueSignedToken, presignUrl } from "@vercel/blob";
+import { issueSignedToken, list, presignUrl } from "@vercel/blob";
 
 import { getAccessSession } from "@/lib/auth/session";
 import { adminDb } from "@/lib/firebase/admin";
@@ -123,8 +123,28 @@ export async function POST(request: Request): Promise<Response> {
       }
       if (data?.blobPathname !== pathname) throw new Error("Upload path does not match the submission record.");
 
+      const prefix = `submissions/${submissionId}/`;
+      const uploaded = await list({ prefix, limit: 20 });
+      const files = uploaded.blobs.filter((blob) => !blob.pathname.endsWith("/"));
+      if (files.length === 0) {
+        throw new Error("The browser reported a successful upload, but the file was not found in private storage. Please try submitting it again.");
+      }
+
+      const expectedName = String(data?.originalFilename ?? "").toLowerCase();
+      const blob =
+        files.find((item) => item.pathname.split("/").pop()?.toLowerCase() === expectedName) ??
+        (files.length === 1 ? files[0] : undefined);
+
+      if (!blob) {
+        throw new Error("More than one file was found for this submission and the uploaded file could not be identified safely.");
+      }
+
       await ref.update({
         status: "uploaded",
+        blobPathname: blob.pathname,
+        blobUrl: blob.url,
+        blobDownloadUrl: blob.downloadUrl,
+        blobSize: blob.size,
         updatedAt: new Date().toISOString(),
       });
 
