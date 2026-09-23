@@ -30,4 +30,6 @@ export type SimulationSummary = {
   legacyUrl?: string;
   migrationNote?: string;
   migrationCredit?: "updated" | "rebuilt";
+  managed?: boolean;
+  currentVersionId?: string;
 };

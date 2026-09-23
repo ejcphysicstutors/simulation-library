@@ -59,4 +59,8 @@ export type SubmissionRecord = SubmissionMetadata & {
   reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
+  publishedAt?: string;
+  publishedSimulationId?: string;
+  publishedVersionId?: string;
+  stagingDeleteAfter?: string;
 };
