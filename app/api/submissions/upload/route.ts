@@ -1,6 +1,6 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
-import { getAccessSession } from "@/lib/auth/session";
+import { getAccessSession, type AccessSession } from "@/lib/auth/session";
 import { adminDb } from "@/lib/firebase/admin";
 import { inferPackageType, parseSubmissionMetadata, sanitiseFilename } from "@/lib/submissions/schema";
 
@@ -12,7 +12,9 @@ type ClientPayload = {
   fileSize?: unknown;
 };
 
-function isContributorSession(session: Awaited<ReturnType<typeof getAccessSession>>) {
+type GoogleAccessSession = Extract<AccessSession, { kind: "google" }>;
+
+function isContributorSession(session: AccessSession | null): session is GoogleAccessSession {
   return session?.kind === "google" && (session.role === "contributor" || session.role === "admin");
 }
 
