@@ -29,4 +29,5 @@ export type SimulationSummary = {
   migrationStatus: MigrationStatus;
   legacyUrl?: string;
   migrationNote?: string;
+  migrationCredit?: "updated" | "rebuilt";
 };

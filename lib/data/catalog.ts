@@ -76,10 +76,13 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-forces-moments",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/centre-of-mass-of-a-system/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/centre-of-mass-of-a-system.html",
-    migrationNote: "Source looks structurally sound; external CDN dependencies still need migration review."
+    migrationNote: "Removed the duplicated pre-dependency React/Babel script block and retained the original centre-of-mass model and interaction design.",
+    migrationCredit: "updated"
   },
   {
     id: "legacy-car-closest-approach",
@@ -143,7 +146,8 @@ export const simulations: SimulationSummary[] = [
     contentPath: "/simulations/monkey-and-hunter/index.html",
     publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/monkey-and-hunter.html",
-    migrationNote: "Rebuilt from the surviving legacy screenshot and learning intent because the original CSS/JS assets were missing; uses a clean projectile-motion model with explicit assumptions."
+    migrationNote: "Rebuilt from the surviving legacy screenshot and learning intent because the original CSS/JS assets were missing; uses a clean projectile-motion model with explicit assumptions.",
+    migrationCredit: "rebuilt"
   },
   {
     id: "legacy-collision",
@@ -223,7 +227,8 @@ export const simulations: SimulationSummary[] = [
     contentPath: "/simulations/gravitational-system-orbit-around-their-common-center-of-mass/index.html",
     publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/gravitational-system-orbit-around-their-common-center-of-mass.html",
-    migrationNote: "Reworked the legacy scaled model so all displayed numerical values are calculated consistently in SI units; retained visually scaled drawing sizes for readability."
+    migrationNote: "Reworked the legacy scaled model so all displayed numerical values are calculated consistently in SI units; retained visually scaled drawing sizes for readability.",
+    migrationCredit: "updated"
   },
   {
     id: "legacy-double-slit",
@@ -239,7 +244,8 @@ export const simulations: SimulationSummary[] = [
     contentPath: "/simulations/double-slit-interference/index.html",
     publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/double-slit-interference.html",
-    migrationNote: "Removed the accidentally duplicated WebGL shader/script block and repaired the embedded layout so the simulation fits the library player."
+    migrationNote: "Removed the accidentally duplicated WebGL shader/script block and repaired the embedded layout so the simulation fits the library player.",
+    migrationCredit: "updated"
   },
   {
     id: "legacy-electron-angle-b",

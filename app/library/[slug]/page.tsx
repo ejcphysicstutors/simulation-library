@@ -21,7 +21,20 @@ export default async function SimulationDetailPage({ params }: { params: Promise
         <div>
           <h1>{simulation.title}</h1>
           <p className="detail-description">{simulation.description}</p>
-          {simulation.author ? <p className="detail-author">Created by {simulation.author}</p> : null}
+          {simulation.author ? (
+            simulation.migrationCredit ? (
+              <>
+                <p className="detail-author">Original simulation by {simulation.author}</p>
+                <p className="detail-credit-note">
+                  {simulation.migrationCredit === "rebuilt"
+                    ? "Rebuilt for the new EJC Simulation Library"
+                    : "Updated for the new EJC Simulation Library"}
+                </p>
+              </>
+            ) : (
+              <p className="detail-author">Created by {simulation.author}</p>
+            )
+          ) : null}
         </div>
       </section>
 
