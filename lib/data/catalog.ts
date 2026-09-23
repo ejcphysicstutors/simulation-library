@@ -44,10 +44,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-forces-moments",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/hooke-s-law/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/hooke-s-law.html",
-    migrationNote: "Source looks structurally sound; external CDN dependencies still need migration review."
+    migrationNote: "Reviewed for migration. The simulation is structurally sound; its existing Tailwind/Lucide CDN dependencies are retained in v1."
   },
   {
     id: "legacy-moments",
@@ -58,10 +60,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-forces-moments",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/moments/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/moments.html",
-    migrationNote: "Source looks structurally sound; external CDN dependencies still need migration review."
+    migrationNote: "Reviewed for migration. The simulation is structurally sound; its existing font/Tailwind/Lucide CDN dependencies are retained in v1."
   },
   {
     id: "legacy-centre-of-mass",
@@ -184,10 +188,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-gravitational-fields",
     relatedTopicIds: [],
-    status: "migration",
+    status: "published",
     migrationStatus: "ready",
+    contentPath: "/simulations/earth-and-moon-orbit/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/earth-and-moon-orbit.html",
-    migrationNote: "No definite source-level defect found in the initial audit."
+    migrationNote: "Migrated as v1 with no source-level repair required."
   },
   {
     id: "legacy-gravity-com",
@@ -324,10 +330,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-nuclear-physics",
     relatedTopicIds: [],
-    status: "migration",
+    status: "published",
     migrationStatus: "ready",
+    contentPath: "/simulations/rutherford-scattering-experiment/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/rutherford-scattering-experiment.html",
-    migrationNote: "No definite source-level defect found in the initial audit."
+    migrationNote: "Migrated as v1. Repaired the corrupted degree symbol in the scattering-angle display."
   },
   {
     id: "legacy-radioactive-decay",

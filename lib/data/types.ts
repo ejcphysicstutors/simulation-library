@@ -23,6 +23,8 @@ export type SimulationSummary = {
   primaryTopicId: string;
   relatedTopicIds: string[];
   thumbnailUrl?: string;
+  contentPath?: string;
+  publishedVersion?: number;
   status: "migration" | "published" | "archived";
   migrationStatus: MigrationStatus;
   legacyUrl?: string;

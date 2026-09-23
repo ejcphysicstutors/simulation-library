@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rutherford Scattering experiment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --panel-bg: #ffffff;
+            --text-color: #1e293b;
+            --accent-color: #0284c7;
+            --alpha-color: #eab308;
+            --nucleus-color: #ef4444;
+            --pudding-color: #8b5cf6;
+            --border-color: #cbd5e1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            padding: 10px 20px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        h1 { margin: 0; font-size: 1.2rem; color: var(--accent-color); }
+        .syllabus-ref { font-size: 0.8rem; color: #64748b; }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 15px;
+            padding: 15px;
+            max-height: calc(100vh - 60px);
+            background: var(--bg-color);
+        }
+
+        #controls {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label { font-size: 0.9rem; font-weight: 600; color: #334155; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .value-display { font-family: monospace; color: var(--accent-color); font-size: 0.95rem; font-weight: bold; }
+
+        #canvas-container {
+            position: relative;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+        }
+        .btn:hover { background: #0369a1; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; box-shadow: none; }
+        .btn-secondary:hover { background: #e2e8f0; color: #1e293b; }
+
+        #data-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            backdrop-filter: blur(4px);
+        }
+
+        .model-toggle {
+            display: flex;
+            gap: 5px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .model-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .model-btn:hover { color: #334155; }
+
+        .model-btn.active {
+            background: #ffffff;
+            color: var(--accent-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .legend {
+            font-size: 0.8rem;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            color: #475569;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Rutherford Scattering experiment</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+<header>
+    <div>
+        <h1>Rutherford Scattering Experiment</h1>
+        <span class="syllabus-ref">9478 LO 20(a): Nuclear Atom</span>
+    </div>
+    <div id="status-display" style="font-family: monospace; font-size: 0.95rem; font-weight: bold; color: #475569;">
+        Model: <span id="current-model-name" style="color:var(--accent-color)">Nuclear</span>
+    </div>
+</header>
+
+<main>
+    <div id="controls">
+        <div class="control-group">
+            <label>Atomic Model</label>
+            <div class="model-toggle">
+                <button class="model-btn active" onclick="setModel('nuclear', this)">Nuclear</button>
+                <button class="model-btn" onclick="setModel('thomson', this)">Thomson</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Alpha Energy (E<sub>k</sub>)</label>
+            <input type="range" id="energy-slider" min="2" max="10" step="0.1" value="5">
+            <div class="value-display"><span id="energy-val">5.0</span> MeV</div>
+        </div>
+
+        <button class="btn" id="fire-btn">Fire Random Alpha</button>
+        <button class="btn btn-secondary" onclick="clearTrails()">Clear All Trails</button>
+        <button class="btn btn-secondary" id="auto-fire-btn">Start Continuous Beam</button>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-dot" style="background-color: var(--alpha-color); border: 1px solid #ca8a04;"></span>
+                <span>Alpha Particle (+2e)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background-color: var(--nucleus-color);"></span>
+                <span>Gold Nucleus (+79e)</span>
+            </div>
+            
+            <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #cbd5e1; font-size: 0.8rem; line-height: 1.5; color: #475569;">
+                <div style="margin-bottom: 8px;">
+                    <strong style="color: #6d28d9;">Thomson Model:</strong> Diffuse positive charge creates weak electric fields. Alpha particles are expected to pass straight through with minimal deflection.
+                </div>
+                <div>
+                    <strong style="color: #b91c1c;">Nuclear Model:</strong> Atoms are mostly empty space with a tiny, dense, positively charged core. Expect rare but massive deflections during close encounters.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="simCanvas"></canvas>
+        <div id="data-panel">
+            <div style="color: #64748b; margin-bottom: 8px; font-family: sans-serif; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;"><b>Last Scattering Event</b></div>
+            <div style="color: #334155; margin-bottom: 4px;">Scattering Angle: <span id="angle-out" style="color: var(--accent-color); font-weight: bold;">--</span>°</div>
+            <div style="color: #334155;">Closest Approach: <span id="dist-out" style="color: var(--accent-color); font-weight: bold;">--</span> fm</div>
+            
+            <div style="margin-top: 12px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+                <div style="color: #64748b; margin-bottom: 4px; font-family: sans-serif; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;"><b>Live Pedagogical Proof</b></div>
+                <div style="color: #334155;">Total E (E<sub>k</sub> + E<sub>p</sub>): <br><span id="energy-check" style="color: #16a34a; font-size: 1.2em; font-weight: bold; display: inline-block; margin-top: 4px;">--</span> MeV</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Physical Constants
+    const e = 1.602e-19; 
+    const epsilon0 = 8.854e-12;
+    const k = 1 / (4 * Math.PI * epsilon0);
+    const mAlpha = 6.644e-27; // kg
+    const qAlpha = 2 * e;
+    const qGold = 79 * e;
+    const MeV = 1.602e-13; // 1 MeV in Joules
+    
+    // Scale Factors
+    const fm = 1e-15;
+    let scale = 0.3; // Zoom level (pixels per fm)
+    const foilSpacing = 1000; // Physical gap between atoms (fm)
+    const R_atom = foilSpacing / 2; // Boundary of neutral atom electron cloud (fm)
+
+    // Sim State
+    let particles = [];
+    let trails = [];
+    let nuclei = []; 
+    let screenHits = []; // Array to store flashes on the macroscopic detector screen
+    let model = 'nuclear';
+    let isAutoFiring = false;
+    let autoFireTimer = null;
+    let lastAngle = 0;
+    let lastClosest = 0;
+
+    function resize() {
+        const container = document.getElementById('canvas-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        nuclei = [];
+        const maxH = (canvas.height / scale) / 2;
+        // Populate nuclei strictly within and slightly beyond the screen
+        for (let y = -maxH - foilSpacing; y <= maxH + foilSpacing; y += foilSpacing) {
+            nuclei.push({x: 0, y: y});
+        }
+        clearTrails();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Physics Engine: Gauss's Law implementation
+    function getKinematics(pos, modelType) {
+        let ax = 0; let ay = 0; let ep = 0;
+        
+        let closestN = null;
+        let minDist = Infinity;
+        for (let n of nuclei) {
+            let dx = pos.x - n.x;
+            let dy = pos.y - n.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < minDist) {
+                minDist = dist;
+                closestN = {dx, dy, dist};
+            }
+        }
+
+        if (modelType === 'nuclear') {
+            if (closestN && closestN.dist < R_atom) {
+                const softR = Math.max(closestN.dist, 2); 
+                
+                // Acceleration
+                const forceMag = (k * qAlpha * qGold) / (softR * fm)**2;
+                ax = (forceMag * (closestN.dx / closestN.dist)) / mAlpha;
+                ay = (forceMag * (closestN.dy / closestN.dist)) / mAlpha;
+                
+                // Potential Energy: Shifted so V(R_atom) = 0 to ensure energy conservation boundary
+                ep = (k * qAlpha * qGold) * (1/(softR * fm) - 1/(R_atom * fm));
+            }
+        } else {
+            // Thomson Plum Pudding
+            if (closestN && closestN.dist < R_atom) {
+                const forceMag = (k * qAlpha * qGold * (closestN.dist * fm)) / (R_atom * fm)**3;
+                ax = (forceMag * (closestN.dx / closestN.dist)) / mAlpha;
+                ay = (forceMag * (closestN.dy / closestN.dist)) / mAlpha;
+            }
+        }
+        return { ax: ax / fm, ay: ay / fm, ep: ep };
+    }
+
+    class AlphaParticle {
+        constructor(energyMeV, impactB) {
+            this.x = -canvas.width / (2 * scale);
+            this.y = -impactB;
+            
+            // Initial Velocity
+            const v_mag = Math.sqrt((2 * energyMeV * MeV) / mAlpha) / fm; 
+            this.vx = v_mag;
+            this.vy = 0;
+            
+            const kData = getKinematics({x: this.x, y: this.y}, model);
+            this.ax = kData.ax;
+            this.ay = kData.ay;
+            
+            this.trail = [];
+            this.active = true;
+            this.minDist = Infinity;
+            this.lastTrailPos = {x: this.x, y: this.y};
+            this.trail.push({x: this.x, y: this.y});
+        }
+
+        update(dt) {
+            if (!this.active) return;
+
+            // Velocity Verlet Integration
+            const nextX = this.x + this.vx * dt + 0.5 * this.ax * dt**2;
+            const nextY = this.y + this.vy * dt + 0.5 * this.ay * dt**2;
+            
+            const nextK = getKinematics({x: nextX, y: nextY}, model);
+            
+            this.vx += 0.5 * (this.ax + nextK.ax) * dt;
+            this.vy += 0.5 * (this.ay + nextK.ay) * dt;
+            
+            this.x = nextX;
+            this.y = nextY;
+            this.ax = nextK.ax;
+            this.ay = nextK.ay;
+
+            // Live Energy Calculation (E_k + E_p)
+            const ek = 0.5 * mAlpha * ((this.vx * fm)**2 + (this.vy * fm)**2);
+            this.totalEMeV = (ek + nextK.ep) / MeV;
+
+            // Closest Approach tracking
+            let minDistToAny = Infinity;
+            for (let n of nuclei) {
+                let dist = Math.sqrt((this.x - n.x)**2 + (this.y - n.y)**2);
+                if (dist < minDistToAny) minDistToAny = dist;
+            }
+            if (minDistToAny < this.minDist) this.minDist = minDistToAny;
+
+            // Dynamic trail points
+            const dx = this.x - this.lastTrailPos.x;
+            const dy = this.y - this.lastTrailPos.y;
+            if (dx*dx + dy*dy > 16) { // Record dot every 4 fm
+                this.trail.push({x: this.x, y: this.y});
+                this.lastTrailPos = {x: this.x, y: this.y};
+            }
+
+            // Boundary removal and Macroscopic Hit recording
+            const limitX = canvas.width / (2 * scale) + 20;
+            const limitY = canvas.height / (2 * scale) + 20;
+            if (this.x > limitX || this.y > limitY || this.x < -limitX || this.y < -limitY) {
+                this.active = false;
+                
+                // Calculate final angle for the hit
+                const finalAngle = Math.atan2(this.vy, this.vx);
+                screenHits.push({ angle: finalAngle, life: 1.0 });
+                
+                lastAngle = Math.abs(finalAngle * 180 / Math.PI).toFixed(1);
+                lastClosest = this.minDist.toFixed(1);
+                updateDisplay();
+                trails.push(this.trail);
+            }
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(234, 179, 8, 0.6)"; // Darker yellow for light theme
+            ctx.lineWidth = 1.5;
+            this.trail.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x * scale, p.y * scale);
+                else ctx.lineTo(p.x * scale, p.y * scale);
+            });
+            ctx.stroke();
+
+            if (this.active) {
+                ctx.beginPath();
+                ctx.fillStyle = "var(--alpha-color)";
+                ctx.strokeStyle = "#ca8a04"; // Outline for better visibility on white
+                ctx.lineWidth = 1;
+                // Draw fixed size pixel circle regardless of zoom
+                ctx.arc(this.x * scale, this.y * scale, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+
+    function drawMacroscopicInset() {
+        const insetSize = 150;
+        const margin = 15;
+        const cx = margin + insetSize / 2;
+        const cy = canvas.height - margin - insetSize / 2;
+        const radius = insetSize / 2 - 25;
+
+        ctx.save();
+        
+        // Inset Background Panel - Light Theme
+        ctx.fillStyle = "rgba(248, 250, 252, 0.95)";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(margin, canvas.height - margin - insetSize, insetSize, insetSize, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Inset Title
+        ctx.fillStyle = "#64748b";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.letterSpacing = "0.5px";
+        ctx.fillText("MACROSCOPIC VIEW", cx, canvas.height - margin - insetSize + 18);
+
+        // Circular Detector Screen (Zinc Sulfide)
+        ctx.beginPath();
+        // Draw an arc with a gap on the left for the beam to enter
+        ctx.arc(cx, cy, radius, Math.PI - 0.25, Math.PI + 0.25, true);
+        ctx.strokeStyle = "#94a3b8"; // Darker for light theme
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // Alpha Particle Source Box
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(cx - radius - 18, cy - 8, 12, 16);
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "9px sans-serif";
+        ctx.fillText("Ra", cx - radius - 12, cy - 10);
+
+        // Central Gold Foil (Macroscopic representation)
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 12);
+        ctx.lineTo(cx, cy + 12);
+        ctx.strokeStyle = "#eab308"; // Gold color
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Beam Path Guide
+        ctx.beginPath();
+        ctx.moveTo(cx - radius - 6, cy);
+        ctx.lineTo(cx, cy);
+        ctx.strokeStyle = "rgba(202, 138, 4, 0.3)"; // Darker yellow guide
+        ctx.lineWidth = 2;
+        ctx.setLineDash([2, 2]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Render Detector Hits (Flashes)
+        for (let i = screenHits.length - 1; i >= 0; i--) {
+            let hit = screenHits[i];
+            hit.life -= 0.03; 
+            
+            if (hit.life <= 0) {
+                screenHits.splice(i, 1);
+                continue;
+            }
+            
+            const hx = cx + Math.cos(hit.angle) * radius;
+            const hy = cy + Math.sin(hit.angle) * radius;
+            
+            // Bright Core (Blue flash is visible on light grey ring)
+            ctx.beginPath();
+            ctx.arc(hx, hy, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(2, 132, 199, ${hit.life})`; 
+            ctx.fill();
+            
+            // Phosphorescent Glow
+            ctx.beginPath();
+            ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(14, 165, 233, ${hit.life * 0.3})`;
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    function setModel(type, btn) {
+        model = type;
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('current-model-name').innerText = type.charAt(0).toUpperCase() + type.slice(1);
+        clearTrails();
+    }
+
+    function clearTrails() {
+        particles = [];
+        trails = [];
+        screenHits = [];
+        lastAngle = 0;
+        lastClosest = 0;
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        document.getElementById('angle-out').innerText = lastAngle || "--";
+        document.getElementById('dist-out').innerText = lastClosest || "--";
+        document.getElementById('energy-val').innerText = document.getElementById('energy-slider').value;
+    }
+
+    function fireParticle() {
+        const e = parseFloat(document.getElementById('energy-slider').value);
+        const maxH = (canvas.height / scale) / 2;
+        const b = (Math.random() - 0.5) * maxH * 1.9; // Cover the full vertical range
+        particles.push(new AlphaParticle(e, b));
+    }
+
+    document.getElementById('fire-btn').onclick = fireParticle;
+
+    const autoBtn = document.getElementById('auto-fire-btn');
+    autoBtn.onclick = () => {
+        isAutoFiring = !isAutoFiring;
+        if (isAutoFiring) {
+            autoBtn.innerText = "Stop Beam";
+            autoBtn.classList.remove('btn-secondary');
+            autoFireTimer = setInterval(fireParticle, 80); 
+        } else {
+            autoBtn.innerText = "Start Continuous Beam";
+            autoBtn.classList.add('btn-secondary');
+            clearInterval(autoFireTimer);
+        }
+    };
+
+    document.getElementById('energy-slider').addEventListener('input', updateDisplay);
+
+    function animate() {
+        // Clear with slight transparency for trail effect (white background)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Ensure completely white base to prevent gray smearing
+        if (Math.random() < 0.05) {
+             ctx.fillStyle = '#ffffff';
+             ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw Old Trails
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.lineWidth = 1;
+        trails.forEach(t => {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(148, 163, 184, 0.4)"; // Darker slate for light theme
+            t.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x * scale, p.y * scale);
+                else ctx.lineTo(p.x * scale, p.y * scale);
+            });
+            ctx.stroke();
+        });
+
+        // Target Model Rendering
+        if (model === 'nuclear') {
+            nuclei.forEach(n => {
+                const pxX = n.x * scale;
+                const pxY = n.y * scale;
+                
+                // Nucleus Core
+                ctx.beginPath();
+                ctx.fillStyle = "var(--nucleus-color)";
+                ctx.arc(pxX, pxY, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Coulomb Field Glow (Adjusted for white background)
+                ctx.beginPath();
+                const gradient = ctx.createRadialGradient(pxX, pxY, 0, pxX, pxY, 20);
+                gradient.addColorStop(0, "rgba(239, 68, 68, 0.25)");
+                gradient.addColorStop(1, "rgba(239, 68, 68, 0)");
+                ctx.fillStyle = gradient;
+                ctx.arc(pxX, pxY, 20, 0, Math.PI*2);
+                ctx.fill();
+            });
+        } else {
+            // Thomson Plum Pudding Visuals
+            nuclei.forEach(n => {
+                ctx.beginPath();
+                ctx.fillStyle = "rgba(139, 92, 246, 0.1)"; // Lighter fill
+                ctx.arc(n.x * scale, n.y * scale, R_atom * scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "rgba(139, 92, 246, 0.6)"; // Darker border
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Embedded "Electrons"
+                ctx.fillStyle = "#0284c7"; // Darker blue for visibility
+                for(let i=0; i<15; i++) {
+                    const ang = i * 2.4 + n.y; 
+                    const r = (i * 7) % (R_atom * scale);
+                    ctx.beginPath();
+                    ctx.arc(n.x * scale + Math.cos(ang)*r, n.y * scale + Math.sin(ang)*r, 1.5, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            });
+        }
+        ctx.restore();
+
+        // High precision physics steps
+        const dt = 1e-23; 
+        const stepsPerFrame = 75; 
+
+        let activeP = null;
+        particles.forEach(p => {
+            for(let i=0; i<stepsPerFrame; i++) p.update(dt);
+            p.draw();
+            if (p.active) activeP = p; // Track the most recent active particle
+        });
+
+        // Draw Macroscopic Inset
+        drawMacroscopicInset();
+
+        // Live Pedagogical Proof Update
+        if (activeP) {
+            document.getElementById('energy-check').innerText = activeP.totalEMeV.toFixed(3);
+        }
+
+        // Limit memory
+        if (particles.length > 50) {
+            const finished = particles.filter(p => !p.active);
+            finished.forEach(p => trails.push(p.trail));
+            particles = particles.filter(p => p.active);
+        }
+        if (trails.length > 80) trails.shift();
+
+        requestAnimationFrame(animate);
+    }
+
+    // Initial clear to white
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    animate();
+    updateDisplay();
+
+</script>
+
+    </div>
+    
+    <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Physical Constants
+    const e = 1.602e-19; 
+    const epsilon0 = 8.854e-12;
+    const k = 1 / (4 * Math.PI * epsilon0);
+    const mAlpha = 6.644e-27; // kg
+    const qAlpha = 2 * e;
+    const qGold = 79 * e;
+    const MeV = 1.602e-13; // 1 MeV in Joules
+    
+    // Scale Factors
+    const fm = 1e-15;
+    let scale = 0.3; // Zoom level (pixels per fm)
+    const foilSpacing = 1000; // Physical gap between atoms (fm)
+    const R_atom = foilSpacing / 2; // Boundary of neutral atom electron cloud (fm)
+
+    // Sim State
+    let particles = [];
+    let trails = [];
+    let nuclei = []; 
+    let screenHits = []; // Array to store flashes on the macroscopic detector screen
+    let model = 'nuclear';
+    let isAutoFiring = false;
+    let autoFireTimer = null;
+    let lastAngle = 0;
+    let lastClosest = 0;
+
+    function resize() {
+        const container = document.getElementById('canvas-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        nuclei = [];
+        const maxH = (canvas.height / scale) / 2;
+        // Populate nuclei strictly within and slightly beyond the screen
+        for (let y = -maxH - foilSpacing; y <= maxH + foilSpacing; y += foilSpacing) {
+            nuclei.push({x: 0, y: y});
+        }
+        clearTrails();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Physics Engine: Gauss's Law implementation
+    function getKinematics(pos, modelType) {
+        let ax = 0; let ay = 0; let ep = 0;
+        
+        let closestN = null;
+        let minDist = Infinity;
+        for (let n of nuclei) {
+            let dx = pos.x - n.x;
+            let dy = pos.y - n.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < minDist) {
+                minDist = dist;
+                closestN = {dx, dy, dist};
+            }
+        }
+
+        if (modelType === 'nuclear') {
+            if (closestN && closestN.dist < R_atom) {
+                const softR = Math.max(closestN.dist, 2); 
+                
+                // Acceleration
+                const forceMag = (k * qAlpha * qGold) / (softR * fm)**2;
+                ax = (forceMag * (closestN.dx / closestN.dist)) / mAlpha;
+                ay = (forceMag * (closestN.dy / closestN.dist)) / mAlpha;
+                
+                // Potential Energy: Shifted so V(R_atom) = 0 to ensure energy conservation boundary
+                ep = (k * qAlpha * qGold) * (1/(softR * fm) - 1/(R_atom * fm));
+            }
+        } else {
+            // Thomson Plum Pudding
+            if (closestN && closestN.dist < R_atom) {
+                const forceMag = (k * qAlpha * qGold * (closestN.dist * fm)) / (R_atom * fm)**3;
+                ax = (forceMag * (closestN.dx / closestN.dist)) / mAlpha;
+                ay = (forceMag * (closestN.dy / closestN.dist)) / mAlpha;
+            }
+        }
+        return { ax: ax / fm, ay: ay / fm, ep: ep };
+    }
+
+    class AlphaParticle {
+        constructor(energyMeV, impactB) {
+            this.x = -canvas.width / (2 * scale);
+            this.y = -impactB;
+            
+            // Initial Velocity
+            const v_mag = Math.sqrt((2 * energyMeV * MeV) / mAlpha) / fm; 
+            this.vx = v_mag;
+            this.vy = 0;
+            
+            const kData = getKinematics({x: this.x, y: this.y}, model);
+            this.ax = kData.ax;
+            this.ay = kData.ay;
+            
+            this.trail = [];
+            this.active = true;
+            this.minDist = Infinity;
+            this.lastTrailPos = {x: this.x, y: this.y};
+            this.trail.push({x: this.x, y: this.y});
+        }
+
+        update(dt) {
+            if (!this.active) return;
+
+            // Velocity Verlet Integration
+            const nextX = this.x + this.vx * dt + 0.5 * this.ax * dt**2;
+            const nextY = this.y + this.vy * dt + 0.5 * this.ay * dt**2;
+            
+            const nextK = getKinematics({x: nextX, y: nextY}, model);
+            
+            this.vx += 0.5 * (this.ax + nextK.ax) * dt;
+            this.vy += 0.5 * (this.ay + nextK.ay) * dt;
+            
+            this.x = nextX;
+            this.y = nextY;
+            this.ax = nextK.ax;
+            this.ay = nextK.ay;
+
+            // Live Energy Calculation (E_k + E_p)
+            const ek = 0.5 * mAlpha * ((this.vx * fm)**2 + (this.vy * fm)**2);
+            this.totalEMeV = (ek + nextK.ep) / MeV;
+
+            // Closest Approach tracking
+            let minDistToAny = Infinity;
+            for (let n of nuclei) {
+                let dist = Math.sqrt((this.x - n.x)**2 + (this.y - n.y)**2);
+                if (dist < minDistToAny) minDistToAny = dist;
+            }
+            if (minDistToAny < this.minDist) this.minDist = minDistToAny;
+
+            // Dynamic trail points
+            const dx = this.x - this.lastTrailPos.x;
+            const dy = this.y - this.lastTrailPos.y;
+            if (dx*dx + dy*dy > 16) { // Record dot every 4 fm
+                this.trail.push({x: this.x, y: this.y});
+                this.lastTrailPos = {x: this.x, y: this.y};
+            }
+
+            // Boundary removal and Macroscopic Hit recording
+            const limitX = canvas.width / (2 * scale) + 20;
+            const limitY = canvas.height / (2 * scale) + 20;
+            if (this.x > limitX || this.y > limitY || this.x < -limitX || this.y < -limitY) {
+                this.active = false;
+                
+                // Calculate final angle for the hit
+                const finalAngle = Math.atan2(this.vy, this.vx);
+                screenHits.push({ angle: finalAngle, life: 1.0 });
+                
+                lastAngle = Math.abs(finalAngle * 180 / Math.PI).toFixed(1);
+                lastClosest = this.minDist.toFixed(1);
+                updateDisplay();
+                trails.push(this.trail);
+            }
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(234, 179, 8, 0.6)"; // Darker yellow for light theme
+            ctx.lineWidth = 1.5;
+            this.trail.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x * scale, p.y * scale);
+                else ctx.lineTo(p.x * scale, p.y * scale);
+            });
+            ctx.stroke();
+
+            if (this.active) {
+                ctx.beginPath();
+                ctx.fillStyle = "var(--alpha-color)";
+                ctx.strokeStyle = "#ca8a04"; // Outline for better visibility on white
+                ctx.lineWidth = 1;
+                // Draw fixed size pixel circle regardless of zoom
+                ctx.arc(this.x * scale, this.y * scale, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+
+    function drawMacroscopicInset() {
+        const insetSize = 150;
+        const margin = 15;
+        const cx = margin + insetSize / 2;
+        const cy = canvas.height - margin - insetSize / 2;
+        const radius = insetSize / 2 - 25;
+
+        ctx.save();
+        
+        // Inset Background Panel - Light Theme
+        ctx.fillStyle = "rgba(248, 250, 252, 0.95)";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(margin, canvas.height - margin - insetSize, insetSize, insetSize, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Inset Title
+        ctx.fillStyle = "#64748b";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.letterSpacing = "0.5px";
+        ctx.fillText("MACROSCOPIC VIEW", cx, canvas.height - margin - insetSize + 18);
+
+        // Circular Detector Screen (Zinc Sulfide)
+        ctx.beginPath();
+        // Draw an arc with a gap on the left for the beam to enter
+        ctx.arc(cx, cy, radius, Math.PI - 0.25, Math.PI + 0.25, true);
+        ctx.strokeStyle = "#94a3b8"; // Darker for light theme
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // Alpha Particle Source Box
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(cx - radius - 18, cy - 8, 12, 16);
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "9px sans-serif";
+        ctx.fillText("Ra", cx - radius - 12, cy - 10);
+
+        // Central Gold Foil (Macroscopic representation)
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 12);
+        ctx.lineTo(cx, cy + 12);
+        ctx.strokeStyle = "#eab308"; // Gold color
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Beam Path Guide
+        ctx.beginPath();
+        ctx.moveTo(cx - radius - 6, cy);
+        ctx.lineTo(cx, cy);
+        ctx.strokeStyle = "rgba(202, 138, 4, 0.3)"; // Darker yellow guide
+        ctx.lineWidth = 2;
+        ctx.setLineDash([2, 2]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Render Detector Hits (Flashes)
+        for (let i = screenHits.length - 1; i >= 0; i--) {
+            let hit = screenHits[i];
+            hit.life -= 0.03; 
+            
+            if (hit.life <= 0) {
+                screenHits.splice(i, 1);
+                continue;
+            }
+            
+            const hx = cx + Math.cos(hit.angle) * radius;
+            const hy = cy + Math.sin(hit.angle) * radius;
+            
+            // Bright Core (Blue flash is visible on light grey ring)
+            ctx.beginPath();
+            ctx.arc(hx, hy, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(2, 132, 199, ${hit.life})`; 
+            ctx.fill();
+            
+            // Phosphorescent Glow
+            ctx.beginPath();
+            ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(14, 165, 233, ${hit.life * 0.3})`;
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    function setModel(type, btn) {
+        model = type;
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('current-model-name').innerText = type.charAt(0).toUpperCase() + type.slice(1);
+        clearTrails();
+    }
+
+    function clearTrails() {
+        particles = [];
+        trails = [];
+        screenHits = [];
+        lastAngle = 0;
+        lastClosest = 0;
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        document.getElementById('angle-out').innerText = lastAngle || "--";
+        document.getElementById('dist-out').innerText = lastClosest || "--";
+        document.getElementById('energy-val').innerText = document.getElementById('energy-slider').value;
+    }
+
+    function fireParticle() {
+        const e = parseFloat(document.getElementById('energy-slider').value);
+        const maxH = (canvas.height / scale) / 2;
+        const b = (Math.random() - 0.5) * maxH * 1.9; // Cover the full vertical range
+        particles.push(new AlphaParticle(e, b));
+    }
+
+    document.getElementById('fire-btn').onclick = fireParticle;
+
+    const autoBtn = document.getElementById('auto-fire-btn');
+    autoBtn.onclick = () => {
+        isAutoFiring = !isAutoFiring;
+        if (isAutoFiring) {
+            autoBtn.innerText = "Stop Beam";
+            autoBtn.classList.remove('btn-secondary');
+            autoFireTimer = setInterval(fireParticle, 80); 
+        } else {
+            autoBtn.innerText = "Start Continuous Beam";
+            autoBtn.classList.add('btn-secondary');
+            clearInterval(autoFireTimer);
+        }
+    };
+
+    document.getElementById('energy-slider').addEventListener('input', updateDisplay);
+
+    function animate() {
+        // Clear with slight transparency for trail effect (white background)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Ensure completely white base to prevent gray smearing
+        if (Math.random() < 0.05) {
+             ctx.fillStyle = '#ffffff';
+             ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw Old Trails
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.lineWidth = 1;
+        trails.forEach(t => {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(148, 163, 184, 0.4)"; // Darker slate for light theme
+            t.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x * scale, p.y * scale);
+                else ctx.lineTo(p.x * scale, p.y * scale);
+            });
+            ctx.stroke();
+        });
+
+        // Target Model Rendering
+        if (model === 'nuclear') {
+            nuclei.forEach(n => {
+                const pxX = n.x * scale;
+                const pxY = n.y * scale;
+                
+                // Nucleus Core
+                ctx.beginPath();
+                ctx.fillStyle = "var(--nucleus-color)";
+                ctx.arc(pxX, pxY, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Coulomb Field Glow (Adjusted for white background)
+                ctx.beginPath();
+                const gradient = ctx.createRadialGradient(pxX, pxY, 0, pxX, pxY, 20);
+                gradient.addColorStop(0, "rgba(239, 68, 68, 0.25)");
+                gradient.addColorStop(1, "rgba(239, 68, 68, 0)");
+                ctx.fillStyle = gradient;
+                ctx.arc(pxX, pxY, 20, 0, Math.PI*2);
+                ctx.fill();
+            });
+        } else {
+            // Thomson Plum Pudding Visuals
+            nuclei.forEach(n => {
+                ctx.beginPath();
+                ctx.fillStyle = "rgba(139, 92, 246, 0.1)"; // Lighter fill
+                ctx.arc(n.x * scale, n.y * scale, R_atom * scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "rgba(139, 92, 246, 0.6)"; // Darker border
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Embedded "Electrons"
+                ctx.fillStyle = "#0284c7"; // Darker blue for visibility
+                for(let i=0; i<15; i++) {
+                    const ang = i * 2.4 + n.y; 
+                    const r = (i * 7) % (R_atom * scale);
+                    ctx.beginPath();
+                    ctx.arc(n.x * scale + Math.cos(ang)*r, n.y * scale + Math.sin(ang)*r, 1.5, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            });
+        }
+        ctx.restore();
+
+        // High precision physics steps
+        const dt = 1e-23; 
+        const stepsPerFrame = 75; 
+
+        let activeP = null;
+        particles.forEach(p => {
+            for(let i=0; i<stepsPerFrame; i++) p.update(dt);
+            p.draw();
+            if (p.active) activeP = p; // Track the most recent active particle
+        });
+
+        // Draw Macroscopic Inset
+        drawMacroscopicInset();
+
+        // Live Pedagogical Proof Update
+        if (activeP) {
+            document.getElementById('energy-check').innerText = activeP.totalEMeV.toFixed(3);
+        }
+
+        // Limit memory
+        if (particles.length > 50) {
+            const finished = particles.filter(p => !p.active);
+            finished.forEach(p => trails.push(p.trail));
+            particles = particles.filter(p => p.active);
+        }
+        if (trails.length > 80) trails.shift();
+
+        requestAnimationFrame(animate);
+    }
+
+    // Initial clear to white
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    animate();
+    updateDisplay();
+
+</script>
+</body>
+</html>

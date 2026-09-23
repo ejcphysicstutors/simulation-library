@@ -14,7 +14,7 @@ type Props = {
 const levelOptions: Array<"All" | SyllabusLevel> = ["All", "H1", "H2", "H3"];
 
 const migrationLabels = {
-  ready: "Ready to migrate",
+  ready: "Ready",
   "needs-repair": "Repair needed",
   "needs-review": "Review needed",
   rebuild: "Rebuild needed"
@@ -45,8 +45,8 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
   }, [level, query, simulations, topicById, topicId]);
 
   const availableTopics = useMemo(() => {
-    if (level === "H3") return [];
-    return topics;
+    if (level === "All") return topics;
+    return topics.filter((topic) => topic.levels.includes(level));
   }, [level, topics]);
 
   return (
@@ -74,7 +74,9 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
                 key={option}
                 onClick={() => {
                   setLevel(option);
-                  if (option === "H3") setTopicId("all");
+                  if (option !== "All" && !topics.find((topic) => topic.id === topicId)?.levels.includes(option)) {
+                    setTopicId("all");
+                  }
                 }}
               >
                 {option}
@@ -90,12 +92,11 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
             className="topic-select"
             value={topicId}
             onChange={(event) => setTopicId(event.target.value)}
-            disabled={level === "H3"}
           >
-            <option value="all">All 9478 topics</option>
+            <option value="all">All topics</option>
             {availableTopics.map((topic) => (
               <option value={topic.id} key={topic.id}>
-                {topic.order}. {topic.name}
+                {topic.order}. {topic.name} ({topic.availabilityLabel})
               </option>
             ))}
           </select>
@@ -108,13 +109,7 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
         {isDemo ? " · demo view" : " · migration catalogue"}
       </div>
 
-      {level === "H3" ? (
-        <section className="empty-state">
-          <p className="eyebrow">H3 ready</p>
-          <h2>H3 taxonomy will plug into this same library.</h2>
-          <p>No H3 simulations have been migrated yet. The data model already supports H3 without creating a separate site.</p>
-        </section>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <section className="empty-state">
           <h2>No simulations match these filters.</h2>
           <p>Try another level, topic or search term.</p>
@@ -126,9 +121,9 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
             return (
               <Link className="simulation-card interactive-card" href={`/library/${simulation.slug}`} key={simulation.id}>
                 <div className="card-visual">
-                  <span>{topic?.name ?? "Physics"}</span>
+                  <span>{topic ? `${topic.name} (${topic.availabilityLabel})` : "Physics"}</span>
                   <span className={`migration-chip migration-${simulation.migrationStatus}`}>
-                    {migrationLabels[simulation.migrationStatus]}
+                    {simulation.status === "published" ? `Published · v${simulation.publishedVersion ?? 1}` : migrationLabels[simulation.migrationStatus]}
                   </span>
                 </div>
                 <div className="card-body">
@@ -138,7 +133,7 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
                   <h2>{simulation.title}</h2>
                   <p>{simulation.description}</p>
                   <div className="card-footer-row">
-                    <span className="topic-label compact">{topic?.strand} · {topic?.name}</span>
+                    <span className="topic-label compact">{topic?.strand} · {topic?.name} {topic ? `(${topic.availabilityLabel})` : ""}</span>
                     <span className="card-arrow" aria-hidden="true">→</span>
                   </div>
                 </div>

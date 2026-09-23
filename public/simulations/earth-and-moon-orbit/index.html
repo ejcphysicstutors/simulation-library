@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth and Moon orbit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; background: #f5f6fa; font-family: Georgia, 'Times New Roman', serif; }
+
+        #wrap {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            min-height: 400px;
+            background: #f5f6fa;
+        }
+
+        #canvasWrap {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px 16px;
+            border-top: 1px solid #dde0ea;
+            background: #eef0f7;
+        }
+
+        #controls label {
+            font-size: 13px;
+            color: #5a6080;
+            font-family: Arial, sans-serif;
+        }
+
+        #controls button {
+            font-size: 13px;
+            padding: 6px 14px;
+            border: 1px solid #b0b8d0;
+            background: #fff;
+            color: #3a4060;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+
+        #controls button:hover { background: #dde0ea; }
+
+        input[type="range"] {
+            width: 100px;
+            accent-color: #3a7bd5;
+        }
+
+        #speedValue {
+            font-size: 13px;
+            font-weight: bold;
+            min-width: 30px;
+            color: #3a4060;
+            font-family: Arial, sans-serif;
+        }
+
+        #info {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            padding: 7px 16px;
+            font-size: 12px;
+            color: #5a6080;
+            border-top: 1px solid #dde0ea;
+            background: #eef0f7;
+            flex-wrap: wrap;
+            font-family: Arial, sans-serif;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Earth and Moon orbit</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+<div id="wrap">
+    <div id="canvasWrap">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div id="controls">
+        <button id="playPause">Pause</button>
+        <button id="reset">Reset</button>
+        <label>Speed:</label>
+        <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1">
+        <span id="speedValue">1x</span>
+        <button id="toggleOrbit">Hide orbit</button>
+    </div>
+    <div id="info">
+        <div class="info-item">
+            <span class="dot" style="background:#c0392b;"></span>
+            Reference point on Earth (shows rotation)
+        </div>
+        <div class="info-item">
+            <span class="dot" style="background:#d4a017;"></span>
+            Arrow always points to Earth (tidal locking)
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const wrap = document.getElementById('canvasWrap');
+
+    let W, H, EARTH_R, MOON_ORBIT_R, MOON_R;
+
+    function resize() {
+        W = wrap.clientWidth;
+        H = wrap.clientHeight;
+        canvas.width = W;
+        canvas.height = H;
+        const minDim = Math.min(W, H);
+        EARTH_R = Math.max(20, minDim * 0.075);
+        MOON_ORBIT_R = Math.max(80, minDim * 0.28);
+        MOON_R = Math.max(8, minDim * 0.028);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let moonAngle = 0;
+    let earthRotation = 0;
+    let isPlaying = true;
+    let speed = 1;
+    let showOrbit = true;
+
+    const BASE_MOON_SPEED = 0.003;
+    const BASE_EARTH_SPEED = 0.1;
+
+    const stars = Array.from({length: 180}, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        b: Math.random() * 0.5 + 0.15
+    }));
+
+    document.getElementById('playPause').addEventListener('click', function() {
+        isPlaying = !isPlaying;
+        this.textContent = isPlaying ? 'Pause' : 'Play';
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+        moonAngle = 0;
+        earthRotation = 0;
+    });
+
+    document.getElementById('speed').addEventListener('input', function() {
+        speed = parseFloat(this.value);
+        document.getElementById('speedValue').textContent = speed.toFixed(1) + 'x';
+    });
+
+    document.getElementById('toggleOrbit').addEventListener('click', function() {
+        showOrbit = !showOrbit;
+        this.textContent = showOrbit ? 'Hide orbit' : 'Show orbit';
+    });
+
+    function drawStars() {
+        stars.forEach(s => {
+            ctx.globalAlpha = s.b * 0.4;
+            ctx.fillStyle = '#8899bb';
+            ctx.fillRect(s.x * W, s.y * H, 1.5, 1.5);
+        });
+        ctx.globalAlpha = 1;
+    }
+
+    function drawOrbit() {
+        if (!showOrbit) return;
+        ctx.strokeStyle = 'rgba(100,120,160,0.25)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.arc(W / 2, H / 2, MOON_ORBIT_R, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function drawEarth() {
+        const cx = W / 2, cy = H / 2;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, EARTH_R, 0, Math.PI * 2);
+        ctx.fillStyle = '#3a7bd5';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(earthRotation);
+
+        ctx.beginPath();
+        ctx.arc(-EARTH_R * 0.35, -EARTH_R * 0.1, EARTH_R * 0.28, 0, Math.PI * 2);
+        ctx.fillStyle = '#2ecc71';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(EARTH_R * 0.2, EARTH_R * 0.2, EARTH_R * 0.18, 0, Math.PI * 2);
+        ctx.fillStyle = '#27ae60';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, -EARTH_R * 0.5, EARTH_R * 0.16, 0, Math.PI * 2);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.globalAlpha = 0.6;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        const dotR = Math.max(4, EARTH_R * 0.18);
+        ctx.beginPath();
+        ctx.arc(0, -EARTH_R * 0.55, dotR, 0, Math.PI * 2);
+        ctx.fillStyle = '#c0392b';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+
+        ctx.fillStyle = 'rgba(40,60,120,0.85)';
+        ctx.font = `${Math.max(11, EARTH_R * 0.32)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Earth', cx, cy + EARTH_R + Math.max(14, EARTH_R * 0.4));
+    }
+
+    function drawMoon() {
+        const cx = W / 2, cy = H / 2;
+        const mx = cx + Math.cos(moonAngle) * MOON_ORBIT_R;
+        const my = cy + Math.sin(moonAngle) * MOON_ORBIT_R;
+
+        ctx.beginPath();
+        ctx.arc(mx, my, MOON_R, 0, Math.PI * 2);
+        ctx.fillStyle = '#d0cfc8';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(100,100,100,0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        const faceAngle = moonAngle + Math.PI;
+        [[0, 4], [0.7, 2.5], [-0.5, 3]].forEach(([offset, r]) => {
+            const a = faceAngle + offset;
+            ctx.beginPath();
+            ctx.arc(
+                mx + Math.cos(a) * MOON_R * 0.45,
+                my + Math.sin(a) * MOON_R * 0.45,
+                Math.max(1.5, r * MOON_R / 14),
+                0, Math.PI * 2
+            );
+            ctx.fillStyle = '#a8a7a0';
+            ctx.fill();
+        });
+
+        const arrowLen = MOON_R * 1.5;
+        const asx = mx + Math.cos(faceAngle) * MOON_R;
+        const asy = my + Math.sin(faceAngle) * MOON_R;
+        const aex = mx + Math.cos(faceAngle) * (MOON_R + arrowLen);
+        const aey = my + Math.sin(faceAngle) * (MOON_R + arrowLen);
+
+        ctx.strokeStyle = '#d4a017';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(asx, asy);
+        ctx.lineTo(aex, aey);
+        ctx.stroke();
+
+        const hw = 7;
+        ctx.beginPath();
+        ctx.moveTo(aex, aey);
+        ctx.lineTo(aex + Math.cos(faceAngle + 2.6) * hw, aey + Math.sin(faceAngle + 2.6) * hw);
+        ctx.moveTo(aex, aey);
+        ctx.lineTo(aex + Math.cos(faceAngle - 2.6) * hw, aey + Math.sin(faceAngle - 2.6) * hw);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(40,60,120,0.85)';
+        ctx.font = `${Math.max(10, MOON_R * 0.85)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Moon', mx, my + MOON_R + Math.max(12, MOON_R * 0.9));
+    }
+
+    function drawStats() {
+        const moonPct = Math.floor(((moonAngle % (Math.PI * 2)) / (Math.PI * 2)) * 100);
+        const earthRots = (earthRotation / (Math.PI * 2)).toFixed(1);
+
+        ctx.fillStyle = 'rgba(220,225,238,0.92)';
+        const pad = 12, bw = 210, bh = 52;
+        ctx.beginPath();
+        ctx.roundRect(pad, pad, bw, bh, 6);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(160,170,200,0.5)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(40,60,120,0.9)';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Moon orbit: ${moonPct}%`, pad + 12, pad + 19);
+        ctx.fillText(`Earth rotations: ${earthRots}`, pad + 12, pad + 38);
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#f5f6fa';
+        ctx.fillRect(0, 0, W, H);
+        drawStars();
+        drawOrbit();
+        drawEarth();
+        drawMoon();
+        drawStats();
+
+        if (isPlaying) {
+            moonAngle += BASE_MOON_SPEED * speed;
+            earthRotation += BASE_EARTH_SPEED * speed;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+
+    </div>
+    
+    <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const wrap = document.getElementById('canvasWrap');
+
+    let W, H, EARTH_R, MOON_ORBIT_R, MOON_R;
+
+    function resize() {
+        W = wrap.clientWidth;
+        H = wrap.clientHeight;
+        canvas.width = W;
+        canvas.height = H;
+        const minDim = Math.min(W, H);
+        EARTH_R = Math.max(20, minDim * 0.075);
+        MOON_ORBIT_R = Math.max(80, minDim * 0.28);
+        MOON_R = Math.max(8, minDim * 0.028);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let moonAngle = 0;
+    let earthRotation = 0;
+    let isPlaying = true;
+    let speed = 1;
+    let showOrbit = true;
+
+    const BASE_MOON_SPEED = 0.003;
+    const BASE_EARTH_SPEED = 0.1;
+
+    const stars = Array.from({length: 180}, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        b: Math.random() * 0.5 + 0.15
+    }));
+
+    document.getElementById('playPause').addEventListener('click', function() {
+        isPlaying = !isPlaying;
+        this.textContent = isPlaying ? 'Pause' : 'Play';
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+        moonAngle = 0;
+        earthRotation = 0;
+    });
+
+    document.getElementById('speed').addEventListener('input', function() {
+        speed = parseFloat(this.value);
+        document.getElementById('speedValue').textContent = speed.toFixed(1) + 'x';
+    });
+
+    document.getElementById('toggleOrbit').addEventListener('click', function() {
+        showOrbit = !showOrbit;
+        this.textContent = showOrbit ? 'Hide orbit' : 'Show orbit';
+    });
+
+    function drawStars() {
+        stars.forEach(s => {
+            ctx.globalAlpha = s.b * 0.4;
+            ctx.fillStyle = '#8899bb';
+            ctx.fillRect(s.x * W, s.y * H, 1.5, 1.5);
+        });
+        ctx.globalAlpha = 1;
+    }
+
+    function drawOrbit() {
+        if (!showOrbit) return;
+        ctx.strokeStyle = 'rgba(100,120,160,0.25)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.arc(W / 2, H / 2, MOON_ORBIT_R, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function drawEarth() {
+        const cx = W / 2, cy = H / 2;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, EARTH_R, 0, Math.PI * 2);
+        ctx.fillStyle = '#3a7bd5';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(earthRotation);
+
+        ctx.beginPath();
+        ctx.arc(-EARTH_R * 0.35, -EARTH_R * 0.1, EARTH_R * 0.28, 0, Math.PI * 2);
+        ctx.fillStyle = '#2ecc71';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(EARTH_R * 0.2, EARTH_R * 0.2, EARTH_R * 0.18, 0, Math.PI * 2);
+        ctx.fillStyle = '#27ae60';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, -EARTH_R * 0.5, EARTH_R * 0.16, 0, Math.PI * 2);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.globalAlpha = 0.6;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        const dotR = Math.max(4, EARTH_R * 0.18);
+        ctx.beginPath();
+        ctx.arc(0, -EARTH_R * 0.55, dotR, 0, Math.PI * 2);
+        ctx.fillStyle = '#c0392b';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+
+        ctx.fillStyle = 'rgba(40,60,120,0.85)';
+        ctx.font = `${Math.max(11, EARTH_R * 0.32)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Earth', cx, cy + EARTH_R + Math.max(14, EARTH_R * 0.4));
+    }
+
+    function drawMoon() {
+        const cx = W / 2, cy = H / 2;
+        const mx = cx + Math.cos(moonAngle) * MOON_ORBIT_R;
+        const my = cy + Math.sin(moonAngle) * MOON_ORBIT_R;
+
+        ctx.beginPath();
+        ctx.arc(mx, my, MOON_R, 0, Math.PI * 2);
+        ctx.fillStyle = '#d0cfc8';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(100,100,100,0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        const faceAngle = moonAngle + Math.PI;
+        [[0, 4], [0.7, 2.5], [-0.5, 3]].forEach(([offset, r]) => {
+            const a = faceAngle + offset;
+            ctx.beginPath();
+            ctx.arc(
+                mx + Math.cos(a) * MOON_R * 0.45,
+                my + Math.sin(a) * MOON_R * 0.45,
+                Math.max(1.5, r * MOON_R / 14),
+                0, Math.PI * 2
+            );
+            ctx.fillStyle = '#a8a7a0';
+            ctx.fill();
+        });
+
+        const arrowLen = MOON_R * 1.5;
+        const asx = mx + Math.cos(faceAngle) * MOON_R;
+        const asy = my + Math.sin(faceAngle) * MOON_R;
+        const aex = mx + Math.cos(faceAngle) * (MOON_R + arrowLen);
+        const aey = my + Math.sin(faceAngle) * (MOON_R + arrowLen);
+
+        ctx.strokeStyle = '#d4a017';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(asx, asy);
+        ctx.lineTo(aex, aey);
+        ctx.stroke();
+
+        const hw = 7;
+        ctx.beginPath();
+        ctx.moveTo(aex, aey);
+        ctx.lineTo(aex + Math.cos(faceAngle + 2.6) * hw, aey + Math.sin(faceAngle + 2.6) * hw);
+        ctx.moveTo(aex, aey);
+        ctx.lineTo(aex + Math.cos(faceAngle - 2.6) * hw, aey + Math.sin(faceAngle - 2.6) * hw);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(40,60,120,0.85)';
+        ctx.font = `${Math.max(10, MOON_R * 0.85)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Moon', mx, my + MOON_R + Math.max(12, MOON_R * 0.9));
+    }
+
+    function drawStats() {
+        const moonPct = Math.floor(((moonAngle % (Math.PI * 2)) / (Math.PI * 2)) * 100);
+        const earthRots = (earthRotation / (Math.PI * 2)).toFixed(1);
+
+        ctx.fillStyle = 'rgba(220,225,238,0.92)';
+        const pad = 12, bw = 210, bh = 52;
+        ctx.beginPath();
+        ctx.roundRect(pad, pad, bw, bh, 6);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(160,170,200,0.5)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(40,60,120,0.9)';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Moon orbit: ${moonPct}%`, pad + 12, pad + 19);
+        ctx.fillText(`Earth rotations: ${earthRots}`, pad + 12, pad + 38);
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#f5f6fa';
+        ctx.fillRect(0, 0, W, H);
+        drawStars();
+        drawOrbit();
+        drawEarth();
+        drawMoon();
+        drawStats();
+
+        if (isPlaying) {
+            moonAngle += BASE_MOON_SPEED * speed;
+            earthRotation += BASE_EARTH_SPEED * speed;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+</body>
+</html>

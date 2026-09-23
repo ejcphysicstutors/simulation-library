@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hooke's Law</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        input[type=range] {
+            accent-color: #4f46e5;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Hooke's Law</div>
+            <div class="ejc-credit-author">Created by <strong>Felix Lim</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+    <div class="flex flex-col h-full">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 p-4 shadow-sm shrink-0">
+            <h1 class="text-xl font-bold text-slate-900">Spring System Comparison</h1>
+            <p class="text-sm text-slate-500">Parallel vs. Single vs. Series Configurations</p>
+        </header>
+
+        <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+            <!-- Controls Sidebar -->
+            <aside class="w-full md:w-96 bg-white border-r border-slate-200 p-6 overflow-y-auto custom-scrollbar">
+                <div class="space-y-8">
+                    <section>
+                        <h2 class="flex items-center gap-2 font-semibold mb-4 text-indigo-600">
+                            <i data-lucide="settings" class="w-5 h-5"></i> Configuration
+                        </h2>
+                        
+                        <div class="space-y-6">
+                            <!-- Spring Constant -->
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-2">
+                                    <span>Spring Constant (k)</span>
+                                    <span id="val-k" class="text-indigo-600 font-mono">20 N/m</span>
+                                </div>
+                                <input type="range" id="input-k" min="10" max="100" step="1" value="20" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <!-- Parallel Springs -->
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-2">
+                                    <span>Springs in Parallel (n)</span>
+                                    <span id="val-np" class="text-indigo-600 font-mono">3</span>
+                                </div>
+                                <input type="range" id="input-np" min="1" max="6" step="1" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <!-- Series Springs -->
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-2">
+                                    <span>Springs in Series (n)</span>
+                                    <span id="val-ns" class="text-indigo-600 font-mono">2</span>
+                                </div>
+                                <input type="range" id="input-ns" min="1" max="4" step="1" value="2" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <!-- Mass -->
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-2">
+                                    <span>Attached Mass (m)</span>
+                                    <span id="val-m" class="text-indigo-600 font-mono">5 kg</span>
+                                </div>
+                                <input type="range" id="input-m" min="1" max="15" step="0.5" value="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Calculations Breakdown -->
+                    <section class="p-4 bg-indigo-50 rounded-xl border border-indigo-100 space-y-4 text-sm">
+                        <h3 class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-700">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Working: Effective Constants
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Parallel Working -->
+                            <div class="bg-white p-3 rounded-lg shadow-sm border border-indigo-100">
+                                <div class="font-semibold text-indigo-900 mb-2 border-b border-slate-100 pb-1">Parallel Setup</div>
+                                <div id="calc-parallel" class="space-y-1 text-slate-700 font-mono text-[11px]">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+
+                            <!-- Series Working -->
+                            <div class="bg-white p-3 rounded-lg shadow-sm border border-indigo-100">
+                                <div class="font-semibold text-indigo-900 mb-2 border-b border-slate-100 pb-1">Series Setup</div>
+                                <div id="calc-series" class="space-y-1 text-slate-700 font-mono text-[11px]">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+
+            <!-- Simulation Viewport -->
+            <section class="flex-1 relative bg-slate-100 p-6 overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto min-h-full">
+                    
+                    <!-- Parallel -->
+                    <div class="flex flex-col h-[550px]">
+                        <div class="mb-2 text-center bg-white py-2 rounded-t-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-700">Parallel</h3>
+                            <p id="label-ext-parallel" class="text-xs font-mono text-indigo-600 font-bold">Extension: 0.000 m</p>
+                        </div>
+                        <div class="flex-1 bg-white rounded-b-xl shadow-inner relative overflow-hidden border border-slate-200">
+                            <svg id="svg-parallel" class="w-full h-full" viewBox="0 0 200 500"></svg>
+                        </div>
+                    </div>
+
+                    <!-- Single -->
+                    <div class="flex flex-col h-[550px]">
+                        <div class="mb-2 text-center bg-white py-2 rounded-t-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-700">Single</h3>
+                            <p id="label-ext-single" class="text-xs font-mono text-pink-600 font-bold">Extension: 0.000 m</p>
+                        </div>
+                        <div class="flex-1 bg-white rounded-b-xl shadow-inner relative overflow-hidden border border-slate-200">
+                            <svg id="svg-single" class="w-full h-full" viewBox="0 0 200 500"></svg>
+                        </div>
+                    </div>
+
+                    <!-- Series -->
+                    <div class="flex flex-col h-[550px]">
+                        <div class="mb-2 text-center bg-white py-2 rounded-t-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-700">Series</h3>
+                            <p id="label-ext-series" class="text-xs font-mono text-emerald-600 font-bold">Extension: 0.000 m</p>
+                        </div>
+                        <div class="flex-1 bg-white rounded-b-xl shadow-inner relative overflow-hidden border border-slate-200">
+                            <svg id="svg-series" class="w-full h-full" viewBox="0 0 200 500"></svg>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+
+        <footer class="bg-indigo-900 text-white p-3 text-xs flex flex-wrap justify-center gap-x-8 gap-y-2 shadow-inner shrink-0">
+            <span>Effective k (Parallel) = n * k</span>
+            <span>Effective k (Series) = k / n</span>
+            <span>Hooke's Law: Force = k * Extension</span>
+        </footer>
+    </div>
+
+    <script>
+        // Constants
+        const GRAVITY = 9.81;
+        const PIXELS_PER_METER = 15;
+        const SPRING_REST_LENGTH = 60;
+        const SPRING_COLORS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#06b6d4', '#8b5cf6'];
+
+        // DOM Elements
+        const inputs = {
+            k: document.getElementById('input-k'),
+            np: document.getElementById('input-np'),
+            ns: document.getElementById('input-ns'),
+            m: document.getElementById('input-m')
+        };
+
+        const displays = {
+            k: document.getElementById('val-k'),
+            np: document.getElementById('val-np'),
+            ns: document.getElementById('val-ns'),
+            m: document.getElementById('val-m'),
+            calcParallel: document.getElementById('calc-parallel'),
+            calcSeries: document.getElementById('calc-series'),
+            labelExtParallel: document.getElementById('label-ext-parallel'),
+            labelExtSingle: document.getElementById('label-ext-single'),
+            labelExtSeries: document.getElementById('label-ext-series'),
+            svgParallel: document.getElementById('svg-parallel'),
+            svgSingle: document.getElementById('svg-single'),
+            svgSeries: document.getElementById('svg-series')
+        };
+
+        // Helper to generate spring polyline path
+        function generateSpringPath(x, y, width, length, coils = 10) {
+            let points = [];
+            const step = length / (coils * 4);
+            for (let i = 0; i <= coils * 4; i++) {
+                const px = x + (i % 4 === 1 ? width / 2 : i % 4 === 3 ? -width / 2 : 0);
+                const py = y + i * step;
+                points.push(`${px},${py}`);
+            }
+            return points.join(' ');
+        }
+
+        // Main update function
+        function update() {
+            const k = parseFloat(inputs.k.value);
+            const np = parseInt(inputs.np.value);
+            const ns = parseInt(inputs.ns.value);
+            const m = parseFloat(inputs.m.value);
+
+            // Update range labels
+            displays.k.textContent = `${k} N/m`;
+            displays.np.textContent = np;
+            displays.ns.textContent = ns;
+            displays.m.textContent = `${m} kg`;
+
+            // Physics logic
+            const weight = m * GRAVITY;
+            
+            const effectiveKParallel = k * np;
+            const extParallel = weight / effectiveKParallel;
+
+            const effectiveKSingle = k;
+            const extSingle = weight / effectiveKSingle;
+
+            const effectiveKSeries = k / ns;
+            const extSeries = weight / effectiveKSeries;
+
+            // Update Labels
+            displays.labelExtParallel.textContent = `Extension: ${extParallel.toFixed(3)} m`;
+            displays.labelExtSingle.textContent = `Extension: ${extSingle.toFixed(3)} m`;
+            displays.labelExtSeries.textContent = `Extension: ${extSeries.toFixed(3)} m`;
+
+            // Update Math Working
+            displays.calcParallel.innerHTML = `
+                <p>Total k = sum of all springs</p>
+                <p>Total k = ${new Array(np).fill(k).join(' + ')}</p>
+                <p class="text-indigo-600 font-bold pt-1">Effective k = ${effectiveKParallel.toFixed(1)} N/m</p>
+            `;
+
+            displays.calcSeries.innerHTML = `
+                <p>1 / Total k = sum of 1/k</p>
+                <p>1 / Total k = ${new Array(ns).fill(`1/${k}`).join(' + ')}</p>
+                <p>1 / Total k = ${ns}/${k}</p>
+                <p class="text-indigo-600 font-bold pt-1">Effective k = ${effectiveKSeries.toFixed(1)} N/m</p>
+            `;
+
+            // Render SVGs
+            renderParallel(np, extParallel);
+            renderSingle(extSingle);
+            renderSeries(ns, extSeries);
+        }
+
+        function createSVGElement(tag) {
+            return document.createElementNS("http://www.w3.org/2000/svg", tag);
+        }
+
+        function renderParallel(count, extension) {
+            const svg = displays.svgParallel;
+            svg.innerHTML = '';
+            
+            // Ceiling
+            const ceiling = createSVGElement('rect');
+            ceiling.setAttribute('x', '0'); ceiling.setAttribute('y', '0');
+            ceiling.setAttribute('width', '100%'); ceiling.setAttribute('height', '12');
+            ceiling.setAttribute('fill', '#334155');
+            svg.appendChild(ceiling);
+
+            const stretch = extension * PIXELS_PER_METER;
+            const len = SPRING_REST_LENGTH + stretch;
+
+            // Springs
+            for (let i = 0; i < count; i++) {
+                const spacing = 160 / (count + 1);
+                const xPos = (i + 1) * spacing + 20;
+                const poly = createSVGElement('polyline');
+                poly.setAttribute('points', generateSpringPath(xPos, 12, 10, len));
+                poly.setAttribute('fill', 'none');
+                poly.setAttribute('stroke', count > 1 ? SPRING_COLORS[i % SPRING_COLORS.length] : '#4b5563');
+                poly.setAttribute('stroke-width', '2.5');
+                poly.setAttribute('stroke-linecap', 'round');
+                poly.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(poly);
+            }
+
+            // Connector Bar
+            const bar = createSVGElement('rect');
+            bar.setAttribute('x', '15'); bar.setAttribute('y', 12 + len);
+            bar.setAttribute('width', '170'); bar.setAttribute('height', '8');
+            bar.setAttribute('fill', '#475569'); bar.setAttribute('rx', '4');
+            svg.appendChild(bar);
+
+            // Mass
+            renderMass(svg, 75, 20 + len, inputs.m.value, '#6366f1');
+        }
+
+        function renderSingle(extension) {
+            const svg = displays.svgSingle;
+            svg.innerHTML = '';
+            
+            const ceiling = createSVGElement('rect');
+            ceiling.setAttribute('x', '0'); ceiling.setAttribute('y', '0');
+            ceiling.setAttribute('width', '100%'); ceiling.setAttribute('height', '12');
+            ceiling.setAttribute('fill', '#334155');
+            svg.appendChild(ceiling);
+
+            const len = SPRING_REST_LENGTH + (extension * PIXELS_PER_METER);
+
+            const poly = createSVGElement('polyline');
+            poly.setAttribute('points', generateSpringPath(100, 12, 16, len, 15));
+            poly.setAttribute('fill', 'none');
+            poly.setAttribute('stroke', '#ec4899');
+            poly.setAttribute('stroke-width', '2.5');
+            poly.setAttribute('stroke-linecap', 'round');
+            poly.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(poly);
+
+            renderMass(svg, 75, 12 + len, inputs.m.value, '#ec4899');
+        }
+
+        function renderSeries(count, extension) {
+            const svg = displays.svgSeries;
+            svg.innerHTML = '';
+            
+            const ceiling = createSVGElement('rect');
+            ceiling.setAttribute('x', '0'); ceiling.setAttribute('y', '0');
+            ceiling.setAttribute('width', '100%'); ceiling.setAttribute('height', '12');
+            ceiling.setAttribute('fill', '#334155');
+            svg.appendChild(ceiling);
+
+            const individualStretch = (extension / count) * PIXELS_PER_METER;
+            const segmentLength = SPRING_REST_LENGTH + individualStretch;
+
+            for (let i = 0; i < count; i++) {
+                const yPos = 12 + (i * segmentLength);
+                const poly = createSVGElement('polyline');
+                poly.setAttribute('points', generateSpringPath(100, yPos, 15, segmentLength, 10));
+                poly.setAttribute('fill', 'none');
+                poly.setAttribute('stroke', count > 1 ? SPRING_COLORS[i % SPRING_COLORS.length] : '#4b5563');
+                poly.setAttribute('stroke-width', '2.5');
+                poly.setAttribute('stroke-linecap', 'round');
+                poly.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(poly);
+            }
+
+            const finalY = 12 + (count * segmentLength);
+            renderMass(svg, 75, finalY, inputs.m.value, '#10b981');
+        }
+
+        function renderMass(svg, x, y, val, color) {
+            const group = createSVGElement('g');
+            group.setAttribute('transform', `translate(${x}, ${y})`);
+            
+            const box = createSVGElement('rect');
+            box.setAttribute('width', '50'); box.setAttribute('height', '45');
+            box.setAttribute('rx', '4'); box.setAttribute('fill', color);
+            
+            const text = createSVGElement('text');
+            text.setAttribute('x', '25'); text.setAttribute('y', '28');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'white');
+            text.setAttribute('class', 'text-xs font-bold');
+            text.textContent = `${val}kg`;
+            
+            group.appendChild(box);
+            group.appendChild(text);
+            svg.appendChild(group);
+        }
+
+        // Initial render and event listeners
+        Object.values(inputs).forEach(input => input.addEventListener('input', update));
+        window.onload = () => {
+            lucide.createIcons();
+            update();
+        };
+    </script>
+
+    </div>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+        // Constants
+        const GRAVITY = 9.81;
+        const PIXELS_PER_METER = 15;
+        const SPRING_REST_LENGTH = 60;
+        const SPRING_COLORS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#06b6d4', '#8b5cf6'];
+
+        // DOM Elements
+        const inputs = {
+            k: document.getElementById('input-k'),
+            np: document.getElementById('input-np'),
+            ns: document.getElementById('input-ns'),
+            m: document.getElementById('input-m')
+        };
+
+        const displays = {
+            k: document.getElementById('val-k'),
+            np: document.getElementById('val-np'),
+            ns: document.getElementById('val-ns'),
+            m: document.getElementById('val-m'),
+            calcParallel: document.getElementById('calc-parallel'),
+            calcSeries: document.getElementById('calc-series'),
+            labelExtParallel: document.getElementById('label-ext-parallel'),
+            labelExtSingle: document.getElementById('label-ext-single'),
+            labelExtSeries: document.getElementById('label-ext-series'),
+            svgParallel: document.getElementById('svg-parallel'),
+            svgSingle: document.getElementById('svg-single'),
+            svgSeries: document.getElementById('svg-series')
+        };
+
+        // Helper to generate spring polyline path
+        function generateSpringPath(x, y, width, length, coils = 10) {
+            let points = [];
+            const step = length / (coils * 4);
+            for (let i = 0; i <= coils * 4; i++) {
+                const px = x + (i % 4 === 1 ? width / 2 : i % 4 === 3 ? -width / 2 : 0);
+                const py = y + i * step;
+                points.push(`${px},${py}`);
+            }
+            return points.join(' ');
+        }
+
+        // Main update function
+        function update() {
+            const k = parseFloat(inputs.k.value);
+            const np = parseInt(inputs.np.value);
+            const ns = parseInt(inputs.ns.value);
+            const m = parseFloat(inputs.m.value);
+
+            // Update range labels
+            displays.k.textContent = `${k} N/m`;
+            displays.np.textContent = np;
+            displays.ns.textContent = ns;
+            displays.m.textContent = `${m} kg`;
+
+            // Physics logic
+            const weight = m * GRAVITY;
+            
+            const effectiveKParallel = k * np;
+            const extParallel = weight / effectiveKParallel;
+
+            const effectiveKSingle = k;
+            const extSingle = weight / effectiveKSingle;
+
+            const effectiveKSeries = k / ns;
+            const extSeries = weight / effectiveKSeries;
+
+            // Update Labels
+            displays.labelExtParallel.textContent = `Extension: ${extParallel.toFixed(3)} m`;
+            displays.labelExtSingle.textContent = `Extension: ${extSingle.toFixed(3)} m`;
+            displays.labelExtSeries.textContent = `Extension: ${extSeries.toFixed(3)} m`;
+
+            // Update Math Working
+            displays.calcParallel.innerHTML = `
+                <p>Total k = sum of all springs</p>
+                <p>Total k = ${new Array(np).fill(k).join(' + ')}</p>
+                <p class="text-indigo-600 font-bold pt-1">Effective k = ${effectiveKParallel.toFixed(1)} N/m</p>
+            `;
+
+            displays.calcSeries.innerHTML = `
+                <p>1 / Total k = sum of 1/k</p>
+                <p>1 / Total k = ${new Array(ns).fill(`1/${k}`).join(' + ')}</p>
+                <p>1 / Total k = ${ns}/${k}</p>
+                <p class="text-indigo-600 font-bold pt-1">Effective k = ${effectiveKSeries.toFixed(1)} N/m</p>
+            `;
+
+            // Render SVGs
+            renderParallel(np, extParallel);
+            renderSingle(extSingle);
+            renderSeries(ns, extSeries);
+        }
+
+        function createSVGElement(tag) {
+            return document.createElementNS("http://www.w3.org/2000/svg", tag);
+        }
+
+        function renderParallel(count, extension) {
+            const svg = displays.svgParallel;
+            svg.innerHTML = '';
+            
+            // Ceiling
+            const ceiling = createSVGElement('rect');
+            ceiling.setAttribute('x', '0'); ceiling.setAttribute('y', '0');
+            ceiling.setAttribute('width', '100%'); ceiling.setAttribute('height', '12');
+            ceiling.setAttribute('fill', '#334155');
+            svg.appendChild(ceiling);
+
+            const stretch = extension * PIXELS_PER_METER;
+            const len = SPRING_REST_LENGTH + stretch;
+
+            // Springs
+            for (let i = 0; i < count; i++) {
+                const spacing = 160 / (count + 1);
+                const xPos = (i + 1) * spacing + 20;
+                const poly = createSVGElement('polyline');
+                poly.setAttribute('points', generateSpringPath(xPos, 12, 10, len));
+                poly.setAttribute('fill', 'none');
+                poly.setAttribute('stroke', count > 1 ? SPRING_COLORS[i % SPRING_COLORS.length] : '#4b5563');
+                poly.setAttribute('stroke-width', '2.5');
+                poly.setAttribute('stroke-linecap', 'round');
+                poly.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(poly);
+            }
+
+            // Connector Bar
+            const bar = createSVGElement('rect');
+            bar.setAttribute('x', '15'); bar.setAttribute('y', 12 + len);
+            bar.setAttribute('width', '170'); bar.setAttribute('height', '8');
+            bar.setAttribute('fill', '#475569'); bar.setAttribute('rx', '4');
+            svg.appendChild(bar);
+
+            // Mass
+            renderMass(svg, 75, 20 + len, inputs.m.value, '#6366f1');
+        }
+
+        function renderSingle(extension) {
+            const svg = displays.svgSingle;
+            svg.innerHTML = '';
+            
+            const ceiling = createSVGElement('rect');
+            ceiling.setAttribute('x', '0'); ceiling.setAttribute('y', '0');
+            ceiling.setAttribute('width', '100%'); ceiling.setAttribute('height', '12');
+            ceiling.setAttribute('fill', '#334155');
+            svg.appendChild(ceiling);
+
+            const len = SPRING_REST_LENGTH + (extension * PIXELS_PER_METER);
+
+            const poly = createSVGElement('polyline');
+            poly.setAttribute('points', generateSpringPath(100, 12, 16, len, 15));
+            poly.setAttribute('fill', 'none');
+            poly.setAttribute('stroke', '#ec4899');
+            poly.setAttribute('stroke-width', '2.5');
+            poly.setAttribute('stroke-linecap', 'round');
+            poly.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(poly);
+
+            renderMass(svg, 75, 12 + len, inputs.m.value, '#ec4899');
+        }
+
+        function renderSeries(count, extension) {
+            const svg = displays.svgSeries;
+            svg.innerHTML = '';
+            
+            const ceiling = createSVGElement('rect');
+            ceiling.setAttribute('x', '0'); ceiling.setAttribute('y', '0');
+            ceiling.setAttribute('width', '100%'); ceiling.setAttribute('height', '12');
+            ceiling.setAttribute('fill', '#334155');
+            svg.appendChild(ceiling);
+
+            const individualStretch = (extension / count) * PIXELS_PER_METER;
+            const segmentLength = SPRING_REST_LENGTH + individualStretch;
+
+            for (let i = 0; i < count; i++) {
+                const yPos = 12 + (i * segmentLength);
+                const poly = createSVGElement('polyline');
+                poly.setAttribute('points', generateSpringPath(100, yPos, 15, segmentLength, 10));
+                poly.setAttribute('fill', 'none');
+                poly.setAttribute('stroke', count > 1 ? SPRING_COLORS[i % SPRING_COLORS.length] : '#4b5563');
+                poly.setAttribute('stroke-width', '2.5');
+                poly.setAttribute('stroke-linecap', 'round');
+                poly.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(poly);
+            }
+
+            const finalY = 12 + (count * segmentLength);
+            renderMass(svg, 75, finalY, inputs.m.value, '#10b981');
+        }
+
+        function renderMass(svg, x, y, val, color) {
+            const group = createSVGElement('g');
+            group.setAttribute('transform', `translate(${x}, ${y})`);
+            
+            const box = createSVGElement('rect');
+            box.setAttribute('width', '50'); box.setAttribute('height', '45');
+            box.setAttribute('rx', '4'); box.setAttribute('fill', color);
+            
+            const text = createSVGElement('text');
+            text.setAttribute('x', '25'); text.setAttribute('y', '28');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'white');
+            text.setAttribute('class', 'text-xs font-bold');
+            text.textContent = `${val}kg`;
+            
+            group.appendChild(box);
+            group.appendChild(text);
+            svg.appendChild(group);
+        }
+
+        // Initial render and event listeners
+        Object.values(inputs).forEach(input => input.addEventListener('input', update));
+        window.onload = () => {
+            lucide.createIcons();
+            update();
+        };
+    </script>
+</body>
+</html>

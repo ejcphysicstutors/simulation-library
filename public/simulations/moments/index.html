@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moments</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Moments</div>
+            <div class="ejc-credit-author">Created by <strong>Koh Siong Yang</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0">
+        <div>
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="settings" class="w-6 h-6 text-blue-600"></i>
+                Moment of Force Simulator
+            </h1>
+            <p class="text-sm text-slate-500">
+                Moment = Force &times; Perpendicular Distance
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="toggleGeometry" class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 shadow-md transform active:scale-95 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
+                <span id="toggleText">Hide Geometry</span>
+            </button>
+            <button id="resetBtn" class="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors text-slate-600" title="Reset Simulation">
+                <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside class="w-80 bg-white border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto shrink-0 shadow-sm z-10">
+            <div class="space-y-4">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Live Calculations</h2>
+                
+                <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                    <label class="text-xs font-bold text-red-600 uppercase">Applied Force (F)</label>
+                    <div id="valForce" class="text-2xl font-mono font-bold text-red-700">0.0 <span class="text-sm font-normal">N</span></div>
+                </div>
+
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                    <label class="text-xs font-bold text-amber-600 uppercase">Perp. Distance (d)</label>
+                    <div id="valDist" class="text-2xl font-mono font-bold text-amber-700">0.0 <span class="text-sm font-normal">m</span></div>
+                </div>
+
+                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <label class="text-xs font-bold text-emerald-600 uppercase">Resulting Moment (&tau;)</label>
+                    <div id="valMoment" class="text-2xl font-mono font-bold text-emerald-700">0.00 <span class="text-sm font-normal">Nm</span></div>
+                    <div id="valDir" class="text-xs font-medium text-emerald-600 mt-1 italic">Equilibrium</div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-blue-50 rounded-xl border border-blue-100 text-sm leading-relaxed text-blue-800">
+                <div class="flex items-center gap-2 font-bold mb-2">
+                    <i data-lucide="info" class="w-4 h-4"></i> Instructions
+                </div>
+                <ul class="space-y-2 list-disc list-inside">
+                    <li>Drag the <b>Red Dot</b> to change application point.</li>
+                    <li>Drag the <b>Arrow Tip</b> to change force vector.</li>
+                    <li>Observe how the <b>Yellow Line (d)</b> stays perpendicular to the line of action.</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="flex-1 relative bg-slate-200 overflow-hidden flex items-center justify-center cursor-crosshair">
+            <canvas id="simCanvas" width="800" height="600" class="bg-white shadow-2xl rounded-sm"></canvas>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white px-8 py-3 shrink-0 flex items-center justify-between text-sm">
+        <div class="flex items-center gap-6">
+            <span class="opacity-70">Key Concept:</span>
+            <span class="flex items-center gap-2">
+                Moment = F &times; d
+            </span>
+            <i data-lucide="arrow-right" class="w-4 h-4 opacity-40"></i>
+            <span class="italic text-slate-400">
+                Maximum moment occurs when the force is perpendicular to the arm.
+            </span>
+        </div>
+        <div class="text-xs opacity-50 font-mono">
+            &tau; = rF sin(&theta;)
+        </div>
+    </footer>
+
+    <script>
+        // State
+        let pivot = { x: 400, y: 300 };
+        let forcePos = { x: 600, y: 200 };
+        let forceVec = { dx: 0, dy: -100 };
+        let showHelperLines = true;
+        let isDraggingForce = false;
+        let isDraggingVec = false;
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Logic
+        function calculateMoment() {
+            const rx = forcePos.x - pivot.x;
+            const ry = forcePos.y - pivot.y;
+            const fx = forceVec.dx;
+            const fy = forceVec.dy;
+            
+            const momentValue = (rx * fy - ry * fx) / 1000;
+            const forceMag = Math.sqrt(fx * fx + fy * fy);
+            const perpDist = forceMag === 0 ? 0 : Math.abs(rx * fy - ry * fx) / forceMag;
+            
+            return {
+                moment: momentValue,
+                forceMag: forceMag / 10,
+                perpDist: perpDist / 10
+            };
+        }
+
+        function updateUI() {
+            const stats = calculateMoment();
+            document.getElementById('valForce').innerHTML = `${stats.forceMag.toFixed(1)} <span class="text-sm font-normal">N</span>`;
+            document.getElementById('valDist').innerHTML = `${stats.perpDist.toFixed(1)} <span class="text-sm font-normal">m</span>`;
+            document.getElementById('valMoment').innerHTML = `${stats.moment.toFixed(2)} <span class="text-sm font-normal">Nm</span>`;
+            
+            const dirEl = document.getElementById('valDir');
+            if (stats.moment > 0) dirEl.textContent = 'Clockwise';
+            else if (stats.moment < 0) dirEl.textContent = 'Counter-Clockwise';
+            else dirEl.textContent = 'Equilibrium';
+        }
+
+        function draw() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const stats = calculateMoment();
+            
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. Grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < w; i += 50) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
+            }
+            for (let i = 0; i < h; i += 50) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
+            }
+
+            // 2. Line of Action
+            if (showHelperLines) {
+                const angle = Math.atan2(forceVec.dy, forceVec.dx);
+                const extend = 2000;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.moveTo(forcePos.x - Math.cos(angle) * extend, forcePos.y - Math.sin(angle) * extend);
+                ctx.lineTo(forcePos.x + Math.cos(angle) * extend, forcePos.y + Math.sin(angle) * extend);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // 3. Perpendicular Distance
+            if (showHelperLines && stats.forceMag > 0) {
+                const dx = forceVec.dx;
+                const dy = forceVec.dy;
+                const lenSq = dx * dx + dy * dy;
+                const t = ((pivot.x - forcePos.x) * dx + (pivot.y - forcePos.y) * dy) / lenSq;
+                const projX = forcePos.x + t * dx;
+                const projY = forcePos.y + t * dy;
+
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(pivot.x, pivot.y);
+                ctx.lineTo(projX, projY);
+                ctx.stroke();
+
+                // Right angle
+                const size = 10;
+                const angle = Math.atan2(dy, dx);
+                ctx.beginPath();
+                ctx.moveTo(projX - Math.cos(angle) * size, projY - Math.sin(angle) * size);
+                ctx.lineTo(projX - Math.cos(angle) * size + Math.sin(angle) * size, projY - Math.sin(angle) * size - Math.cos(angle) * size);
+                ctx.lineTo(projX + Math.sin(angle) * size, projY - Math.cos(angle) * size);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#b45309';
+                ctx.font = 'bold 14px Inter';
+                ctx.fillText('d', (pivot.x + projX) / 2 + 10, (pivot.y + projY) / 2);
+            }
+
+            // 4. Radius Vector
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(pivot.x, pivot.y);
+            ctx.lineTo(forcePos.x, forcePos.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 5. Pivot
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(pivot.x, pivot.y, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px Inter';
+            ctx.fillText('PIVOT', pivot.x - 20, pivot.y + 25);
+
+            // 6. Force Vector
+            const tipX = forcePos.x + forceVec.dx;
+            const tipY = forcePos.y + forceVec.dy;
+            const fAngle = Math.atan2(forceVec.dy, forceVec.dx);
+            
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(forcePos.x, forcePos.y);
+            ctx.lineTo(tipX, tipY);
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.moveTo(tipX, tipY);
+            ctx.lineTo(tipX - 15 * Math.cos(fAngle - Math.PI / 6), tipY - 15 * Math.sin(fAngle - Math.PI / 6));
+            ctx.lineTo(tipX - 15 * Math.cos(fAngle + Math.PI / 6), tipY - 15 * Math.sin(fAngle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+
+            // Handle
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(forcePos.x, forcePos.y, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText(`Force: ${stats.forceMag.toFixed(1)} N`, tipX + 10, tipY + 5);
+
+            updateUI();
+            requestAnimationFrame(draw);
+        }
+
+        // Interaction
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const distToForce = Math.sqrt((x - forcePos.x) ** 2 + (y - forcePos.y) ** 2);
+            if (distToForce < 15) {
+                isDraggingForce = true;
+                return;
+            }
+
+            const tipX = forcePos.x + forceVec.dx;
+            const tipY = forcePos.y + forceVec.dy;
+            const distToTip = Math.sqrt((x - tipX) ** 2 + (y - tipY) ** 2);
+            if (distToTip < 20) {
+                isDraggingVec = true;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDraggingForce && !isDraggingVec) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isDraggingForce) {
+                forcePos.x = Math.max(50, Math.min(750, x));
+                forcePos.y = Math.max(50, Math.min(550, y));
+            } else if (isDraggingVec) {
+                forceVec.dx = x - forcePos.x;
+                forceVec.dy = y - forcePos.y;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDraggingForce = false;
+            isDraggingVec = false;
+        });
+
+        // Controls
+        document.getElementById('toggleGeometry').addEventListener('click', function() {
+            showHelperLines = !showHelperLines;
+            const btn = this;
+            const text = document.getElementById('toggleText');
+            
+            if (showHelperLines) {
+                btn.className = 'flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 shadow-md transform active:scale-95 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg';
+                text.textContent = 'Hide Geometry';
+                btn.querySelector('i').setAttribute('data-lucide', 'eye-off');
+            } else {
+                btn.className = 'flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 shadow-md transform active:scale-95 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50';
+                text.textContent = 'Show Geometry';
+                btn.querySelector('i').setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            forcePos = { x: 600, y: 200 };
+            forceVec = { dx: 0, dy: -100 };
+        });
+
+        // Init
+        window.onload = () => {
+            lucide.createIcons();
+            draw();
+        };
+    </script>
+
+    </div>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+        // State
+        let pivot = { x: 400, y: 300 };
+        let forcePos = { x: 600, y: 200 };
+        let forceVec = { dx: 0, dy: -100 };
+        let showHelperLines = true;
+        let isDraggingForce = false;
+        let isDraggingVec = false;
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Logic
+        function calculateMoment() {
+            const rx = forcePos.x - pivot.x;
+            const ry = forcePos.y - pivot.y;
+            const fx = forceVec.dx;
+            const fy = forceVec.dy;
+            
+            const momentValue = (rx * fy - ry * fx) / 1000;
+            const forceMag = Math.sqrt(fx * fx + fy * fy);
+            const perpDist = forceMag === 0 ? 0 : Math.abs(rx * fy - ry * fx) / forceMag;
+            
+            return {
+                moment: momentValue,
+                forceMag: forceMag / 10,
+                perpDist: perpDist / 10
+            };
+        }
+
+        function updateUI() {
+            const stats = calculateMoment();
+            document.getElementById('valForce').innerHTML = `${stats.forceMag.toFixed(1)} <span class="text-sm font-normal">N</span>`;
+            document.getElementById('valDist').innerHTML = `${stats.perpDist.toFixed(1)} <span class="text-sm font-normal">m</span>`;
+            document.getElementById('valMoment').innerHTML = `${stats.moment.toFixed(2)} <span class="text-sm font-normal">Nm</span>`;
+            
+            const dirEl = document.getElementById('valDir');
+            if (stats.moment > 0) dirEl.textContent = 'Clockwise';
+            else if (stats.moment < 0) dirEl.textContent = 'Counter-Clockwise';
+            else dirEl.textContent = 'Equilibrium';
+        }
+
+        function draw() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const stats = calculateMoment();
+            
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. Grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < w; i += 50) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
+            }
+            for (let i = 0; i < h; i += 50) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
+            }
+
+            // 2. Line of Action
+            if (showHelperLines) {
+                const angle = Math.atan2(forceVec.dy, forceVec.dx);
+                const extend = 2000;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.moveTo(forcePos.x - Math.cos(angle) * extend, forcePos.y - Math.sin(angle) * extend);
+                ctx.lineTo(forcePos.x + Math.cos(angle) * extend, forcePos.y + Math.sin(angle) * extend);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // 3. Perpendicular Distance
+            if (showHelperLines && stats.forceMag > 0) {
+                const dx = forceVec.dx;
+                const dy = forceVec.dy;
+                const lenSq = dx * dx + dy * dy;
+                const t = ((pivot.x - forcePos.x) * dx + (pivot.y - forcePos.y) * dy) / lenSq;
+                const projX = forcePos.x + t * dx;
+                const projY = forcePos.y + t * dy;
+
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(pivot.x, pivot.y);
+                ctx.lineTo(projX, projY);
+                ctx.stroke();
+
+                // Right angle
+                const size = 10;
+                const angle = Math.atan2(dy, dx);
+                ctx.beginPath();
+                ctx.moveTo(projX - Math.cos(angle) * size, projY - Math.sin(angle) * size);
+                ctx.lineTo(projX - Math.cos(angle) * size + Math.sin(angle) * size, projY - Math.sin(angle) * size - Math.cos(angle) * size);
+                ctx.lineTo(projX + Math.sin(angle) * size, projY - Math.cos(angle) * size);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#b45309';
+                ctx.font = 'bold 14px Inter';
+                ctx.fillText('d', (pivot.x + projX) / 2 + 10, (pivot.y + projY) / 2);
+            }
+
+            // 4. Radius Vector
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(pivot.x, pivot.y);
+            ctx.lineTo(forcePos.x, forcePos.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 5. Pivot
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(pivot.x, pivot.y, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px Inter';
+            ctx.fillText('PIVOT', pivot.x - 20, pivot.y + 25);
+
+            // 6. Force Vector
+            const tipX = forcePos.x + forceVec.dx;
+            const tipY = forcePos.y + forceVec.dy;
+            const fAngle = Math.atan2(forceVec.dy, forceVec.dx);
+            
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(forcePos.x, forcePos.y);
+            ctx.lineTo(tipX, tipY);
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.moveTo(tipX, tipY);
+            ctx.lineTo(tipX - 15 * Math.cos(fAngle - Math.PI / 6), tipY - 15 * Math.sin(fAngle - Math.PI / 6));
+            ctx.lineTo(tipX - 15 * Math.cos(fAngle + Math.PI / 6), tipY - 15 * Math.sin(fAngle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+
+            // Handle
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(forcePos.x, forcePos.y, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText(`Force: ${stats.forceMag.toFixed(1)} N`, tipX + 10, tipY + 5);
+
+            updateUI();
+            requestAnimationFrame(draw);
+        }
+
+        // Interaction
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const distToForce = Math.sqrt((x - forcePos.x) ** 2 + (y - forcePos.y) ** 2);
+            if (distToForce < 15) {
+                isDraggingForce = true;
+                return;
+            }
+
+            const tipX = forcePos.x + forceVec.dx;
+            const tipY = forcePos.y + forceVec.dy;
+            const distToTip = Math.sqrt((x - tipX) ** 2 + (y - tipY) ** 2);
+            if (distToTip < 20) {
+                isDraggingVec = true;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDraggingForce && !isDraggingVec) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isDraggingForce) {
+                forcePos.x = Math.max(50, Math.min(750, x));
+                forcePos.y = Math.max(50, Math.min(550, y));
+            } else if (isDraggingVec) {
+                forceVec.dx = x - forcePos.x;
+                forceVec.dy = y - forcePos.y;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDraggingForce = false;
+            isDraggingVec = false;
+        });
+
+        // Controls
+        document.getElementById('toggleGeometry').addEventListener('click', function() {
+            showHelperLines = !showHelperLines;
+            const btn = this;
+            const text = document.getElementById('toggleText');
+            
+            if (showHelperLines) {
+                btn.className = 'flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 shadow-md transform active:scale-95 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg';
+                text.textContent = 'Hide Geometry';
+                btn.querySelector('i').setAttribute('data-lucide', 'eye-off');
+            } else {
+                btn.className = 'flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-200 shadow-md transform active:scale-95 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50';
+                text.textContent = 'Show Geometry';
+                btn.querySelector('i').setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            forcePos = { x: 600, y: 200 };
+            forceVec = { dx: 0, dy: -100 };
+        });
+
+        // Init
+        window.onload = () => {
+            lucide.createIcons();
+            draw();
+        };
+    </script>
+</body>
+</html>
