@@ -16,7 +16,7 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
 
   const topic = topics.find((item) => item.id === submission.primaryTopicId);
   const validation = submission.validation;
-  const canApprove = Boolean(validation && validation.errors === 0);
+  const canApprove = Boolean(validation && validation.errors === 0 && submission.status !== "published");
 
   let previewHtml = "";
   if (submission.packageType === "html" && submission.blobPathname) {
@@ -47,7 +47,7 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
       <div className="review-detail-grid">
         <section className="admin-panel review-main-panel">
           <div className="panel-heading-row"><div><h2>Automated checks</h2><p>Source-level checks run immediately after upload.</p></div>
-            <RevalidationButton submissionId={submission.submissionId} />
+            {submission.status !== "published" ? <RevalidationButton submissionId={submission.submissionId} /> : null}
           </div>
 
           {validation ? (
@@ -89,11 +89,12 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
               <input type="hidden" name="submissionId" value={submission.submissionId} />
               <label><span>Note to contributor</span><textarea name="adminNote" rows={4} defaultValue={submission.adminNote ?? ""} placeholder="Optional for approval; recommended when changes are needed." /></label>
               <div className="review-action-buttons">
-                <button className="button primary" formAction={approveSubmission} disabled={!canApprove}>Approve</button>
+                <button className="button primary" formAction={approveSubmission} disabled={!canApprove}>Approve & publish</button>
                 <button className="button secondary" formAction={markNeedsChanges}>Needs changes</button>
                 <button className="button danger-button" formAction={rejectSubmission}>Reject</button>
               </div>
-              {!canApprove ? <small className="review-help">Resolve validation errors before approval.</small> : null}
+              {!canApprove && submission.status !== "published" ? <small className="review-help">Resolve validation errors before approval.</small> : null}
+              {submission.publishedSimulationId ? <Link className="button secondary" href={`/admin/simulations/${submission.publishedSimulationId}/versions`}>Version history</Link> : null}
             </form>
           </section>
         </aside>
@@ -101,14 +102,16 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
 
       <section className="admin-panel preview-panel">
         <div className="panel-heading-row"><div><h2>Preview</h2><p>Runs in a restricted iframe and cannot access the admin application.</p></div></div>
-        {submission.packageType === "html" ? (
+        {submission.status === "published" && submission.publishedSimulationId ? (
+          <div className="admin-preview-frame-wrap"><iframe className="admin-preview-frame" title={`Live ${submission.title}`} sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" referrerPolicy="no-referrer" src={`/api/library/simulations/${submission.publishedSimulationId}/current/index.html`} /></div>
+        ) : submission.packageType === "html" ? (
           previewHtml ? (
-          <div className="admin-preview-frame-wrap"><iframe className="admin-preview-frame" title={`Preview of ${submission.title}`} sandbox="allow-scripts" referrerPolicy="no-referrer" srcDoc={previewHtml} /></div>
+            <div className="admin-preview-frame-wrap"><iframe className="admin-preview-frame" title={`Preview of ${submission.title}`} sandbox="allow-scripts" referrerPolicy="no-referrer" srcDoc={previewHtml} /></div>
+          ) : (
+            <p className="empty-submissions">The preview could not be loaded from private storage. Run the checks again; if this persists, the review page will show a validation error.</p>
+          )
         ) : (
-          <p className="empty-submissions">The preview could not be loaded from private storage. Run the checks again; if this persists, the review page will now show a validation error instead of a blank frame.</p>
-        )
-        ) : (
-          <p className="empty-submissions">ZIP preview will be added after the single-file preview path is proven. The ZIP has still been unpacked and source-checked automatically.</p>
+          <p className="empty-submissions">ZIP projects are source-checked automatically. Live multi-file preview becomes available immediately after publication.</p>
         )}
       </section>
     </main>
