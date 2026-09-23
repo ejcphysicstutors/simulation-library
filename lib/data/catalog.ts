@@ -106,10 +106,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-motion-forces",
     relatedTopicIds: ["9478-energy-fields"],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/forces-on-an-object-sliding-down-a-curved-path/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/forces-on-an-object-sliding-down-a-curved-path.html",
-    migrationNote: "Held for physics review: the legacy explanation states that the normal force balances mg cos θ, which is not generally true on a curved path when normal acceleration is present."
+    migrationNote: "Repaired angle/interface symbols and made the model assumption explicit: acceleration is tangent to the local slope, so the normal component of acceleration is zero and N = mg cos θ within this simulation."
   },
   {
     id: "legacy-car-chase",
@@ -338,10 +340,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-quantum-physics",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-review",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/heisenberg-uncertainty/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/heisenberg-uncertainty.html",
-    migrationNote: "Held for physics review: the legacy text uses an approximate uncertainty relation Δx·Δp ≈ h; this should be aligned to the intended syllabus statement before publication."
+    migrationNote: "Repaired Δ, ψ, ∞ and momentum notation, retained the 9478 relation Δx · Δp ≈ h, and removed an accidentally duplicated inline script during migration."
   },
   {
     id: "legacy-rutherford",

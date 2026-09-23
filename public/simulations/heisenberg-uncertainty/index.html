@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heisenberg Uncertainty</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f6; color: #1a1a1a; padding: 1.5rem; }
+  h1 { font-size: 18px; font-weight: 500; margin-bottom: 0.25rem; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 1.5rem; }
+  .metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+  .metric { background: #efefef; border-radius: 8px; padding: 10px 14px; }
+  .metric-lbl { font-size: 11px; color: #666; margin-bottom: 2px; }
+  .metric-v { font-size: 20px; font-weight: 500; color: #1a1a1a; }
+  .metric-s { font-size: 11px; color: #666; margin-top: 2px; }
+  .slider-wrap { background: #fff; border: 0.5px solid #ddd; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+  .slider-row { display: flex; align-items: center; gap: 12px; }
+  .slider-row label { font-size: 13px; color: #444; min-width: 170px; }
+  .slider-row input[type=range] { flex: 1; cursor: pointer; accent-color: #185FA5; }
+  .slider-val { font-size: 14px; font-weight: 500; min-width: 28px; text-align: right; color: #1a1a1a; }
+  .tick-row { display: flex; justify-content: space-between; padding: 4px 0 0; font-size: 10px; color: #aaa; }
+  .panel { background: #fff; border: 0.5px solid #ddd; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+  .panel-title { font-size: 12px; color: #666; margin-bottom: 8px; }
+  .panel-note { font-size: 11px; color: #aaa; font-style: italic; margin-bottom: 8px; }
+  canvas { display: block; width: 100%; }
+  .sep-row { display: flex; align-items: center; gap: 8px; margin: 14px 0 12px; }
+  .sep-lbl { font-size: 11px; color: #888; white-space: nowrap; }
+  .sep-line { flex: 1; height: 1px; background: #ddd; }
+  .insight { font-size: 13px; color: #1a1a1a; line-height: 1.6; padding: 8px 12px; border-radius: 8px; background: #f0f0ee; margin-bottom: 1.25rem; }
+  .ins-dp { color: #1a4f99; font-weight: 500; }
+  .ins-dx { color: #085041; font-weight: 500; }
+  .ins-eq { color: #7a4a00; font-weight: 500; }
+</style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Heisenberg Uncertainty</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+<h1>Heisenberg Uncertainty — Explore</h1>
+<p class="subtitle">Drag the slider to change the spread of momenta and watch the wave packet respond.</p>
+
+<div class="metric-row">
+  <div class="metric">
+    <div class="metric-lbl">Position uncertainty Δx</div>
+    <div class="metric-v" id="dx-v">∞</div>
+    <div class="metric-s" id="dx-s">perfectly unknown</div>
+  </div>
+  <div class="metric">
+    <div class="metric-lbl">Momentum uncertainty Δp</div>
+    <div class="metric-v" id="dp-v">≈ 0</div>
+    <div class="metric-s" id="dp-s">perfectly defined</div>
+  </div>
+</div>
+
+<div class="slider-wrap">
+  <div class="slider-row">
+    <label>Momentum spread (Δp)</label>
+    <input type="range" id="spread-slider" min="0" max="100" step="1" value="0" oninput="onSlider()">
+    <span class="slider-val" id="spread-val">0</span>
+  </div>
+  <div class="tick-row">
+    <span>narrow → single momentum</span>
+    <span>wide → many momenta</span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Resultant wavefunction ψ(x)</div>
+  <canvas id="sum-canvas" height="160"></canvas>
+
+  <div class="sep-row">
+    <div class="sep-line"></div>
+    <div class="sep-lbl">made up of these component waves ↓</div>
+    <div class="sep-line"></div>
+  </div>
+
+  <div class="panel-title" id="comp-title">Momentum distribution — single wavelength (p₀ only)</div>
+  <div class="panel-note" id="amp-note" style="display:none;"></div>
+  <div id="comp-col"></div>
+</div>
+
+<div class="insight" id="insight-box">
+  <span class="ins-dp">Δp ≈ 0</span> — only one wavelength is present. The wavefunction is a pure sinusoid extending across all space. <span class="ins-dx">Δx → ∞</span>: the particle could be anywhere. This illustrates the limiting behaviour described by <span class="ins-eq">Δx · Δp ≈ h</span>: as Δp tends towards zero, Δx becomes arbitrarily large.
+</div>
+
+<script>
+const XMIN = -Math.PI * 4, XMAX = Math.PI * 4, PTS = 1000;
+const N_WAVES = 200, K0 = 8;
+
+function gaussian(dk, sigma) {
+  return Math.exp(-(dk * dk) / (2 * sigma * sigma));
+}
+
+function buildWaves(sigma) {
+  const waves = [];
+  const range = sigma < 0.001 ? 0.01 : sigma * 4;
+  for (let i = 0; i < N_WAVES; i++) {
+    const k = K0 - range + (i / (N_WAVES - 1)) * range * 2;
+    const amp = sigma < 0.001 ? (Math.abs(k - K0) < 0.05 ? 1 : 0) : gaussian(k - K0, sigma);
+    waves.push({ k, amp });
+  }
+  return waves;
+}
+
+function superpose(waves, x) {
+  let s = 0;
+  for (const w of waves) s += w.amp * Math.cos(w.k * x);
+  return s;
+}
+
+function computeEnvelope(yy) {
+  const N = yy.length, env = new Float64Array(N), win = Math.floor(N / 16);
+  for (let i = 0; i < N; i++) {
+    let mx = 0;
+    for (let j = Math.max(0, i - win); j <= Math.min(N - 1, i + win); j++)
+      if (Math.abs(yy[j]) > mx) mx = Math.abs(yy[j]);
+    env[i] = mx;
+  }
+  return env;
+}
+
+function findCentralPeak(env, threshold) {
+  const N = env.length, mid = Math.floor(N / 2);
+  let peakVal = 0;
+  for (let i = 0; i < N; i++) if (env[i] > peakVal) peakVal = env[i];
+  const t = peakVal * threshold;
+  let x1 = mid, x2 = mid;
+  while (x1 > 0 && env[x1] > t) x1--;
+  while (x2 < N - 1 && env[x2] > t) x2++;
+  return { x1, x2 };
+}
+
+function getDisplayRows(sigma, sliderVal) {
+  if (sliderVal === 0) {
+    return [{ k: K0, amp: 1, label: 'p₀' }];
+  }
+  const nRows = sliderVal < 15 ? 3 : sliderVal < 35 ? 5 : sliderVal < 60 ? 7 : sliderVal < 80 ? 9 : 11;
+  const range = sigma * 3.5;
+  const rows = [];
+  for (let i = 0; i < nRows; i++) {
+    const k = K0 - range + (i / (nRows - 1)) * range * 2;
+    const dk = k - K0;
+    const amp = gaussian(dk, sigma);
+    const midIdx = Math.floor(nRows / 2);
+    let label;
+    if (i === midIdx) label = 'p₀';
+    else if (dk > 0) label = `p₀+${dk.toFixed(1)}`;
+    else label = `p₀−${Math.abs(dk).toFixed(1)}`;
+    rows.push({ k, amp, label });
+  }
+  return rows;
+}
+
+function drawCompCol(sigma, sliderVal) {
+  const container = document.getElementById('comp-col');
+  container.innerHTML = '';
+
+  document.getElementById('amp-note').style.display = sliderVal > 0 ? '' : 'none';
+
+  const rows = getDisplayRows(sigma, sliderVal);
+  const ROW_H = 70, LBL_W = 68;
+
+  rows.forEach(row => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:3px;';
+
+    const lbl = document.createElement('div');
+    lbl.style.cssText = `font-size:11px;min-width:${LBL_W}px;text-align:right;flex-shrink:0;line-height:1.3;`;
+    lbl.style.color = "rgba(0,0,0,0.7)";
+    lbl.textContent = row.label;
+
+    const cv = document.createElement('canvas');
+    cv.height = ROW_H;
+    cv.style.cssText = 'flex:1;display:block;min-width:0;';
+    wrap.appendChild(lbl);
+    wrap.appendChild(cv);
+    container.appendChild(wrap);
+
+    requestAnimationFrame(() => {
+      const W = cv.offsetWidth || 700;
+      cv.width = W; cv.height = ROW_H;
+      const ctx = cv.getContext('2d');
+      ctx.clearRect(0, 0, W, ROW_H);
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(0, ROW_H / 2); ctx.lineTo(W, ROW_H / 2); ctx.stroke();
+
+      const alpha = 0.85;
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(24,95,165,${alpha})`;
+      ctx.lineWidth = 1.8;
+      for (let i = 0; i <= PTS; i++) {
+        const x = XMIN + (i / PTS) * (XMAX - XMIN);
+        const px = (i / PTS) * W;
+        const py = ROW_H / 2 - Math.cos(row.k * x) * (ROW_H / 2 - 4);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    });
+  });
+
+  if (sliderVal > 0) {
+    const more = document.createElement('div');
+    more.style.cssText = `font-size:13px;color:#1a1a1a;font-weight:500;margin:10px 0 4px;padding:8px 10px;background:#f0f0ee;border-radius:6px;`;
+    more.textContent = '+ infinitely many waves filling the gaps continuously';
+    container.appendChild(more);
+  }
+
+  const titles = [
+    'Momentum distribution — single wavelength (p₀ only)',
+    'Momentum distribution — narrow spread of wavelengths centred on p₀',
+    'Momentum distribution — small spread of wavelengths centred on p₀',
+    'Momentum distribution — moderate spread of wavelengths centred on p₀',
+    'Momentum distribution — wide spread of wavelengths centred on p₀',
+    'Momentum distribution — very wide spread of wavelengths centred on p₀',
+  ];
+  const ti = sliderVal === 0 ? 0 : Math.min(5, Math.ceil(sliderVal / 20));
+  document.getElementById('comp-title').textContent = titles[ti];
+}
+
+function drawSumCanvas(waves, sliderVal) {
+  const canvas = document.getElementById('sum-canvas');
+  const W = canvas.offsetWidth || 700, H = 160;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const sumCol = '#1D9E75', axisCol = 'rgba(0,0,0,0.08)';
+  const envCol = 'rgba(15,110,86,0.12)', arrowCol = '#BA7517';
+  const waveH = sliderVal > 0 ? H - 22 : H;
+
+  const yy = [];
+  let maxA = 0;
+  for (let i = 0; i <= PTS; i++) {
+    const x = XMIN + (i / PTS) * (XMAX - XMIN);
+    const v = superpose(waves, x); yy.push(v);
+    if (Math.abs(v) > maxA) maxA = Math.abs(v);
+  }
+  if (maxA === 0) return;
+
+  ctx.strokeStyle = axisCol; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(0, waveH / 2); ctx.lineTo(W, waveH / 2); ctx.stroke();
+
+  if (sliderVal > 0) {
+    const env = computeEnvelope(yy);
+    const threshold = 0.5 + (sliderVal / 100) * 0.35;
+    const pkt = findCentralPeak(env, threshold);
+
+    ctx.beginPath(); ctx.fillStyle = envCol;
+    for (let i = 0; i <= PTS; i++) {
+      const px = (i / PTS) * W, py = waveH / 2 - (env[i] / maxA) * (waveH / 2 - 4);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    for (let i = PTS; i >= 0; i--) {
+      const px = (i / PTS) * W, py = waveH / 2 + (env[i] / maxA) * (waveH / 2 - 4);
+      ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+
+    if (pkt && pkt.x2 > pkt.x1) {
+      const px1 = (pkt.x1 / PTS) * W, px2 = (pkt.x2 / PTS) * W;
+      const arrowY = waveH + 11, aHead = 6;
+      ctx.strokeStyle = arrowCol; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(px1, arrowY); ctx.lineTo(px2, arrowY); ctx.stroke();
+      ctx.fillStyle = arrowCol;
+      ctx.beginPath(); ctx.moveTo(px1, arrowY); ctx.lineTo(px1 + aHead, arrowY - 3); ctx.lineTo(px1 + aHead, arrowY + 3); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(px2, arrowY); ctx.lineTo(px2 - aHead, arrowY - 3); ctx.lineTo(px2 - aHead, arrowY + 3); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = arrowCol; ctx.font = '500 12px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Δx', (px1 + px2) / 2, arrowY - 3);
+    }
+  }
+
+  ctx.beginPath(); ctx.strokeStyle = sumCol; ctx.lineWidth = 2.5;
+  for (let i = 0; i <= PTS; i++) {
+    const px = (i / PTS) * W, py = waveH / 2 - (yy[i] / maxA) * (waveH / 2 - 4);
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+function updateMetrics(sliderVal) {
+  const dxLabels = ['∞', 'very large', 'large', 'moderate', 'small', 'very small'];
+  const dpLabels = ['≈ 0', 'very small', 'small', 'moderate', 'large', 'very large'];
+  const dxSubs   = ['perfectly unknown', 'almost unknown', 'fairly uncertain', 'moderately uncertain', 'fairly certain', 'well-localised'];
+  const dpSubs   = ['perfectly defined', 'almost precise', 'fairly precise', 'moderate spread', 'wide spread', 'very wide spread'];
+  const i = sliderVal === 0 ? 0 : Math.min(5, Math.ceil(sliderVal / 20));
+  document.getElementById('dx-v').textContent = dxLabels[i];
+  document.getElementById('dp-v').textContent = dpLabels[i];
+  document.getElementById('dx-s').textContent = dxSubs[i];
+  document.getElementById('dp-s').textContent = dpSubs[i];
+}
+
+function updateInsight(sliderVal) {
+  const box = document.getElementById('insight-box');
+  if (sliderVal === 0) {
+    box.innerHTML = '<span class="ins-dp">Δp ≈ 0</span> — only one wavelength is present. The wavefunction is a pure sinusoid extending across all space. <span class="ins-dx">Δx → ∞</span>: the particle could be anywhere. This illustrates the limiting behaviour described by <span class="ins-eq">Δx · Δp ≈ h</span>: as Δp tends towards zero, Δx becomes arbitrarily large.';
+  } else if (sliderVal < 25) {
+    box.innerHTML = 'A narrow range of momenta. Each row has a slightly different wavelength — the waves look nearly identical but are not quite. Their superposition starts to show a preferred region. <span class="ins-dx">Δx is still large</span> and <span class="ins-dp">Δp is still small</span>. <span class="ins-eq">Δx · Δp ≈ h</span>.';
+  } else if (sliderVal < 55) {
+    box.innerHTML = 'A moderate spread of momenta. The rows now span visibly different wavelengths. Constructive interference produces a clear central packet; destructive interference suppresses the wave on either side. <span class="ins-dx">Δx is shrinking</span> as <span class="ins-dp">Δp grows</span>. <span class="ins-eq">Δx · Δp ≈ h</span>.';
+  } else if (sliderVal < 80) {
+    box.innerHTML = 'A wide spread of momenta. Many distinct wavelengths contribute — the rows are clearly different from each other. The packet is now tightly confined. <span class="ins-dx">Δx is small</span> but <span class="ins-dp">Δp is large</span>. You cannot reduce both simultaneously. <span class="ins-eq">Δx · Δp ≈ h</span>.';
+  } else {
+    box.innerHTML = 'A very wide momentum spread — the rows span a huge range of wavelengths. The packet is very tightly confined. <span class="ins-dx">Δx is very small</span>, <span class="ins-dp">Δp is very large</span>. A perfectly localised particle would need an infinite spread of momenta. <span class="ins-eq">Δx · Δp ≈ h</span> throughout this model.';
+  }
+}
+
+function onSlider() {
+  const raw = parseInt(document.getElementById('spread-slider').value);
+  document.getElementById('spread-val').textContent = raw;
+  const sigma = raw === 0 ? 0 : 0.05 + (raw / 100) * 2.2;
+  const waves = buildWaves(sigma);
+  drawSumCanvas(waves, raw);
+  drawCompCol(sigma, raw);
+  updateMetrics(raw);
+  updateInsight(raw);
+}
+
+onSlider();
+window.addEventListener('resize', () => onSlider());
+</script>
+
+    </div>
+</body>
+</html>
