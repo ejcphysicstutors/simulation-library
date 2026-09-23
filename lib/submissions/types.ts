@@ -63,4 +63,6 @@ export type SubmissionRecord = SubmissionMetadata & {
   publishedSimulationId?: string;
   publishedVersionId?: string;
   stagingDeleteAfter?: string;
+  publishedSimulationDeletedAt?: string;
+  publishedSimulationDeletedBy?: string;
 };
