@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2017 P2 Q2: Animation of Pluto - Charon system</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body-equiv { background: white; }
+.sim-wrap { background: white; font-family: Arial, sans-serif; color: #111; padding: 16px; }
+h1 { text-align: center; color: #1a5fa8; font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #555; margin-bottom: 16px; font-size: 15px; }
+#simContainer { width: 100%; height: 520px; border: 1px solid #ccc; border-radius: 8px; position: relative; background: white; overflow: hidden; }
+canvas { display: block; }
+.stats { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.92); border: 0.5px solid #ccc; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; min-width: 190px; color: #111; }
+.controls { margin: 12px 0; text-align: center; }
+.controls button { background: #1a5fa8; color: white; border: none; padding: 8px 18px; margin: 4px; border-radius: 5px; cursor: pointer; font-size: 15px; }
+.controls button:hover { background: #144d8c; }
+.speed-control { margin: 8px; font-size: 14px; color: #333; }
+.speed-control input { width: 180px; vertical-align: middle; }
+.legend { display: flex; justify-content: center; gap: 24px; margin: 10px 0; flex-wrap: wrap; font-size: 14px; color: #333; }
+.legend-item { display: flex; align-items: center; gap: 7px; }
+.lc { width: 16px; height: 16px; border-radius: 50%; }
+.info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.info-box { background: #f4f7fb; padding: 14px; border-radius: 8px; border-left: 3px solid #1a5fa8; }
+.info-box h3 { margin: 0 0 8px; color: #1a5fa8; font-size: 14px; font-weight: 500; }
+.info-box p { font-size: 13px; color: #333; line-height: 1.5; margin: 0 0 6px; }
+@media (max-width: 600px) { .info-panel { grid-template-columns: 1fr; } .legend { flex-direction: column; align-items: center; } }
+</style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">2017 P2 Q2: Animation of Pluto - Charon system</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body-equiv { background: white; }
+.sim-wrap { background: white; font-family: Arial, sans-serif; color: #111; padding: 16px; }
+h1 { text-align: center; color: #1a5fa8; font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #555; margin-bottom: 16px; font-size: 15px; }
+#simContainer { width: 100%; height: 520px; border: 1px solid #ccc; border-radius: 8px; position: relative; background: white; overflow: hidden; }
+canvas { display: block; }
+.stats { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.92); border: 0.5px solid #ccc; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; min-width: 190px; color: #111; }
+.controls { margin: 12px 0; text-align: center; }
+.controls button { background: #1a5fa8; color: white; border: none; padding: 8px 18px; margin: 4px; border-radius: 5px; cursor: pointer; font-size: 15px; }
+.controls button:hover { background: #144d8c; }
+.speed-control { margin: 8px; font-size: 14px; color: #333; }
+.speed-control input { width: 180px; vertical-align: middle; }
+.legend { display: flex; justify-content: center; gap: 24px; margin: 10px 0; flex-wrap: wrap; font-size: 14px; color: #333; }
+.legend-item { display: flex; align-items: center; gap: 7px; }
+.lc { width: 16px; height: 16px; border-radius: 50%; }
+.info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.info-box { background: #f4f7fb; padding: 14px; border-radius: 8px; border-left: 3px solid #1a5fa8; }
+.info-box h3 { margin: 0 0 8px; color: #1a5fa8; font-size: 14px; font-weight: 500; }
+.info-box p { font-size: 13px; color: #333; line-height: 1.5; margin: 0 0 6px; }
+@media (max-width: 600px) { .info-panel { grid-template-columns: 1fr; } .legend { flex-direction: column; align-items: center; } }
+</style>
+<div class="sim-wrap">
+<h2 style="display:none">Pluto-Charon mutual tidal locking simulation</h2>
+<h1>Pluto-Charon tidal locking simulation</h1>
+<p class="subtitle">Demonstrating mutual tidal locking between Pluto and its moon Charon</p>
+<div id="simContainer">
+  <canvas id="simCanvas"></canvas>
+  <div class="stats">
+    <div>Time: <span id="timeDisplay">0.0</span> Pluto days</div>
+    <div>Charon orbit: <span id="charonOrbit">0.0°</span></div>
+    <div>Charon rotation: <span id="charonRot">0.0°</span></div>
+    <div>Pluto rotation: <span id="plutoRot">0.0°</span></div>
+  </div>
+</div>
+<div class="controls">
+  <button id="playBtn">Play</button>
+  <button id="resetBtn">Reset</button>
+  <div class="speed-control">
+    <label>Speed: </label>
+    <input type="range" id="speedSlider" min="0.1" max="5" value="1" step="0.1">
+    <span id="speedDisplay">1.0x</span>
+  </div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="lc" style="background:#8B4513"></div><span>Pluto</span></div>
+  <div class="legend-item"><div class="lc" style="background:#888"></div><span>Charon</span></div>
+  <div class="legend-item"><div class="lc" style="background:#e03030"></div><span>Surface feature (Pluto)</span></div>
+  <div class="legend-item"><div class="lc" style="background:#2aadad"></div><span>Surface feature (Charon)</span></div>
+  <div class="legend-item"><div class="lc" style="background:#e6a800; border-radius: 2px;"></div><span>Barycenter</span></div>
+</div>
+<div class="info-panel">
+  <div class="info-box">
+    <h3>Tidal locking condition 1</h3>
+    <p><strong>Charon's rotation period = Charon's orbital period</strong></p>
+    <p>Charon always shows the same face to Pluto. Watch the cyan dot on Charon — it always points toward Pluto.</p>
+  </div>
+  <div class="info-box">
+    <h3>Tidal locking condition 2</h3>
+    <p><strong>Charon's orbital period = Pluto's rotation period</strong></p>
+    <p>Pluto and Charon are mutually tidally locked. The red dot on Pluto always faces toward Charon.</p>
+  </div>
+  <div class="info-box">
+    <h3>Real data</h3>
+    <p>Orbital period: 6.387 Earth days • Distance: ~19,570 km • Charon is unusually large (mass ratio ~1:8) • They orbit a common barycenter.</p>
+  </div>
+  <div class="info-box">
+    <h3>What this means</h3>
+    <p>From Pluto's surface, Charon hangs motionless in the sky. From Charon, Pluto is similarly stationary. This mutual locking is unique in our solar system.</p>
+  </div>
+</div>
+</div>
+<script>
+(function(){
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('simContainer');
+  let isPlaying = false, speed = 1.0, time = 0, animId = null;
+
+  function resize() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); draw(); });
+
+  const orbitalRadius = 180;
+  const plutoRadius = 35;
+  const charonRadius = 18;
+  const baryDist = 12;
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2;
+
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, orbitalRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const angle = time * 2 * Math.PI;
+    const plutoX = cx - baryDist * Math.cos(angle);
+    const plutoY = cy - baryDist * Math.sin(angle);
+    const charonX = cx + (orbitalRadius - baryDist) * Math.cos(angle);
+    const charonY = cy + (orbitalRadius - baryDist) * Math.sin(angle);
+
+    ctx.fillStyle = '#e6a800';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plutoX, plutoY);
+    ctx.lineTo(charonX, charonY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.arc(plutoX, plutoY, plutoRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const pfX = plutoX + (plutoRadius - 8) * Math.cos(angle);
+    const pfY = plutoY + (plutoRadius - 8) * Math.sin(angle);
+    ctx.fillStyle = '#e03030';
+    ctx.beginPath();
+    ctx.arc(pfX, pfY, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.arc(charonX, charonY, charonRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const cfAngle = Math.atan2(plutoY - charonY, plutoX - charonX);
+    const cfX = charonX + (charonRadius - 5) * Math.cos(cfAngle);
+    const cfY = charonY + (charonRadius - 5) * Math.sin(cfAngle);
+    ctx.fillStyle = '#2aadad';
+    ctx.beginPath();
+    ctx.arc(cfX, cfY, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#222';
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Pluto', plutoX, plutoY + plutoRadius + 16);
+    ctx.fillText('Charon', charonX, charonY + charonRadius + 16);
+    ctx.fillStyle = '#888';
+    ctx.font = '11px Arial';
+    ctx.fillText('Barycenter', cx, cy - 8);
+  }
+
+  function updateStats() {
+    const deg = ((time * 360) % 360).toFixed(1);
+    const days = (time * 6.387).toFixed(1);
+    document.getElementById('timeDisplay').textContent = days;
+    document.getElementById('charonOrbit').textContent = deg + '°';
+    document.getElementById('charonRot').textContent = deg + '°';
+    document.getElementById('plutoRot').textContent = deg + '°';
+  }
+
+  function animate() {
+    if (!isPlaying) return;
+    time += 0.005 * speed;
+    draw();
+    updateStats();
+    animId = requestAnimationFrame(animate);
+  }
+
+  document.getElementById('playBtn').addEventListener('click', function() {
+    isPlaying = !isPlaying;
+    this.textContent = isPlaying ? 'Pause' : 'Play';
+    if (isPlaying) animate();
+    else cancelAnimationFrame(animId);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    isPlaying = false;
+    document.getElementById('playBtn').textContent = 'Play';
+    cancelAnimationFrame(animId);
+    time = 0;
+    draw();
+    updateStats();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', function() {
+    speed = parseFloat(this.value);
+    document.getElementById('speedDisplay').textContent = speed.toFixed(1) + 'x';
+  });
+
+  draw();
+  updateStats();
+})();
+</script>
+
+    </div>
+    
+    <script>
+(function(){
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('simContainer');
+  let isPlaying = false, speed = 1.0, time = 0, animId = null;
+
+  function resize() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); draw(); });
+
+  const orbitalRadius = 180;
+  const plutoRadius = 35;
+  const charonRadius = 18;
+  const baryDist = 12;
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2;
+
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, orbitalRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const angle = time * 2 * Math.PI;
+    const plutoX = cx - baryDist * Math.cos(angle);
+    const plutoY = cy - baryDist * Math.sin(angle);
+    const charonX = cx + (orbitalRadius - baryDist) * Math.cos(angle);
+    const charonY = cy + (orbitalRadius - baryDist) * Math.sin(angle);
+
+    ctx.fillStyle = '#e6a800';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plutoX, plutoY);
+    ctx.lineTo(charonX, charonY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.arc(plutoX, plutoY, plutoRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const pfX = plutoX + (plutoRadius - 8) * Math.cos(angle);
+    const pfY = plutoY + (plutoRadius - 8) * Math.sin(angle);
+    ctx.fillStyle = '#e03030';
+    ctx.beginPath();
+    ctx.arc(pfX, pfY, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.arc(charonX, charonY, charonRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const cfAngle = Math.atan2(plutoY - charonY, plutoX - charonX);
+    const cfX = charonX + (charonRadius - 5) * Math.cos(cfAngle);
+    const cfY = charonY + (charonRadius - 5) * Math.sin(cfAngle);
+    ctx.fillStyle = '#2aadad';
+    ctx.beginPath();
+    ctx.arc(cfX, cfY, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#222';
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Pluto', plutoX, plutoY + plutoRadius + 16);
+    ctx.fillText('Charon', charonX, charonY + charonRadius + 16);
+    ctx.fillStyle = '#888';
+    ctx.font = '11px Arial';
+    ctx.fillText('Barycenter', cx, cy - 8);
+  }
+
+  function updateStats() {
+    const deg = ((time * 360) % 360).toFixed(1);
+    const days = (time * 6.387).toFixed(1);
+    document.getElementById('timeDisplay').textContent = days;
+    document.getElementById('charonOrbit').textContent = deg + '°';
+    document.getElementById('charonRot').textContent = deg + '°';
+    document.getElementById('plutoRot').textContent = deg + '°';
+  }
+
+  function animate() {
+    if (!isPlaying) return;
+    time += 0.005 * speed;
+    draw();
+    updateStats();
+    animId = requestAnimationFrame(animate);
+  }
+
+  document.getElementById('playBtn').addEventListener('click', function() {
+    isPlaying = !isPlaying;
+    this.textContent = isPlaying ? 'Pause' : 'Play';
+    if (isPlaying) animate();
+    else cancelAnimationFrame(animId);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    isPlaying = false;
+    document.getElementById('playBtn').textContent = 'Play';
+    cancelAnimationFrame(animId);
+    time = 0;
+    draw();
+    updateStats();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', function() {
+    speed = parseFloat(this.value);
+    document.getElementById('speedDisplay').textContent = speed.toFixed(1) + 'x';
+  });
+
+  draw();
+  updateStats();
+})();
+</script>
+</body>
+</html>

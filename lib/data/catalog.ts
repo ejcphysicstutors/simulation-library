@@ -166,10 +166,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-gravitational-fields",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/resultant-gravitational-field/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/resultant-gravitational-field.html",
-    migrationNote: "Subscripts, superscripts and scientific notation show encoding corruption."
+    migrationNote: "Repaired subscripts, superscripts, scientific notation, gravitational-constant units and removed an accidentally duplicated inline script during migration."
   },
   {
     id: "legacy-pluto-charon",
@@ -180,10 +182,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-gravitational-fields",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/2017-p2-q2-animation-of-pluto-charon-system/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/2017-p2-q2-animation-of-pluto-charon-system.html",
-    migrationNote: "Degree symbols and several interface symbols show encoding corruption."
+    migrationNote: "Repaired degree symbols and explanatory separators during migration."
   },
   {
     id: "legacy-earth-moon",
@@ -211,9 +215,9 @@ export const simulations: SimulationSummary[] = [
     primaryTopicId: "9478-gravitational-fields",
     relatedTopicIds: ["9478-circular-motion"],
     status: "migration",
-    migrationStatus: "needs-repair",
+    migrationStatus: "needs-review",
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/gravitational-system-orbit-around-their-common-center-of-mass.html",
-    migrationNote: "Subscripts, powers, omega and scientific notation show encoding corruption."
+    migrationNote: "Encoding damage is present, but the displayed physical scaling also needs a physics-model review before migration; held back from publication."
   },
   {
     id: "legacy-double-slit",
