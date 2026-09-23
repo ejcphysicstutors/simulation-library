@@ -16,8 +16,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (submission.packageType !== "html") return new Response("Preview is currently available for standalone HTML submissions only.", { status: 415 });
 
   const bytes = await getPrivateBlobBytes(submission.blobPathname);
-  const body = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-  return new Response(body, {
+  const html = new TextDecoder("utf-8").decode(bytes);
+  return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "private, no-store",
