@@ -1,46 +1,28 @@
+import { LibraryBrowser } from "@/components/library/library-browser";
 import { requireStudentAccess } from "@/lib/auth/session";
 import { simulations, topics } from "@/lib/data/catalog";
 
 export default async function LibraryPage() {
   const session = await requireStudentAccess();
-  const topicMap = new Map(topics.map((topic) => [topic.id, topic]));
 
   return (
     <main className="shell section">
-      <div className="library-heading">
+      <div className="library-heading syllabus-heading">
         <div>
-          <p className="eyebrow">Simulation library</p>
-          <h1>Explore by topic</h1>
+          <p className="eyebrow">EJC Physics Simulation Library</p>
+          <h1>Explore physics interactively.</h1>
           <p>
-            {session.kind === "demo"
-              ? "You are viewing the read-only demonstration library."
-              : "This starter view uses migration samples. The full legacy collection will be imported only after each simulation passes the readiness audit."}
+            Browse the migration catalogue using the canonical H2 Physics 9478 topic structure. H1 uses the same shared library through level tags, while the data model is ready for H3 content later.
           </p>
         </div>
-        <div className="level-pills" aria-label="Syllabus level filters">
-          <button className="pill active">All</button>
-          <button className="pill">H1</button>
-          <button className="pill">H2</button>
-          <button className="pill">H3</button>
-        </div>
+        <aside className="catalog-stat" aria-label="Migration catalogue summary">
+          <strong>{simulations.length}</strong>
+          <span>legacy simulations catalogued</span>
+          <small>{topics.length} canonical 9478 topics</small>
+        </aside>
       </div>
 
-      <div className="simulation-grid">
-        {simulations.map((simulation) => {
-          const topic = topicMap.get(simulation.primaryTopicId);
-          return (
-            <article className="simulation-card" key={simulation.id}>
-              <div className="card-visual"><span>{topic?.name ?? "Physics"}</span></div>
-              <div className="card-body">
-                <div className="level-row">{simulation.levels.map((level) => <span key={level}>{level}</span>)}</div>
-                <h2>{simulation.title}</h2>
-                <p>{simulation.description}</p>
-                <div className="topic-label">{topic?.strand} · {topic?.name}</div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+      <LibraryBrowser simulations={simulations} topics={topics} isDemo={session.kind === "demo"} />
     </main>
   );
 }
