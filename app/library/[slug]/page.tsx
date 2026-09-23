@@ -32,7 +32,7 @@ export default async function SimulationDetailPage({ params }: { params: Promise
           <div className="level-row">
             {simulation.levels.map((level) => <span key={level}>{level}</span>)}
           </div>
-          <p className="eyebrow detail-eyebrow">{topic?.strand} · {topic?.name}</p>
+          <p className="eyebrow detail-eyebrow">{topic?.strand} · {topic?.name} {topic ? `(${topic.availabilityLabel})` : ""}</p>
           <h1>{simulation.title}</h1>
           <p className="detail-description">{simulation.description}</p>
           {simulation.author ? <p className="detail-author">Created by {simulation.author}</p> : null}
@@ -64,15 +64,16 @@ export default async function SimulationDetailPage({ params }: { params: Promise
           <p className="eyebrow">Curriculum mapping</p>
           <h2>Where this fits</h2>
           <dl className="metadata-list">
-            <div><dt>Primary topic</dt><dd>{topic?.name ?? "Unassigned"}</dd></div>
+            <div><dt>Primary topic</dt><dd>{topic ? `${topic.name} (${topic.availabilityLabel})` : "Unassigned"}</dd></div>
             <div><dt>Strand</dt><dd>{topic?.strand ?? "—"}</dd></div>
             <div><dt>Levels</dt><dd>{simulation.levels.join(" · ")}</dd></div>
             <div><dt>Syllabus</dt><dd>{topic?.syllabusCode ?? "—"}</dd></div>
           </dl>
+          {topic?.coverageNote ? <p className="coverage-note">{topic.coverageNote}</p> : null}
           {relatedTopics.length ? (
             <div className="related-topics">
               <strong>Related topics</strong>
-              <div className="level-row">{relatedTopics.map((item) => <span key={item.id}>{item.name}</span>)}</div>
+              <div className="level-row">{relatedTopics.map((item) => <span key={item.id}>{item.name} ({item.availabilityLabel})</span>)}</div>
             </div>
           ) : null}
         </article>

@@ -5,9 +5,11 @@ export type MigrationStatus = "ready" | "needs-repair" | "needs-review" | "rebui
 export type Topic = {
   id: string;
   syllabusCode: string;
-  level: SyllabusLevel;
+  levels: SyllabusLevel[];
   strand: string;
   name: string;
+  availabilityLabel: "H1/H2" | "H2 only" | "H3 only" | "H1/H2/H3";
+  coverageNote?: string;
   order: number;
 };
 

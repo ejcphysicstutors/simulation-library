@@ -12,13 +12,13 @@ export default async function LibraryPage() {
           <p className="eyebrow">EJC Physics Simulation Library</p>
           <h1>Explore physics interactively.</h1>
           <p>
-            Browse the migration catalogue using the canonical H2 Physics 9478 topic structure. H1 uses the same shared library through level tags, while the data model is ready for H3 content later.
+            Browse the library using the syllabus coverage shown in the official H1/H2/H3 physics framework. Each topic is labelled by the level or levels in which it is covered.
           </p>
         </div>
         <aside className="catalog-stat" aria-label="Migration catalogue summary">
           <strong>{simulations.length}</strong>
           <span>legacy simulations catalogued</span>
-          <small>{topics.length} canonical 9478 topics</small>
+          <small>24 canonical topics across H1/H2/H3</small>
         </aside>
       </div>
 
