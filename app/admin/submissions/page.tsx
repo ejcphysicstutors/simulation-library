@@ -29,6 +29,7 @@ export default async function AdminSubmissionsPage() {
           <p className="lead-copy">Every upload is checked before it can become part of the published library.</p>
         </div>
         <div className="admin-nav-inline">
+          <Link className="button secondary" href="/admin/simulations">Published simulations</Link>
           <Link className="button secondary" href="/admin/access">Access management</Link>
         </div>
       </div>
