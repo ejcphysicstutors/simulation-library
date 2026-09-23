@@ -1,6 +1,11 @@
 import Link from "next/link";
 
-export function SiteHeader() {
+import { getAccessSession } from "@/lib/auth/session";
+import { SignOutButton } from "./sign-out-button";
+
+export async function SiteHeader() {
+  const session = await getAccessSession();
+
   return (
     <header className="site-header">
       <div className="shell header-inner">
@@ -12,8 +17,19 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="nav-links" aria-label="Main navigation">
-          <Link href="/library">Library</Link>
-          <Link href="/login">Sign in</Link>
+          {session ? <Link href="/library">Library</Link> : null}
+          {session?.kind === "google" && (session.role === "contributor" || session.role === "admin") ? (
+            <Link href="/contribute">Contribute</Link>
+          ) : null}
+          {session?.kind === "google" && session.role === "admin" ? <Link href="/admin/access">Admin</Link> : null}
+          {session ? (
+            <>
+              <span className="access-badge">{session.kind === "demo" ? "Demo" : session.role}</span>
+              <SignOutButton />
+            </>
+          ) : (
+            <Link href="/login">Sign in</Link>
+          )}
         </nav>
       </div>
     </header>

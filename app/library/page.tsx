@@ -1,6 +1,8 @@
+import { requireStudentAccess } from "@/lib/auth/session";
 import { simulations, topics } from "@/lib/data/catalog";
 
-export default function LibraryPage() {
+export default async function LibraryPage() {
+  const session = await requireStudentAccess();
   const topicMap = new Map(topics.map((topic) => [topic.id, topic]));
 
   return (
@@ -9,7 +11,11 @@ export default function LibraryPage() {
         <div>
           <p className="eyebrow">Simulation library</p>
           <h1>Explore by topic</h1>
-          <p>This starter view uses migration samples. The full legacy collection will be imported only after each simulation passes the readiness audit.</p>
+          <p>
+            {session.kind === "demo"
+              ? "You are viewing the read-only demonstration library."
+              : "This starter view uses migration samples. The full legacy collection will be imported only after each simulation passes the readiness audit."}
+          </p>
         </div>
         <div className="level-pills" aria-label="Syllabus level filters">
           <button className="pill active">All</button>

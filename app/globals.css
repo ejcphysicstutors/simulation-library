@@ -99,3 +99,34 @@ button, input { font: inherit; }
   .feature-grid, .simulation-grid { grid-template-columns: 1fr; }
   .section { padding-block: 54px; }
 }
+
+.form-error { margin-top: 14px; color: #b42318; font-size: 0.92rem; }
+.nav-button { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; padding: 0; }
+.access-badge { display: inline-flex; align-items: center; border: 1px solid rgba(15, 118, 110, 0.18); background: #ecfdf5; color: #0f766e; border-radius: 999px; padding: 0.28rem 0.62rem; font-size: 0.78rem; font-weight: 700; text-transform: capitalize; }
+.narrow-page { max-width: 800px; }
+.lead-copy { max-width: 680px; font-size: 1.05rem; color: #475569; }
+.status-card { margin-top: 24px; display: grid; gap: 6px; padding: 22px; border: 1px solid #dbe4ea; border-radius: 18px; background: white; }
+.status-card strong { font-size: 1.05rem; }
+.status-card span { color: #0f766e; font-weight: 700; }
+.status-card small { color: #64748b; }
+.admin-page { max-width: 1000px; }
+.compact-heading { margin-bottom: 24px; }
+.admin-panel { margin-top: 22px; padding: 24px; border: 1px solid #dbe4ea; border-radius: 20px; background: #fff; box-shadow: 0 10px 30px rgba(15,23,42,0.04); }
+.admin-panel h2 { margin-top: 0; }
+.access-form { display: grid; grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr) auto; align-items: end; gap: 14px; }
+.access-form label { display: grid; gap: 7px; font-weight: 700; font-size: 0.9rem; color: #334155; }
+.panel-heading-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.panel-heading-row p { margin-top: 4px; color: #64748b; }
+.access-table-wrap { margin-top: 18px; overflow-x: auto; }
+.access-table { width: 100%; border-collapse: collapse; }
+.access-table th, .access-table td { padding: 13px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.92rem; }
+.access-table th { color: #475569; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.text-button { border: 0; background: transparent; cursor: pointer; font: inherit; font-weight: 700; }
+.text-button.danger { color: #b42318; }
+.muted { color: #94a3b8; font-size: 0.85rem; }
+.empty-table { color: #64748b; text-align: center !important; padding: 28px !important; }
+
+@media (max-width: 760px) {
+  .access-form { grid-template-columns: 1fr; }
+  .panel-heading-row { flex-direction: column; }
+}
