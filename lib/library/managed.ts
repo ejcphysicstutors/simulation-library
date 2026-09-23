@@ -66,8 +66,10 @@ function toSummary(record: ManagedSimulation): SimulationSummary {
 
 export async function listManagedSimulations(): Promise<ManagedSimulation[]> {
   if (!adminDb) return [];
-  const snapshot = await adminDb.collection("simulations").where("status", "==", "published").get();
-  return snapshot.docs.map((doc) => doc.data() as ManagedSimulation);
+  const snapshot = await adminDb.collection("simulations").get();
+  return snapshot.docs
+    .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<ManagedSimulation, "id">) }))
+    .filter((record) => record.status === "published");
 }
 
 export async function getManagedSimulation(id: string): Promise<ManagedSimulation | null> {

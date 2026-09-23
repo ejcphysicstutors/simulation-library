@@ -1,9 +1,12 @@
 import { LibraryBrowser } from "@/components/library/library-browser";
 import { requireStudentAccess } from "@/lib/auth/session";
-import { simulations, topics } from "@/lib/data/catalog";
+import { topics } from "@/lib/data/catalog";
+import { getLibrarySimulations } from "@/lib/library/managed";
 
+export const dynamic = "force-dynamic";
 export default async function LibraryPage() {
   const session = await requireStudentAccess();
+  const simulations = await getLibrarySimulations();
 
   return (
     <main className="shell section">

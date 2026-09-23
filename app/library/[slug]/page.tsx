@@ -2,12 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireStudentAccess } from "@/lib/auth/session";
-import { simulationMap } from "@/lib/data/catalog";
+import { getLibrarySimulationBySlug } from "@/lib/library/managed";
 
+export const dynamic = "force-dynamic";
 export default async function SimulationDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   await requireStudentAccess();
   const { slug } = await params;
-  const simulation = simulationMap.get(slug);
+  const simulation = await getLibrarySimulationBySlug(slug);
 
   if (!simulation) notFound();
 
@@ -51,9 +52,11 @@ export default async function SimulationDetailPage({ params }: { params: Promise
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <a className="button secondary inline-button" href={simulation.contentPath} target="_blank" rel="noreferrer">
-                Open simulation in a new tab ↗
-              </a>
+              {!simulation.managed ? (
+                <a className="button secondary inline-button" href={simulation.contentPath} target="_blank" rel="noreferrer">
+                  Open simulation in a new tab ↗
+                </a>
+              ) : null}
             </>
           ) : (
             <>
