@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamics/E-field - Collision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: sans-serif; }
+        .section-top { height: 25vh; border-bottom: 1px solid #222; background: #0a0a0a; position: relative; }
+        .section-middle { height: 45vh; position: relative; overflow: hidden; cursor: crosshair; }
+        .section-bottom { height: 30vh; border-top: 1px solid #222; background: #0d0d0d; overflow-y: auto; padding: 1.5rem; }
+        
+        select, input[type=range] {
+            background: #1a1a1a;
+            color: #ddd;
+            border: 1px solid #333;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        input[type=range] { width: 100%; accent-color: #3b82f6; }
+        label { font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
+        .btn-primary { background: #3b82f6; color: white; border-radius: 99px; padding: 8px 24px; font-weight: 700; transition: 0.2s; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn-secondary { background: #333; color: white; border-radius: 99px; padding: 8px 24px; font-weight: 700; transition: 0.2s; }
+        .btn-secondary:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Dynamics/E-field - Collision</div>
+            <div class="ejc-credit-author">Created by <strong>Felix Lim</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+    <!-- TOP SECTION: GRAPHS -->
+    <div class="section-top flex items-center justify-center">
+        <div class="w-full max-w-4xl px-4 flex flex-col items-center">
+            <div class="w-full flex justify-between items-end mb-1">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Velocity ($v$) vs. Time ($t$)</span>
+                <span id="timeDisplay" class="text-xs font-mono text-blue-400">t = 0.0</span>
+            </div>
+            <canvas id="velocityChart" class="w-full h-40"></canvas>
+        </div>
+    </div>
+
+    <!-- MIDDLE SECTION: SIMULATION -->
+    <div class="section-middle">
+        <canvas id="simCanvas"></canvas>
+        <!-- Isotope Labels Overlay -->
+        <div class="absolute top-4 left-4 flex gap-6 pointer-events-none">
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                <span id="n1Label" class="text-xs font-bold text-red-400">Nucleus 1</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                <span id="n2Label" class="text-xs font-bold text-blue-400">Nucleus 2</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SECTION: CONTROLS -->
+    <div class="section-bottom">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Config Column -->
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Nucleus 1 (Left)</label>
+                        <select id="n1Select" class="w-full">
+                            <option value="H1">Hydrogen (¹H)</option>
+                            <option value="D2" selected>Deuterium (²H)</option>
+                            <option value="T3">Tritium (³H)</option>
+                            <option value="He3">Helium-3 (³He)</option>
+                            <option value="He4">Helium-4 (⁴He)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Nucleus 2 (Right)</label>
+                        <select id="n2Select" class="w-full">
+                            <option value="H1">Hydrogen (¹H)</option>
+                            <option value="D2">Deuterium (²H)</option>
+                            <option value="T3" selected>Tritium (³H)</option>
+                            <option value="He3">Helium-3 (³He)</option>
+                            <option value="He4">Helium-4 (⁴He)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Initial $v_1$</label>
+                        <div class="flex items-center gap-2">
+                            <input type="range" id="v1Slider" min="0.5" max="6.0" step="0.1" value="3.0">
+                            <span id="v1ValText" class="text-[10px] font-mono text-red-400 min-w-[25px]">3.0v</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Initial $v_2$</label>
+                        <div class="flex items-center gap-2">
+                            <input type="range" id="v2Slider" min="0.5" max="6.0" step="0.1" value="3.0">
+                            <span id="v2ValText" class="text-[10px] font-mono text-blue-400 min-w-[25px]">3.0v</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrubbing Column -->
+            <div class="flex flex-col justify-center">
+                <label class="text-center">Manual Timeline Scrubbing</label>
+                <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
+                <div class="flex justify-between text-[8px] text-gray-600 mt-1">
+                    <span>$t=0$</span>
+                    <span>MAX STEPS</span>
+                </div>
+            </div>
+
+            <!-- Playback Column -->
+            <div class="flex flex-col justify-center space-y-4">
+                <div class="flex items-center gap-4">
+                    <button id="playBtn" class="btn-primary flex-grow">Play</button>
+                    <button id="resetBtn" class="btn-secondary">Reset</button>
+                </div>
+                <div>
+                    <label>Playback Speed</label>
+                    <input type="range" id="speedSlider" min="0.01" max="1.0" step="0.01" value="0.2">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const simCanvas = document.getElementById('simCanvas');
+    const simCtx = simCanvas.getContext('2d');
+    const chartCanvas = document.getElementById('velocityChart');
+    const chartCtx = chartCanvas.getContext('2d');
+    
+    const ui = {
+        n1: document.getElementById('n1Select'),
+        n2: document.getElementById('n2Select'),
+        v1: document.getElementById('v1Slider'),
+        v2: document.getElementById('v2Slider'),
+        v1T: document.getElementById('v1ValText'),
+        v2T: document.getElementById('v2ValText'),
+        time: document.getElementById('timeSlider'),
+        speed: document.getElementById('speedSlider'),
+        timeDisp: document.getElementById('timeDisplay'),
+        play: document.getElementById('playBtn'),
+        reset: document.getElementById('resetBtn'),
+        n1L: document.getElementById('n1Label'),
+        n2L: document.getElementById('n2Label')
+    };
+
+    const NUCLEI_PROPS = {
+        H1:  { mass: 1, charge: 1, p: 1, n: 0, label: "^{1}\\text{H}" },
+        D2:  { mass: 2, charge: 1, p: 1, n: 1, label: "^{2}\\text{H}" },
+        T3:  { mass: 3, charge: 1, p: 1, n: 2, label: "^{3}\\text{H}" },
+        He3: { mass: 3, charge: 2, p: 2, n: 1, label: "^{3}\\text{He}" },
+        He4: { mass: 4, charge: 2, p: 2, n: 2, label: "^{4}\\text{He}" }
+    };
+
+    const COULOMB_BASE = 1800;
+    const MAX_STEPS = 800;
+    const FUSION_DIST = 45;
+
+    let width, height;
+    let fullHistory = [];
+    let currentTime = 0;
+    let fusionIndex = -1;
+    let isPlaying = false;
+
+    function precomputePhysics() {
+        fullHistory = [];
+        const n1 = NUCLEI_PROPS[ui.n1.value];
+        const n2 = NUCLEI_PROPS[ui.n2.value];
+        const iv1 = parseFloat(ui.v1.value);
+        const iv2 = parseFloat(ui.v2.value);
+
+        let x1 = -width/3; 
+        let x2 = width/3;
+        let v1 = iv1;
+        let v2 = -iv2;
+        let fused = false;
+        fusionIndex = -1;
+
+        const forceK = COULOMB_BASE * n1.charge * n2.charge;
+
+        for (let i = 0; i <= MAX_STEPS; i++) {
+            const dx = x2 - x1;
+            const distSq = dx * dx;
+            const force = forceK / Math.max(distSq, 100);
+            
+            const acc1 = -force / n1.mass;
+            const acc2 = force / n2.mass;
+
+            if (!fused) {
+                v1 += acc1;
+                v2 += acc2;
+                x1 += v1;
+                x2 += v2;
+            }
+
+            fullHistory.push({ t: i, x1, x2, v1, v2 });
+
+            if (Math.abs(dx) < FUSION_DIST && !fused) {
+                fused = true;
+                fusionIndex = i;
+                v1 = 0; v2 = 0;
+            }
+        }
+    }
+
+    function init() {
+        // Render LaTeX
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
+                delimiters: [{left: '$', right: '$', display: false}],
+                throwOnError : false
+            });
+        }
+
+        const recompute = () => {
+            ui.n1L.innerText = ui.n1.options[ui.n1.selectedIndex].text;
+            ui.n2L.innerText = ui.n2.options[ui.n2.selectedIndex].text;
+            ui.v1T.innerText = `${ui.v1.value}v`;
+            ui.v2T.innerText = `${ui.v2.value}v`;
+            precomputePhysics();
+            currentTime = 0;
+            ui.time.value = 0;
+        };
+
+        ui.n1.addEventListener('change', recompute);
+        ui.n2.addEventListener('change', recompute);
+        ui.v1.addEventListener('input', recompute);
+        ui.v2.addEventListener('input', recompute);
+
+        ui.time.addEventListener('input', (e) => {
+            currentTime = parseFloat(e.target.value);
+            isPlaying = false;
+            ui.play.innerText = "Play";
+        });
+
+        ui.play.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            ui.play.innerText = isPlaying ? "Pause" : "Play";
+            if (currentTime >= 100) currentTime = 0;
+        });
+
+        ui.reset.addEventListener('click', () => {
+            currentTime = 0;
+            isPlaying = false;
+            ui.play.innerText = "Play";
+            ui.time.value = 0;
+        });
+
+        resize();
+        recompute();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function resize() {
+        width = simCanvas.width = simCanvas.parentElement.clientWidth;
+        height = simCanvas.height = simCanvas.parentElement.clientHeight;
+        chartCanvas.width = chartCanvas.parentElement.clientWidth;
+        chartCanvas.height = chartCanvas.parentElement.clientHeight;
+        precomputePhysics();
+    }
+
+    function gameLoop() {
+        if (isPlaying) {
+            currentTime += parseFloat(ui.speed.value);
+            if (currentTime >= 100) {
+                currentTime = 100;
+                isPlaying = false;
+                ui.play.innerText = "Play";
+            }
+            ui.time.value = currentTime;
+        }
+        ui.timeDisp.innerText = `t = ${currentTime.toFixed(1)}`;
+        render();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function render() {
+        const idx = Math.min(Math.floor((currentTime / 100) * MAX_STEPS), MAX_STEPS);
+        const state = fullHistory[idx];
+
+        simCtx.fillStyle = '#050505';
+        simCtx.fillRect(0, 0, width, height);
+
+        // Grid
+        simCtx.strokeStyle = '#0f0f0f';
+        simCtx.lineWidth = 1;
+        for(let i=0; i<width; i+=50) {
+            simCtx.beginPath(); simCtx.moveTo(i, 0); simCtx.lineTo(i, height); simCtx.stroke();
+        }
+        for(let i=0; i<height; i+=50) {
+            simCtx.beginPath(); simCtx.moveTo(0, i); simCtx.lineTo(width, i); simCtx.stroke();
+        }
+
+        const cx = width / 2;
+        const cy = height / 2;
+
+        drawNucleus(cx + state.x1, cy, ui.n1.value);
+        drawNucleus(cx + state.x2, cy, ui.n2.value);
+
+        if (fusionIndex !== -1 && idx >= fusionIndex) {
+            drawFlash(cx + (state.x1 + state.x2)/2, cy);
+        }
+
+        drawChart(idx);
+    }
+
+    function drawNucleus(x, y, type) {
+        const props = NUCLEI_PROPS[type];
+        simCtx.save();
+        simCtx.translate(x, y);
+        let drawnP = 0, drawnN = 0;
+        const total = props.p + props.n;
+        for (let i = 0; i < total; i++) {
+            const angle = (i / total) * Math.PI * 2;
+            const dist = total > 1 ? 8 : 0;
+            const px = Math.cos(angle) * dist;
+            const py = Math.sin(angle) * dist;
+            if (drawnP < props.p) {
+                drawParticle(simCtx, px, py, '#ef4444', true);
+                drawnP++;
+            } else {
+                drawParticle(simCtx, px, py, '#6b7280', false);
+                drawnN++;
+            }
+        }
+        simCtx.restore();
+    }
+
+    function drawParticle(ctx, x, y, color, isProton) {
+        ctx.beginPath();
+        ctx.arc(x, y, 9, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        if (isProton) {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = color;
+        }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(x - 3, y - 3, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fill();
+    }
+
+    function drawFlash(x, y) {
+        const grad = simCtx.createRadialGradient(x, y, 0, x, y, 120);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+        grad.addColorStop(0.3, 'rgba(255, 255, 100, 0.4)');
+        grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+        simCtx.fillStyle = grad;
+        simCtx.beginPath();
+        simCtx.arc(x, y, 120, 0, Math.PI*2);
+        simCtx.fill();
+    }
+
+    function drawChart(currentIdx) {
+        const w = chartCanvas.width;
+        const h = chartCanvas.height;
+        chartCtx.clearRect(0, 0, w, h);
+
+        const marginX = 50;
+        const marginY = 30;
+        const chartW = w - marginX * 2;
+        const chartH = h - marginY * 2;
+        const zeroY = marginY + chartH / 2;
+
+        chartCtx.strokeStyle = '#333';
+        chartCtx.lineWidth = 1;
+        chartCtx.beginPath();
+        chartCtx.moveTo(marginX, marginY);
+        chartCtx.lineTo(marginX, h - marginY);
+        chartCtx.stroke();
+
+        chartCtx.setLineDash([3, 3]);
+        chartCtx.beginPath();
+        chartCtx.moveTo(marginX, zeroY);
+        chartCtx.lineTo(w - marginX, zeroY);
+        chartCtx.stroke();
+        chartCtx.setLineDash([]);
+
+        // Labels
+        chartCtx.fillStyle = '#666';
+        chartCtx.font = '10px Arial';
+        chartCtx.textAlign = 'right';
+        chartCtx.fillText('0', marginX - 10, zeroY + 3);
+        chartCtx.fillText('Time →', w - marginX, zeroY + 12);
+
+        // INITIAL VELOCITY LABELS ON Y AXIS
+        const iv1 = parseFloat(ui.v1.value);
+        const iv2 = parseFloat(ui.v2.value);
+        const scaleY = chartH / 16; 
+
+        chartCtx.textAlign = 'right';
+        chartCtx.fillStyle = '#ef4444';
+        chartCtx.fillText(`${iv1.toFixed(1)}v`, marginX - 10, zeroY - iv1 * scaleY + 3);
+        chartCtx.fillStyle = '#3b82f6';
+        chartCtx.fillText(`-${iv2.toFixed(1)}v`, marginX - 10, zeroY + iv2 * scaleY + 3);
+
+        const isEnd = (currentIdx >= MAX_STEPS - 1) || (fusionIndex !== -1 && currentIdx >= fusionIndex);
+        const scaleX = chartW / MAX_STEPS;
+
+        if (isEnd) {
+            const endIdx = fusionIndex !== -1 ? fusionIndex : MAX_STEPS;
+            // N1
+            chartCtx.strokeStyle = '#ef4444';
+            chartCtx.lineWidth = 2;
+            chartCtx.beginPath();
+            for(let i=0; i<=endIdx; i++) {
+                const px = marginX + i * scaleX;
+                const py = zeroY - fullHistory[i].v1 * scaleY;
+                if(i===0) chartCtx.moveTo(px, py); else chartCtx.lineTo(px, py);
+            }
+            chartCtx.stroke();
+            // N2
+            chartCtx.strokeStyle = '#3b82f6';
+            chartCtx.beginPath();
+            for(let i=0; i<=endIdx; i++) {
+                const px = marginX + i * scaleX;
+                const py = zeroY - fullHistory[i].v2 * scaleY;
+                if(i===0) chartCtx.moveTo(px, py); else chartCtx.lineTo(px, py);
+            }
+            chartCtx.stroke();
+        } else {
+            const state = fullHistory[currentIdx];
+            const px = marginX + currentIdx * scaleX;
+            // Trace
+            chartCtx.globalAlpha = 0.3;
+            for(let i=0; i<currentIdx; i+=10) {
+                chartCtx.fillStyle = '#ef4444';
+                chartCtx.fillRect(marginX + i * scaleX - 1, zeroY - fullHistory[i].v1 * scaleY - 1, 2, 2);
+                chartCtx.fillStyle = '#3b82f6';
+                chartCtx.fillRect(marginX + i * scaleX - 1, zeroY - fullHistory[i].v2 * scaleY - 1, 2, 2);
+            }
+            chartCtx.globalAlpha = 1.0;
+            // Current points
+            chartCtx.fillStyle = '#ef4444';
+            chartCtx.beginPath(); chartCtx.arc(px, zeroY - state.v1 * scaleY, 4, 0, Math.PI*2); chartCtx.fill();
+            chartCtx.fillStyle = '#3b82f6';
+            chartCtx.beginPath(); chartCtx.arc(px, zeroY - state.v2 * scaleY, 4, 0, Math.PI*2); chartCtx.fill();
+        }
+    }
+
+    window.onload = init;
+    window.addEventListener('resize', resize);
+</script>
+
+
+    </div>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+    const simCanvas = document.getElementById('simCanvas');
+    const simCtx = simCanvas.getContext('2d');
+    const chartCanvas = document.getElementById('velocityChart');
+    const chartCtx = chartCanvas.getContext('2d');
+    
+    const ui = {
+        n1: document.getElementById('n1Select'),
+        n2: document.getElementById('n2Select'),
+        v1: document.getElementById('v1Slider'),
+        v2: document.getElementById('v2Slider'),
+        v1T: document.getElementById('v1ValText'),
+        v2T: document.getElementById('v2ValText'),
+        time: document.getElementById('timeSlider'),
+        speed: document.getElementById('speedSlider'),
+        timeDisp: document.getElementById('timeDisplay'),
+        play: document.getElementById('playBtn'),
+        reset: document.getElementById('resetBtn'),
+        n1L: document.getElementById('n1Label'),
+        n2L: document.getElementById('n2Label')
+    };
+
+    const NUCLEI_PROPS = {
+        H1:  { mass: 1, charge: 1, p: 1, n: 0, label: "^{1}\\text{H}" },
+        D2:  { mass: 2, charge: 1, p: 1, n: 1, label: "^{2}\\text{H}" },
+        T3:  { mass: 3, charge: 1, p: 1, n: 2, label: "^{3}\\text{H}" },
+        He3: { mass: 3, charge: 2, p: 2, n: 1, label: "^{3}\\text{He}" },
+        He4: { mass: 4, charge: 2, p: 2, n: 2, label: "^{4}\\text{He}" }
+    };
+
+    const COULOMB_BASE = 1800;
+    const MAX_STEPS = 800;
+    const FUSION_DIST = 45;
+
+    let width, height;
+    let fullHistory = [];
+    let currentTime = 0;
+    let fusionIndex = -1;
+    let isPlaying = false;
+
+    function precomputePhysics() {
+        fullHistory = [];
+        const n1 = NUCLEI_PROPS[ui.n1.value];
+        const n2 = NUCLEI_PROPS[ui.n2.value];
+        const iv1 = parseFloat(ui.v1.value);
+        const iv2 = parseFloat(ui.v2.value);
+
+        let x1 = -width/3; 
+        let x2 = width/3;
+        let v1 = iv1;
+        let v2 = -iv2;
+        let fused = false;
+        fusionIndex = -1;
+
+        const forceK = COULOMB_BASE * n1.charge * n2.charge;
+
+        for (let i = 0; i <= MAX_STEPS; i++) {
+            const dx = x2 - x1;
+            const distSq = dx * dx;
+            const force = forceK / Math.max(distSq, 100);
+            
+            const acc1 = -force / n1.mass;
+            const acc2 = force / n2.mass;
+
+            if (!fused) {
+                v1 += acc1;
+                v2 += acc2;
+                x1 += v1;
+                x2 += v2;
+            }
+
+            fullHistory.push({ t: i, x1, x2, v1, v2 });
+
+            if (Math.abs(dx) < FUSION_DIST && !fused) {
+                fused = true;
+                fusionIndex = i;
+                v1 = 0; v2 = 0;
+            }
+        }
+    }
+
+    function init() {
+        // Render LaTeX
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
+                delimiters: [{left: '$', right: '$', display: false}],
+                throwOnError : false
+            });
+        }
+
+        const recompute = () => {
+            ui.n1L.innerText = ui.n1.options[ui.n1.selectedIndex].text;
+            ui.n2L.innerText = ui.n2.options[ui.n2.selectedIndex].text;
+            ui.v1T.innerText = `${ui.v1.value}v`;
+            ui.v2T.innerText = `${ui.v2.value}v`;
+            precomputePhysics();
+            currentTime = 0;
+            ui.time.value = 0;
+        };
+
+        ui.n1.addEventListener('change', recompute);
+        ui.n2.addEventListener('change', recompute);
+        ui.v1.addEventListener('input', recompute);
+        ui.v2.addEventListener('input', recompute);
+
+        ui.time.addEventListener('input', (e) => {
+            currentTime = parseFloat(e.target.value);
+            isPlaying = false;
+            ui.play.innerText = "Play";
+        });
+
+        ui.play.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            ui.play.innerText = isPlaying ? "Pause" : "Play";
+            if (currentTime >= 100) currentTime = 0;
+        });
+
+        ui.reset.addEventListener('click', () => {
+            currentTime = 0;
+            isPlaying = false;
+            ui.play.innerText = "Play";
+            ui.time.value = 0;
+        });
+
+        resize();
+        recompute();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function resize() {
+        width = simCanvas.width = simCanvas.parentElement.clientWidth;
+        height = simCanvas.height = simCanvas.parentElement.clientHeight;
+        chartCanvas.width = chartCanvas.parentElement.clientWidth;
+        chartCanvas.height = chartCanvas.parentElement.clientHeight;
+        precomputePhysics();
+    }
+
+    function gameLoop() {
+        if (isPlaying) {
+            currentTime += parseFloat(ui.speed.value);
+            if (currentTime >= 100) {
+                currentTime = 100;
+                isPlaying = false;
+                ui.play.innerText = "Play";
+            }
+            ui.time.value = currentTime;
+        }
+        ui.timeDisp.innerText = `t = ${currentTime.toFixed(1)}`;
+        render();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function render() {
+        const idx = Math.min(Math.floor((currentTime / 100) * MAX_STEPS), MAX_STEPS);
+        const state = fullHistory[idx];
+
+        simCtx.fillStyle = '#050505';
+        simCtx.fillRect(0, 0, width, height);
+
+        // Grid
+        simCtx.strokeStyle = '#0f0f0f';
+        simCtx.lineWidth = 1;
+        for(let i=0; i<width; i+=50) {
+            simCtx.beginPath(); simCtx.moveTo(i, 0); simCtx.lineTo(i, height); simCtx.stroke();
+        }
+        for(let i=0; i<height; i+=50) {
+            simCtx.beginPath(); simCtx.moveTo(0, i); simCtx.lineTo(width, i); simCtx.stroke();
+        }
+
+        const cx = width / 2;
+        const cy = height / 2;
+
+        drawNucleus(cx + state.x1, cy, ui.n1.value);
+        drawNucleus(cx + state.x2, cy, ui.n2.value);
+
+        if (fusionIndex !== -1 && idx >= fusionIndex) {
+            drawFlash(cx + (state.x1 + state.x2)/2, cy);
+        }
+
+        drawChart(idx);
+    }
+
+    function drawNucleus(x, y, type) {
+        const props = NUCLEI_PROPS[type];
+        simCtx.save();
+        simCtx.translate(x, y);
+        let drawnP = 0, drawnN = 0;
+        const total = props.p + props.n;
+        for (let i = 0; i < total; i++) {
+            const angle = (i / total) * Math.PI * 2;
+            const dist = total > 1 ? 8 : 0;
+            const px = Math.cos(angle) * dist;
+            const py = Math.sin(angle) * dist;
+            if (drawnP < props.p) {
+                drawParticle(simCtx, px, py, '#ef4444', true);
+                drawnP++;
+            } else {
+                drawParticle(simCtx, px, py, '#6b7280', false);
+                drawnN++;
+            }
+        }
+        simCtx.restore();
+    }
+
+    function drawParticle(ctx, x, y, color, isProton) {
+        ctx.beginPath();
+        ctx.arc(x, y, 9, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        if (isProton) {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = color;
+        }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(x - 3, y - 3, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fill();
+    }
+
+    function drawFlash(x, y) {
+        const grad = simCtx.createRadialGradient(x, y, 0, x, y, 120);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+        grad.addColorStop(0.3, 'rgba(255, 255, 100, 0.4)');
+        grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+        simCtx.fillStyle = grad;
+        simCtx.beginPath();
+        simCtx.arc(x, y, 120, 0, Math.PI*2);
+        simCtx.fill();
+    }
+
+    function drawChart(currentIdx) {
+        const w = chartCanvas.width;
+        const h = chartCanvas.height;
+        chartCtx.clearRect(0, 0, w, h);
+
+        const marginX = 50;
+        const marginY = 30;
+        const chartW = w - marginX * 2;
+        const chartH = h - marginY * 2;
+        const zeroY = marginY + chartH / 2;
+
+        chartCtx.strokeStyle = '#333';
+        chartCtx.lineWidth = 1;
+        chartCtx.beginPath();
+        chartCtx.moveTo(marginX, marginY);
+        chartCtx.lineTo(marginX, h - marginY);
+        chartCtx.stroke();
+
+        chartCtx.setLineDash([3, 3]);
+        chartCtx.beginPath();
+        chartCtx.moveTo(marginX, zeroY);
+        chartCtx.lineTo(w - marginX, zeroY);
+        chartCtx.stroke();
+        chartCtx.setLineDash([]);
+
+        // Labels
+        chartCtx.fillStyle = '#666';
+        chartCtx.font = '10px Arial';
+        chartCtx.textAlign = 'right';
+        chartCtx.fillText('0', marginX - 10, zeroY + 3);
+        chartCtx.fillText('Time →', w - marginX, zeroY + 12);
+
+        // INITIAL VELOCITY LABELS ON Y AXIS
+        const iv1 = parseFloat(ui.v1.value);
+        const iv2 = parseFloat(ui.v2.value);
+        const scaleY = chartH / 16; 
+
+        chartCtx.textAlign = 'right';
+        chartCtx.fillStyle = '#ef4444';
+        chartCtx.fillText(`${iv1.toFixed(1)}v`, marginX - 10, zeroY - iv1 * scaleY + 3);
+        chartCtx.fillStyle = '#3b82f6';
+        chartCtx.fillText(`-${iv2.toFixed(1)}v`, marginX - 10, zeroY + iv2 * scaleY + 3);
+
+        const isEnd = (currentIdx >= MAX_STEPS - 1) || (fusionIndex !== -1 && currentIdx >= fusionIndex);
+        const scaleX = chartW / MAX_STEPS;
+
+        if (isEnd) {
+            const endIdx = fusionIndex !== -1 ? fusionIndex : MAX_STEPS;
+            // N1
+            chartCtx.strokeStyle = '#ef4444';
+            chartCtx.lineWidth = 2;
+            chartCtx.beginPath();
+            for(let i=0; i<=endIdx; i++) {
+                const px = marginX + i * scaleX;
+                const py = zeroY - fullHistory[i].v1 * scaleY;
+                if(i===0) chartCtx.moveTo(px, py); else chartCtx.lineTo(px, py);
+            }
+            chartCtx.stroke();
+            // N2
+            chartCtx.strokeStyle = '#3b82f6';
+            chartCtx.beginPath();
+            for(let i=0; i<=endIdx; i++) {
+                const px = marginX + i * scaleX;
+                const py = zeroY - fullHistory[i].v2 * scaleY;
+                if(i===0) chartCtx.moveTo(px, py); else chartCtx.lineTo(px, py);
+            }
+            chartCtx.stroke();
+        } else {
+            const state = fullHistory[currentIdx];
+            const px = marginX + currentIdx * scaleX;
+            // Trace
+            chartCtx.globalAlpha = 0.3;
+            for(let i=0; i<currentIdx; i+=10) {
+                chartCtx.fillStyle = '#ef4444';
+                chartCtx.fillRect(marginX + i * scaleX - 1, zeroY - fullHistory[i].v1 * scaleY - 1, 2, 2);
+                chartCtx.fillStyle = '#3b82f6';
+                chartCtx.fillRect(marginX + i * scaleX - 1, zeroY - fullHistory[i].v2 * scaleY - 1, 2, 2);
+            }
+            chartCtx.globalAlpha = 1.0;
+            // Current points
+            chartCtx.fillStyle = '#ef4444';
+            chartCtx.beginPath(); chartCtx.arc(px, zeroY - state.v1 * scaleY, 4, 0, Math.PI*2); chartCtx.fill();
+            chartCtx.fillStyle = '#3b82f6';
+            chartCtx.beginPath(); chartCtx.arc(px, zeroY - state.v2 * scaleY, 4, 0, Math.PI*2); chartCtx.fill();
+        }
+    }
+
+    window.onload = init;
+    window.addEventListener('resize', resize);
+</script>
+</body>
+</html>

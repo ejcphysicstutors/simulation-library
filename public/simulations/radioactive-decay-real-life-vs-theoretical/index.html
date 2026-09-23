@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radioactive Decay: Real life vs theoretical</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        body { font-family: sans-serif; background: #ffffff; color: #212529; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        .container { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; padding: 15px; box-sizing: border-box; flex-grow: 1; }
+        #canvas-side { display: flex; flex-direction: column; gap: 10px; }
+        #canvas-container { background: #fdfdfd; border: 2px solid #333; border-radius: 8px; position: relative; height: 350px; }
+        #chart-container { background: white; border: 2px solid #333; border-radius: 8px; padding: 10px; height: 500px; display: flex; flex-direction: column; }
+        .controls { background: #f1f1f1; padding: 15px; width: 100%; display: flex; justify-content: center; gap: 20px; border-top: 3px solid #333; flex-wrap: wrap; }
+        .control-group { display: flex; flex-direction: column; align-items: center; min-width: 140px; }
+        label { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; }
+        .btn-play { background: #008000; color: white; }
+        .btn-reset { background: #d00000; color: white; }
+        .stats-panel { background: #e9ecef; border: 1px solid #333; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 0.9rem; line-height: 1.4; }
+        .highlight { color: #d00000; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Radioactive Decay: Real life vs theoretical</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+
+<h2 style="margin: 10px 0;">Radioactive Decay: Real life vs Theoretical</h2>
+
+<div class="container">
+    <div id="canvas-side">
+        <div id="canvas-container">
+            <canvas id="nucleusStage"></canvas>
+        </div>
+        <div class="stats-panel">
+            <strong>STATISTICAL LOG:</strong><br>
+            Time (t): <span id="timeVal">0.0</span> s<br>
+            Remaining (N): <span id="nCount">0</span><br>
+            % Deviation: <span id="errorVal" class="highlight">0.00</span>%<br><br>
+            <strong>HALF-LIFE (t<sub>1/2</sub>) TRACKER:</strong><br>
+            Theory t<sub>1/2</sub>: <span id="theoryT">13.86</span> s<br>
+            Obs. 1st t<sub>1/2</sub>: <span id="obsT1" class="highlight">--</span> s<br>
+            Obs. 2nd t<sub>1/2</sub>: <span id="obsT2" class="highlight">--</span> s
+        </div>
+    </div>
+    <div id="chart-container">
+        <canvas id="decayChart"></canvas>
+    </div>
+</div>
+
+<div class="controls">
+    <div class="control-group">
+        <label>Initial Sample (N₀)</label>
+        <input type="range" id="nInput" min="20" max="2000" value="100" step="20">
+        <span id="nLabel" style="font-weight:bold;">100</span>
+    </div>
+    <div class="control-group">
+        <label>Decay Const (λ)</label>
+        <input type="range" id="lambdaInput" min="0.02" max="0.10" value="0.05" step="0.01">
+        <span id="lambdaLabel" style="font-weight:bold;">0.05 s⁻¹</span>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn-play" id="playBtn" style="padding: 10px 20px; font-weight:bold;">START SIM</button>
+        <button class="btn-reset" id="resetBtn" style="padding: 10px 20px; font-weight:bold;">RESET</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('nucleusStage');
+    const ctx = canvas.getContext('2d');
+    const nInput = document.getElementById('nInput');
+    const lambdaInput = document.getElementById('lambdaInput');
+    const playBtn = document.getElementById('playBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let nuclei = [];
+    let isRunning = false;
+    let time = 0;
+    let n0 = 100;
+    let lambda = 0.05;
+    let halfLifeMarkers = [false, false]; // To track if 1st and 2nd half-lives occurred
+    const dt = 0.1; 
+
+    // Chart Configuration
+    const chartCtx = document.getElementById('decayChart').getContext('2d');
+    let chart = new Chart(chartCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Real Data (Random)',
+                    data: [],
+                    borderColor: '#0000FF',
+                    borderWidth: 2,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Theoretical Law (Smooth)',
+                    data: [],
+                    borderColor: '#FF0000',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { type: 'linear', title: { display: true, text: 'Time / s', font: {weight: 'bold'}}, min: 0, max: 60 },
+                y: { title: { display: true, text: 'Undecayed Nuclei (N)', font: {weight: 'bold'}}, min: 0 }
+            },
+            animation: false
+        }
+    });
+
+    function init() {
+        nuclei = [];
+        n0 = parseInt(nInput.value);
+        lambda = parseFloat(lambdaInput.value);
+        time = 0;
+        halfLifeMarkers = [false, false];
+        
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        
+        // Populate Grid
+        const cols = Math.ceil(Math.sqrt(n0 * (canvas.width/canvas.height)));
+        const rows = Math.ceil(n0 / cols);
+        const spacingX = canvas.width / (cols + 1);
+        const spacingY = canvas.height / (rows + 1);
+
+        for (let i = 0; i < n0; i++) {
+            nuclei.push({ x: spacingX + (i % cols) * spacingX, y: spacingY + Math.floor(i / cols) * spacingY, decayed: false });
+        }
+        
+        // Reset UI and Graph
+        chart.options.scales.y.max = n0;
+        chart.data.datasets[0].data = [{x: 0, y: n0}];
+        chart.data.datasets[1].data = [{x: 0, y: n0}];
+        chart.update();
+        
+        document.getElementById('theoryT').innerText = (Math.log(2)/lambda).toFixed(2);
+        document.getElementById('obsT1').innerText = "--";
+        document.getElementById('obsT2').innerText = "--";
+        draw();
+        updateDisplay(n0);
+    }
+
+    function update() {
+        if (!isRunning) return;
+        time += dt;
+        let currentN = 0;
+        const prob = lambda * dt;
+
+        nuclei.forEach(n => {
+            if (!n.decayed) {
+                if (Math.random() < prob) n.decayed = true;
+                else currentN++;
+            }
+        });
+
+        // Math Logic
+        const theoreticalN = n0 * Math.exp(-lambda * time);
+        const deviation = (Math.abs(currentN - theoreticalN) / n0) * 100;
+
+        // Check Half-Lives
+        if (!halfLifeMarkers[0] && currentN <= n0 / 2) {
+            document.getElementById('obsT1').innerText = time.toFixed(2);
+            halfLifeMarkers[0] = true;
+        }
+        if (!halfLifeMarkers[1] && currentN <= n0 / 4) {
+            document.getElementById('obsT2').innerText = (time - parseFloat(document.getElementById('obsT1').innerText)).toFixed(2);
+            halfLifeMarkers[1] = true;
+        }
+
+        // Update Graph
+        chart.data.datasets[0].data.push({x: time, y: currentN});
+        chart.data.datasets[1].data.push({x: time, y: theoreticalN});
+        chart.update('none');
+
+        // Update UI
+        document.getElementById('timeVal').innerText = time.toFixed(1);
+        document.getElementById('errorVal').innerText = deviation.toFixed(2);
+        updateDisplay(currentN);
+        
+        if (currentN === 0 || time >= 60) isRunning = false;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        nuclei.forEach(n => {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = n.decayed ? "#f0f0f0" : "#007bff";
+            ctx.fill();
+            if(!n.decayed) { ctx.strokeStyle = "#333"; ctx.stroke(); }
+            ctx.closePath();
+        });
+    }
+
+    function updateDisplay(n) {
+        document.getElementById('nCount').innerText = n;
+        document.getElementById('nLabel').innerText = nInput.value;
+        document.getElementById('lambdaLabel').innerText = lambdaInput.value + " s⁻¹";
+    }
+
+    function loop() {
+        update();
+        draw();
+        if (isRunning) requestAnimationFrame(loop);
+    }
+
+    playBtn.onclick = () => {
+        isRunning = !isRunning;
+        playBtn.innerText = isRunning ? "PAUSE SIM" : "RESUME";
+        if (isRunning) loop();
+    };
+
+    resetBtn.onclick = () => { isRunning = false; playBtn.innerText = "START SIM"; init(); };
+    nInput.oninput = () => { if(!isRunning) init(); updateDisplay(); };
+    lambdaInput.oninput = () => { if(!isRunning) init(); updateDisplay(); };
+    window.onload = init;
+</script>
+
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const canvas = document.getElementById('nucleusStage');
+    const ctx = canvas.getContext('2d');
+    const nInput = document.getElementById('nInput');
+    const lambdaInput = document.getElementById('lambdaInput');
+    const playBtn = document.getElementById('playBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let nuclei = [];
+    let isRunning = false;
+    let time = 0;
+    let n0 = 100;
+    let lambda = 0.05;
+    let halfLifeMarkers = [false, false]; // To track if 1st and 2nd half-lives occurred
+    const dt = 0.1; 
+
+    // Chart Configuration
+    const chartCtx = document.getElementById('decayChart').getContext('2d');
+    let chart = new Chart(chartCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Real Data (Random)',
+                    data: [],
+                    borderColor: '#0000FF',
+                    borderWidth: 2,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Theoretical Law (Smooth)',
+                    data: [],
+                    borderColor: '#FF0000',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { type: 'linear', title: { display: true, text: 'Time / s', font: {weight: 'bold'}}, min: 0, max: 60 },
+                y: { title: { display: true, text: 'Undecayed Nuclei (N)', font: {weight: 'bold'}}, min: 0 }
+            },
+            animation: false
+        }
+    });
+
+    function init() {
+        nuclei = [];
+        n0 = parseInt(nInput.value);
+        lambda = parseFloat(lambdaInput.value);
+        time = 0;
+        halfLifeMarkers = [false, false];
+        
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        
+        // Populate Grid
+        const cols = Math.ceil(Math.sqrt(n0 * (canvas.width/canvas.height)));
+        const rows = Math.ceil(n0 / cols);
+        const spacingX = canvas.width / (cols + 1);
+        const spacingY = canvas.height / (rows + 1);
+
+        for (let i = 0; i < n0; i++) {
+            nuclei.push({ x: spacingX + (i % cols) * spacingX, y: spacingY + Math.floor(i / cols) * spacingY, decayed: false });
+        }
+        
+        // Reset UI and Graph
+        chart.options.scales.y.max = n0;
+        chart.data.datasets[0].data = [{x: 0, y: n0}];
+        chart.data.datasets[1].data = [{x: 0, y: n0}];
+        chart.update();
+        
+        document.getElementById('theoryT').innerText = (Math.log(2)/lambda).toFixed(2);
+        document.getElementById('obsT1').innerText = "--";
+        document.getElementById('obsT2').innerText = "--";
+        draw();
+        updateDisplay(n0);
+    }
+
+    function update() {
+        if (!isRunning) return;
+        time += dt;
+        let currentN = 0;
+        const prob = lambda * dt;
+
+        nuclei.forEach(n => {
+            if (!n.decayed) {
+                if (Math.random() < prob) n.decayed = true;
+                else currentN++;
+            }
+        });
+
+        // Math Logic
+        const theoreticalN = n0 * Math.exp(-lambda * time);
+        const deviation = (Math.abs(currentN - theoreticalN) / n0) * 100;
+
+        // Check Half-Lives
+        if (!halfLifeMarkers[0] && currentN <= n0 / 2) {
+            document.getElementById('obsT1').innerText = time.toFixed(2);
+            halfLifeMarkers[0] = true;
+        }
+        if (!halfLifeMarkers[1] && currentN <= n0 / 4) {
+            document.getElementById('obsT2').innerText = (time - parseFloat(document.getElementById('obsT1').innerText)).toFixed(2);
+            halfLifeMarkers[1] = true;
+        }
+
+        // Update Graph
+        chart.data.datasets[0].data.push({x: time, y: currentN});
+        chart.data.datasets[1].data.push({x: time, y: theoreticalN});
+        chart.update('none');
+
+        // Update UI
+        document.getElementById('timeVal').innerText = time.toFixed(1);
+        document.getElementById('errorVal').innerText = deviation.toFixed(2);
+        updateDisplay(currentN);
+        
+        if (currentN === 0 || time >= 60) isRunning = false;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        nuclei.forEach(n => {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = n.decayed ? "#f0f0f0" : "#007bff";
+            ctx.fill();
+            if(!n.decayed) { ctx.strokeStyle = "#333"; ctx.stroke(); }
+            ctx.closePath();
+        });
+    }
+
+    function updateDisplay(n) {
+        document.getElementById('nCount').innerText = n;
+        document.getElementById('nLabel').innerText = nInput.value;
+        document.getElementById('lambdaLabel').innerText = lambdaInput.value + " s⁻¹";
+    }
+
+    function loop() {
+        update();
+        draw();
+        if (isRunning) requestAnimationFrame(loop);
+    }
+
+    playBtn.onclick = () => {
+        isRunning = !isRunning;
+        playBtn.innerText = isRunning ? "PAUSE SIM" : "RESUME";
+        if (isRunning) loop();
+    };
+
+    resetBtn.onclick = () => { isRunning = false; playBtn.innerText = "START SIM"; init(); };
+    nInput.oninput = () => { if(!isRunning) init(); updateDisplay(); };
+    lambdaInput.oninput = () => { if(!isRunning) init(); updateDisplay(); };
+    window.onload = init;
+</script>
+</body>
+</html>

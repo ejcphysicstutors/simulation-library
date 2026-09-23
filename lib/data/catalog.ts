@@ -90,10 +90,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-motion-forces",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/car-approaching-each-other-distance-of-closest-approach/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/car-approaching-each-other-distance-of-closest-approach.html",
-    migrationNote: "Physics symbols/units show encoding corruption in the legacy source."
+    migrationNote: "Repaired superscripted acceleration units during migration."
   },
   {
     id: "legacy-curved-path-forces",
@@ -118,10 +120,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-motion-forces",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/car-chase-simulation-understanding-speed-time-graphs/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/car-chase-simulation-understanding-speed-time-graphs.html",
-    migrationNote: "Superscripted units show encoding corruption in the legacy source."
+    migrationNote: "Repaired superscripted acceleration units during migration."
   },
   {
     id: "legacy-monkey-hunter",
@@ -146,10 +150,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-collisions",
     relatedTopicIds: ["9478-electric-fields"],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/dynamics-e-field-collision/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/dynamics-e-field-collision.html",
-    migrationNote: "Isotope notation shows encoding corruption in the legacy source."
+    migrationNote: "Repaired isotope notation and time-axis arrow during migration."
   },
   {
     id: "legacy-resultant-gravity",
@@ -346,10 +352,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-nuclear-physics",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/radioactive-decay-real-life-vs-theoretical/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/radioactive-decay-real-life-vs-theoretical.html",
-    migrationNote: "Subscripts, lambda and inverse-second notation show encoding corruption."
+    migrationNote: "Repaired N₀, λ and s⁻¹ notation during migration."
   }
 ];
 
