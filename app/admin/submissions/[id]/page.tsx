@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { requireAdminAccess } from "@/lib/auth/session";
 import { topics } from "@/lib/data/catalog";
 import { getSubmissionRecord } from "@/lib/submissions/data";
-import { approveSubmission, markNeedsChanges, rejectSubmission, rerunValidation } from "../actions";
+import { approveSubmission, markNeedsChanges, rejectSubmission } from "../actions";
+import { RevalidationButton } from "@/components/admin/revalidation-button";
+import { getPrivateBlobBytes } from "@/lib/submissions/blob";
 
 export default async function SubmissionReviewPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminAccess();
@@ -15,6 +17,20 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
   const topic = topics.find((item) => item.id === submission.primaryTopicId);
   const validation = submission.validation;
   const canApprove = Boolean(validation && validation.errors === 0);
+
+  let previewHtml = "";
+  if (submission.packageType === "html" && submission.blobPathname) {
+    try {
+      const bytes = await getPrivateBlobBytes(submission.blobPathname);
+      const originalHtml = new TextDecoder("utf-8").decode(bytes);
+      const previewCsp = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; media-src blob: data: https:; worker-src blob:; frame-src https:; base-uri 'none'; form-action 'none'">`;
+      previewHtml = /<head[^>]*>/i.test(originalHtml)
+        ? originalHtml.replace(/<head([^>]*)>/i, `<head$1>${previewCsp}`)
+        : `${previewCsp}${originalHtml}`;
+    } catch {
+      previewHtml = "";
+    }
+  }
 
   return (
     <main className="shell section admin-page review-detail-page">
@@ -31,7 +47,7 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
       <div className="review-detail-grid">
         <section className="admin-panel review-main-panel">
           <div className="panel-heading-row"><div><h2>Automated checks</h2><p>Source-level checks run immediately after upload.</p></div>
-            <form action={rerunValidation}><input type="hidden" name="submissionId" value={submission.submissionId} /><button className="button secondary" type="submit">Run checks again</button></form>
+            <RevalidationButton submissionId={submission.submissionId} />
           </div>
 
           {validation ? (
@@ -86,7 +102,11 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
       <section className="admin-panel preview-panel">
         <div className="panel-heading-row"><div><h2>Preview</h2><p>Runs in a restricted iframe and cannot access the admin application.</p></div></div>
         {submission.packageType === "html" ? (
-          <div className="admin-preview-frame-wrap"><iframe className="admin-preview-frame" title={`Preview of ${submission.title}`} sandbox="allow-scripts" src={`/api/admin/submissions/${submission.submissionId}/preview`} /></div>
+          previewHtml ? (
+          <div className="admin-preview-frame-wrap"><iframe className="admin-preview-frame" title={`Preview of ${submission.title}`} sandbox="allow-scripts" referrerPolicy="no-referrer" srcDoc={previewHtml} /></div>
+        ) : (
+          <p className="empty-submissions">The preview could not be loaded from private storage. Run the checks again; if this persists, the review page will now show a validation error instead of a blank frame.</p>
+        )
         ) : (
           <p className="empty-submissions">ZIP preview will be added after the single-file preview path is proven. The ZIP has still been unpacked and source-checked automatically.</p>
         )}

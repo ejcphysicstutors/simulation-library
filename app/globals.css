@@ -336,3 +336,8 @@ button, input { font: inherit; }
   .admin-preview-frame-wrap { height: 620px; }
 }
 .submission-admin-note { margin-top: 3px; padding: 7px 9px; border-radius: 8px; background: #fff7ed; color: #92400e !important; }
+
+.validation-rerun-control { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+.validation-action-message { max-width: 24rem; text-align: right; }
+.good-text { color: #176b52; }
+.bad-text { color: #a23b3b; }
