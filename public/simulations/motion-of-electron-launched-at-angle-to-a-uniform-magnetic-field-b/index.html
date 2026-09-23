@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion of electron launched at angle θ to a uniform magnetic field B </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#07111f;
+  font-family:'Segoe UI',Arial,sans-serif;
+  color:#c8ddf0;
+  height:100vh;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+#topbar {
+  background:rgba(4,12,28,0.98);
+  border-bottom:1px solid #142040;
+  padding:7px 12px;
+  display:flex; align-items:center; gap:10px; flex-shrink:0; z-index:20; flex-wrap:wrap;
+}
+#topbar h1 { font-size:13px; font-weight:700; color:#6aaaff; letter-spacing:.5px; white-space:nowrap; flex-shrink:0; }
+#main { display:flex; flex:1; overflow:hidden; min-height:0; }
+#canvasWrap { flex:1; position:relative; min-height:0; }
+#c { display:block; }
+#panel {
+  width:256px; background:rgba(3,10,24,.99);
+  border-left:1px solid #0f1e38;
+  display:flex; flex-direction:column; overflow-y:auto; flex-shrink:0;
+}
+#panel::-webkit-scrollbar { width:3px; }
+#panel::-webkit-scrollbar-thumb { background:#142040; border-radius:2px; }
+.pblock { padding:12px 14px; border-bottom:1px solid #0a1628; }
+.pblock h3 { font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:#2a5080; margin-bottom:9px; }
+#scenario-desc { font-size:11px; color:#6888a8; line-height:1.75; }
+.slider-row { margin-bottom:12px; }
+.slider-row:last-child { margin-bottom:0; }
+.slider-label { display:flex; justify-content:space-between; font-size:11px; color:#7898b8; margin-bottom:5px; gap:6px; }
+.sval { color:#40c8ff; font-weight:700; flex-shrink:0; }
+input[type=range] {
+  width:100%; height:4px; -webkit-appearance:none;
+  background:linear-gradient(to right,#0a1e3c,#1a5098); border-radius:2px; outline:none; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:#48a0ff; box-shadow:0 0 8px rgba(72,160,255,.6); cursor:pointer;
+}
+.leg-item { display:flex; align-items:center; gap:8px; margin-bottom:7px; font-size:11px; color:#7090b0; }
+.leg-item:last-child { margin-bottom:0; }
+.leg-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.leg-dash { width:22px; height:3px; border-radius:1px; flex-shrink:0; }
+.rout-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.rout { background:rgba(6,18,42,.7); border:1px solid #0f2040; border-radius:4px; padding:6px 8px; font-size:10px; }
+.rlbl { color:#2a5070; margin-bottom:2px; }
+.rval { color:#40c8ff; font-weight:700; font-size:12px; }
+.btn-row { display:flex; gap:6px; flex-wrap:wrap; }
+.btn {
+  font-family:'Segoe UI',Arial,sans-serif; font-size:11px; padding:6px 14px;
+  border-radius:4px; border:1px solid #0f2040; background:rgba(8,22,52,.6); color:#5080a0;
+  cursor:pointer; transition:all .15s;
+}
+.btn:hover { border-color:#2050a0; color:#80a8d0; background:rgba(15,40,100,.5); }
+.btn.primary { border-color:#1a50b0; color:#60a8ff; background:rgba(8,40,110,.4); }
+.btn.primary:hover { background:rgba(15,60,160,.5); }
+#overlay {
+  position:absolute; top:10px; left:10px;
+  background:rgba(3,10,26,.88); border:1px solid #0f2040; border-radius:6px;
+  padding:9px 13px; pointer-events:none; min-width:164px;
+}
+.ov-row { display:flex; gap:8px; align-items:center; margin-bottom:4px; font-size:11px; }
+.ov-row:last-child { margin-bottom:0; }
+.ov-lbl { color:#2a5070; width:48px; flex-shrink:0; }
+.ov-val { color:#40c8ff; font-weight:700; }
+#cam-hint {
+  position:absolute; bottom:9px; left:50%; transform:translateX(-50%);
+  background:rgba(3,10,26,.7); border:1px solid #0f2040; border-radius:14px;
+  padding:3px 12px; font-size:10px; color:#2a5070; pointer-events:none;
+  letter-spacing:1px; white-space:nowrap;
+}
+</style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Motion of electron launched at angle θ to a uniform magnetic field B </div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+<div id="topbar">
+  <h1>Sim 1 — v∥ and v⊥ in a Magnetic Field</h1>
+</div>
+<div id="main">
+  <div id="canvasWrap">
+    <canvas id="c"></canvas>
+    <div id="overlay">
+      <div class="ov-row"><span class="ov-lbl">Speed</span><span class="ov-val" id="ov-spd">—</span></div>
+      <div class="ov-row"><span class="ov-lbl">v∥</span>   <span class="ov-val" id="ov-vp">—</span></div>
+      <div class="ov-row"><span class="ov-lbl">v⊥</span>   <span class="ov-val" id="ov-vt">—</span></div>
+      <div class="ov-row"><span class="ov-lbl">Turns</span><span class="ov-val" id="ov-tr">—</span></div>
+    </div>
+    <div id="cam-hint">Drag to rotate · Scroll to zoom</div>
+  </div>
+  <div id="panel">
+    <div class="pblock">
+      <div id="scenario-desc">
+        <b style="color:#40d0ff">v∥</b> is parallel to B — <b>F = q(v∥ × B) = 0</b> — no magnetic force, so this component gives uniform motion along Z.<br><br>
+        <b style="color:#ff4488">v⊥</b> is perpendicular to B — <b>F = q(v⊥ × B) ≠ 0</b> — the magnetic force provides the centripetal force for circular motion.<br><br>
+        Adjust θ to change the mix of v∥ and v⊥. Pause and drag to inspect the helical path from any angle.
+      </div>
+    </div>
+    <div class="pblock">
+      <h3>Controls</h3>
+      <div class="slider-row">
+        <div class="slider-label"><span>Launch angle θ to B</span><span class="sval" id="sv-theta">40°</span></div>
+        <input type="range" id="sl-theta" min="10" max="80" step="5" value="40">
+      </div>
+    </div>
+    <div class="pblock">
+      <h3>Legend</h3>
+      <div class="leg-item"><div class="leg-dot" style="background:#ffffff;box-shadow:0 0 5px #ffffff88"></div><span>v — total velocity</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#40d0ff;box-shadow:0 0 5px #40d0ff88"></div><span>v∥ — along B, no magnetic force</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff4488;box-shadow:0 0 5px #ff448888"></div><span>v⊥ — ⊥ to B, drives circular orbit</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff8030;box-shadow:0 0 5px #ff803088"></div><span>B — magnetic field along +Z</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff30c0;box-shadow:0 0 5px #ff30c088"></div><span>F — magnetic force (always ⊥ to v)</span></div>
+      <div class="leg-item"><div class="leg-dash" style="background:#20e8a0"></div><span>Full helical path + midpoint arrow</span></div>
+    </div>
+    <div class="pblock">
+      <h3>Simulation</h3>
+      <div class="btn-row">
+        <button class="btn primary" id="ppBtn" onclick="togglePP()">⏸ Pause</button>
+        <button class="btn" onclick="doReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="pblock">
+      <h3>Live Values</h3>
+      <div class="rout-grid">
+        <div class="rout"><div class="rlbl">Speed</div>        <div class="rval" id="rv-spd">—</div></div>
+        <div class="rout"><div class="rlbl">v∥ (along B)</div> <div class="rval" id="rv-vp">—</div></div>
+        <div class="rout"><div class="rlbl">v⊥ (⊥ to B)</div> <div class="rval" id="rv-vt">—</div></div>
+        <div class="rout"><div class="rlbl">|F_net|</div>      <div class="rval" id="rv-fn">—</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const QE=-1.6e-19, ME=9.11e-31, B0=0.5e-3, V0=3.0e6, SCALE=7.7, DT=8e-12, SPF=120;
+const Bvec=new THREE.Vector3(0,0,B0), Evec=new THREE.Vector3(0,0,0);
+let theta=40, running=true;
+let pos=new THREE.Vector3(), vel=new THREE.Vector3();
+const TRAIL_MAX=40000;
+let trail=[], trailIdx=0, turns=0, prevVx=0;
+
+const c3=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas:c3,antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setClearColor(0x07111f,1);
+const scene3=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,1,.001,200);
+function resize3(){const w=c3.parentElement.clientWidth,h=c3.parentElement.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+window.addEventListener('resize',resize3);resize3();
+scene3.add(new THREE.AmbientLight(0x304060,4));
+const dl=new THREE.DirectionalLight(0x8090ff,1.2);dl.position.set(3,5,3);scene3.add(dl);
+
+let camR=3.8,camTh=0.65,camPh=0.38;
+const camTgt=new THREE.Vector3(0,0,0.8);
+function applyCam(){camera.position.set(camTgt.x+camR*Math.cos(camPh)*Math.sin(camTh),camTgt.y+camR*Math.sin(camPh),camTgt.z+camR*Math.cos(camPh)*Math.cos(camTh));camera.lookAt(camTgt);}
+applyCam();
+let drag=false,lm={x:0,y:0};
+c3.addEventListener('mousedown',e=>{drag=true;lm={x:e.clientX,y:e.clientY};});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{if(!drag)return;camTh-=(e.clientX-lm.x)*.01;camPh=Math.max(-1.3,Math.min(1.3,camPh+(e.clientY-lm.y)*.01));lm={x:e.clientX,y:e.clientY};applyCam();});
+c3.addEventListener('wheel',e=>{camR=Math.max(1.5,Math.min(16,camR+e.deltaY*.005));applyCam();e.preventDefault();},{passive:false});
+
+scene3.add(new THREE.GridHelper(5,25,0x0e2040,0x081830));
+function mkLine(p1,p2,col,op=.4){return new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...p1),new THREE.Vector3(...p2)]),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op}));}
+scene3.add(mkLine([-2,0,0],[2,0,0],0x2a4878));
+scene3.add(mkLine([0,-.15,0],[0,.15,0],0x2a4878));
+scene3.add(mkLine([0,0,-.3],[0,0,3.5],0x4a6898,.55));
+function mkSprite(txt,p,col,sx=.32,sy=.15){const cv=document.createElement('canvas');cv.width=128;cv.height=56;const cx=cv.getContext('2d');cx.fillStyle=col;cx.font='bold 32px Arial';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(txt,64,28);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));sp.position.set(...p);sp.scale.set(sx,sy,1);return sp;}
+scene3.add(mkSprite('X',[2.2,0,0],'#4a6898'));
+scene3.add(mkSprite('Y',[0,.35,0],'#4a6898'));
+scene3.add(mkSprite('Z',[.15,0,3.7],'#ff8030',.22,.13));
+scene3.add(mkSprite('(B)',[.38,0,3.5],'#ff8030',.28,.13));
+
+const eSphere=new THREE.Mesh(new THREE.SphereGeometry(.045,20,20),new THREE.MeshPhongMaterial({color:0x3a90ff,emissive:0x1040cc,emissiveIntensity:1.2,shininess:100}));
+scene3.add(eSphere);
+eSphere.add(new THREE.Mesh(new THREE.SphereGeometry(.085,12,12),new THREE.MeshBasicMaterial({color:0x1a50ff,transparent:true,opacity:.18,side:THREE.BackSide})));
+const ePL=new THREE.PointLight(0x2060ff,1.5,.9);scene3.add(ePL);
+
+const trailBuf=new Float32Array(TRAIL_MAX*3);
+const trailGeo=new THREE.BufferGeometry();
+trailGeo.setAttribute('position',new THREE.BufferAttribute(trailBuf,3));
+const trailMat=new THREE.LineBasicMaterial({color:0x20e8a0,transparent:true,opacity:.9});
+const trailLine3=new THREE.Line(trailGeo,trailMat);
+scene3.add(trailLine3);
+const midCone=new THREE.Mesh(new THREE.ConeGeometry(.04,.14,10),new THREE.MeshBasicMaterial({color:0x20e8a0,transparent:true,opacity:.95}));
+midCone.visible=false;scene3.add(midCone);
+
+function flushTrail3(){
+  const n=trail.length;
+  if(n<2){trailGeo.setDrawRange(0,0);trailGeo.attributes.position.needsUpdate=true;midCone.visible=false;return;}
+  for(let i=0;i<n;i++){trailBuf[i*3]=trail[i].x;trailBuf[i*3+1]=trail[i].y;trailBuf[i*3+2]=trail[i].z;}
+  trailGeo.setDrawRange(0,n);trailGeo.attributes.position.needsUpdate=true;
+  if(n>=6){const mi=Math.floor(n/2);const p0=trail[Math.max(0,mi-2)];const p1=trail[Math.min(n-1,mi+2)];const dir=new THREE.Vector3(p1.x-p0.x,p1.y-p0.y,p1.z-p0.z);if(dir.length()>1e-9){dir.normalize();midCone.visible=true;midCone.position.copy(trail[mi]);midCone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);}}
+}
+
+let aObjs={};
+const ACOLS={v:0xffffff,vpar:0x40d0ff,vperp:0xff4488,F:0xff30c0,B:0xff8030};
+const ALBLS={v:'v',vpar:'v∥',vperp:'v⊥',F:'F',B:'B'};
+function clearArrows(){Object.values(aObjs).forEach(({a,l})=>{scene3.remove(a);scene3.remove(l);});aObjs={};}
+function addArrow(key){const col=ACOLS[key];const a=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(0,0,0),.3,col,.09,.028);scene3.add(a);const cv=document.createElement('canvas');cv.width=128;cv.height=56;const cx=cv.getContext('2d');cx.fillStyle='#'+col.toString(16).padStart(6,'0');cx.font='bold 30px Arial';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(ALBLS[key],64,28);const l=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));l.scale.set(.32,.15,1);scene3.add(l);aObjs[key]={a,l};}
+function buildArrows(){clearArrows();['v','vpar','vperp','F','B'].forEach(k=>addArrow(k));}
+function placeArrow(key,dir,len){const o=aObjs[key];if(!o)return;const sp=pos.clone().multiplyScalar(SCALE);if(dir.length()<1e-14||len<.004){o.a.visible=false;o.l.visible=false;return;}o.a.visible=true;o.l.visible=true;o.a.position.copy(sp);o.a.setDirection(dir.clone().normalize());o.a.setLength(len,len*.28,len*.08);o.l.position.copy(sp).addScaledVector(dir.clone().normalize(),len+.14);}
+function placeArrowFixed(key,orig,dir,len){const o=aObjs[key];if(!o||dir.length()<1e-14)return;o.a.visible=true;o.l.visible=true;o.a.position.copy(orig);o.a.setDirection(dir.clone().normalize());o.a.setLength(len,len*.28,len*.08);o.l.position.copy(orig).addScaledVector(dir.clone().normalize(),len+.14);}
+
+function lorentzAccelV(v,B,E){const vxB=new THREE.Vector3().crossVectors(v,B);return new THREE.Vector3().addScaledVector(E,QE).addScaledVector(vxB,QE).divideScalar(ME);}
+
+function initPhysics(){
+  const th=theta*Math.PI/180;
+  const initVel=new THREE.Vector3(V0*Math.sin(th),0,V0*Math.cos(th));
+  let pPos=new THREE.Vector3(),pVel=initVel.clone(),pTurns=0,pPrevVx=pVel.x;
+  trail=[];
+  for(let i=0;i<TRAIL_MAX;i++){
+    const h=DT;
+    const k1v=lorentzAccelV(pVel,Bvec,Evec),k1p=pVel.clone();
+    const v2=pVel.clone().addScaledVector(k1v,h/2);
+    const k2v=lorentzAccelV(v2,Bvec,Evec),k2p=v2.clone();
+    const v3=pVel.clone().addScaledVector(k2v,h/2);
+    const k3v=lorentzAccelV(v3,Bvec,Evec),k3p=v3.clone();
+    const v4=pVel.clone().addScaledVector(k3v,h);
+    const k4v=lorentzAccelV(v4,Bvec,Evec),k4p=v4.clone();
+    pVel.addScaledVector(k1v,h/6).addScaledVector(k2v,h/3).addScaledVector(k3v,h/3).addScaledVector(k4v,h/6);
+    pPos.addScaledVector(k1p,h/6).addScaledVector(k2p,h/3).addScaledVector(k3p,h/3).addScaledVector(k4p,h/6);
+    if(pPrevVx!==0&&Math.sign(pVel.x)!==Math.sign(pPrevVx))pTurns+=0.5;
+    pPrevVx=pVel.x;
+    trail.push(pPos.clone().multiplyScalar(SCALE));
+    if(pTurns>=4)break;
+  }
+  vel.copy(initVel);pos.set(0,0,0);trailIdx=0;turns=0;prevVx=vel.x;midCone.visible=false;
+  flushTrail3();
+}
+
+function updateArrows(){
+  const Bhat=Bvec.clone().normalize();
+  const vparSc=vel.dot(Bhat),vparV=Bhat.clone().multiplyScalar(vparSc),vperpV=vel.clone().sub(vparV);
+  const speed=vel.length(),Amax=.38;
+  const vxB=new THREE.Vector3().crossVectors(vel,Bvec);
+  const Fnet=vxB.clone().multiplyScalar(QE);
+  if(aObjs['v'])    placeArrow('v',vel,Math.min(Amax,speed/V0*Amax));
+  if(aObjs['vpar']) placeArrow('vpar',vparV,Math.min(Amax,Math.abs(vparSc)/V0*Amax));
+  if(aObjs['vperp'])placeArrow('vperp',vperpV,Math.min(Amax,vperpV.length()/V0*Amax));
+  if(aObjs['F'])    placeArrow('F',Fnet,Fnet.length()>1e-26?.32:0);
+  if(aObjs['B'])    placeArrowFixed('B',new THREE.Vector3(-.4,0,.3),Bvec,.58);
+}
+
+let hudT=0;
+function updateHUD(){
+  if(++hudT%5!==0)return;
+  const Bhat=Bvec.clone().normalize(),vpar=vel.dot(Bhat),vperpV=vel.clone().sub(Bhat.clone().multiplyScalar(vpar)),spd=vel.length();
+  const vxB=new THREE.Vector3().crossVectors(vel,Bvec),Fnet=vxB.clone().multiplyScalar(QE);
+  const fmm=v=>(v/1e6).toFixed(2)+' Mm/s';
+  document.getElementById('ov-spd').textContent=fmm(spd);
+  document.getElementById('ov-vp').textContent=fmm(Math.abs(vpar));
+  document.getElementById('ov-vt').textContent=fmm(vperpV.length());
+  document.getElementById('ov-tr').textContent=turns.toFixed(1);
+  document.getElementById('rv-spd').textContent=fmm(spd);
+  document.getElementById('rv-vp').textContent=fmm(Math.abs(vpar));
+  document.getElementById('rv-vt').textContent=fmm(vperpV.length());
+  document.getElementById('rv-fn').textContent=Fnet.length().toExponential(1)+' N';
+}
+
+function rk4Step(){
+  const h=DT;
+  const k1v=lorentzAccelV(vel,Bvec,Evec),k1p=vel.clone();
+  const v2=vel.clone().addScaledVector(k1v,h/2);
+  const k2v=lorentzAccelV(v2,Bvec,Evec),k2p=v2.clone();
+  const v3=vel.clone().addScaledVector(k2v,h/2);
+  const k3v=lorentzAccelV(v3,Bvec,Evec),k3p=v3.clone();
+  const v4=vel.clone().addScaledVector(k3v,h);
+  const k4v=lorentzAccelV(v4,Bvec,Evec),k4p=v4.clone();
+  vel.addScaledVector(k1v,h/6).addScaledVector(k2v,h/3).addScaledVector(k3v,h/3).addScaledVector(k4v,h/6);
+  pos.addScaledVector(k1p,h/6).addScaledVector(k2p,h/3).addScaledVector(k3p,h/3).addScaledVector(k4p,h/6);
+}
+
+function togglePP(){running=!running;document.getElementById('ppBtn').textContent=running?'⏸ Pause':'▶ Play';}
+function doReset(){initPhysics();}
+
+document.getElementById('sl-theta').addEventListener('input',function(){theta=parseFloat(this.value);document.getElementById('sv-theta').textContent=theta+'°';initPhysics();});
+
+buildArrows();initPhysics();
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(running){
+    trailIdx=(trailIdx+SPF)%trail.length;
+    for(let i=0;i<SPF;i++){
+      rk4Step();
+      if(prevVx!==0&&Math.sign(vel.x)!==Math.sign(prevVx))turns+=0.5;
+      prevVx=vel.x;
+      if(trailIdx===0){vel.set(V0*Math.sin(theta*Math.PI/180),0,V0*Math.cos(theta*Math.PI/180));pos.set(0,0,0);turns=0;prevVx=vel.x;break;}
+    }
+    if(trail.length>0){eSphere.position.copy(trail[trailIdx]);ePL.position.copy(trail[trailIdx]);pos.copy(trail[trailIdx].clone().divideScalar(SCALE));}
+    flushTrail3();updateArrows();updateHUD();
+  }
+  renderer.render(scene3,camera);
+}
+animate();
+</script>
+
+    </div>
+    
+    
+
+</body>
+</html>

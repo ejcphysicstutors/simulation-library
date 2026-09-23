@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gold Leaf Electroscope Experiment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e0dfd8;
+    padding: 28px 28px 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  h1 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a18;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #6b6a64;
+    margin-bottom: 24px;
+  }
+
+  /* ?? control rows ?? */
+  .control-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .control-label {
+    font-size: 12px;
+    color: #6b6a64;
+    white-space: nowrap;
+  }
+
+  .btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid #d0cfc8;
+    background: #f5f4f0;
+    color: #1a1a18;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .btn:hover:not(:disabled) { background: #eceae3; border-color: #b0afaa; }
+  .btn:disabled { opacity: 0.38; cursor: default; }
+  .btn.active { background: #e6f0fb; color: #0c447c; border-color: #85b7eb; font-weight: 500; }
+  .btn.charge-neg { background: #faeeda; color: #633806; border-color: #ef9f27; font-weight: 500; }
+  .btn.charge-neg:hover { background: #f5e0b0; }
+  .btn.charge-pos { background: #fcebeb; color: #791f1f; border-color: #f09595; font-weight: 500; }
+  .btn.charge-pos:hover { background: #f7caca; }
+  .btn.reset-btn { color: #6b6a64; font-size: 12px; }
+
+  .divider-v { width: 1px; height: 24px; background: #d0cfc8; flex-shrink: 0; }
+
+  /* ?? main layout ?? */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-top: 16px;
+  }
+  @media (max-width: 600px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ?? observation panel ?? */
+  #obs-panel {
+    font-size: 13px;
+    color: #4a4a46;
+    line-height: 1.7;
+    min-height: 80px;
+  }
+
+  .obs-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .obs-tag.neg      { background: #faeeda; color: #633806; }
+  .obs-tag.discharge{ background: #e6f0fb; color: #0c447c; }
+  .obs-tag.done     { background: #eaf3de; color: #3b6d11; }
+  .obs-tag.noeffect { background: #f5f4f0; color: #5f5e5a; border: 1px solid #d0cfc8; }
+  .obs-tag.pos      { background: #fcebeb; color: #791f1f; }
+
+  .obs-block {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eceae3;
+  }
+  .obs-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .obs-title { font-weight: 600; color: #1a1a18; margin-bottom: 3px; font-size: 13px; }
+
+  .callout {
+    padding: 10px 12px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    border: 1px solid #e0dfd8;
+    font-size: 12px;
+    margin-top: 8px;
+    line-height: 1.6;
+    color: #4a4a46;
+  }
+  .callout strong { color: #1a1a18; }
+
+  .hint { font-size: 12px; color: #888780; margin-top: 8px; }
+
+  /* ?? think box ?? */
+  .think-box {
+    margin-top: 24px;
+    border: 1px solid #e0dfd8;
+    border-radius: 12px;
+    padding: 18px 20px;
+    background: #fafaf8;
+  }
+  .think-box-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a18;
+    margin-bottom: 6px;
+  }
+  .think-box-prompt {
+    font-size: 13px;
+    color: #4a4a46;
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+
+  #pos-obs { margin-top: 14px; font-size: 13px; color: #4a4a46; line-height: 1.7; }
+
+  /* ?? animations ?? */
+  @keyframes electronFly {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--ex), var(--ey)) scale(0.5); }
+  }
+  .e-particle { animation: electronFly 1s ease-out forwards; pointer-events: none; }
+</style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">The Gold Leaf Electroscope Experiment</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+<div class="container">
+
+  <h1>Photoelectric Effect — Gold-Leaf Electroscope</h1>
+  <p class="subtitle">An interactive simulation demonstrating how different light sources affect a negatively charged electroscope.</p>
+
+  <!-- Row 1: charge + reset -->
+  <div class="control-row">
+    <button class="btn charge-neg" id="btn-charge" onclick="chargeScope('neg')">− Charge negatively</button>
+    <button class="btn reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+
+  <!-- Row 2: light source buttons (vis-low, vis-high, uv) -->
+  <div class="control-row">
+    <span class="control-label">Light source:</span>
+    <button class="btn" id="btn-vis-low"  onclick="setLight('vis-low')"  disabled>Visible — low intensity</button>
+    <button class="btn" id="btn-vis-high" onclick="setLight('vis-high')" disabled>Visible — high intensity</button>
+    <button class="btn" id="btn-uv"       onclick="setLight('uv')"       disabled>UV light</button>
+  </div>
+
+  <!-- Main diagram + observations -->
+  <div class="main-grid">
+
+    <!-- SVG electroscope -->
+    <svg id="scope-svg" width="280" height="340" viewBox="0 0 280 340" style="flex-shrink:0;">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Lamp -->
+      <g id="lamp-group" opacity="0">
+        <rect id="lamp-rect" x="75" y="8" width="130" height="28" rx="6"
+              fill="#f5f4f0" stroke="#d0cfc8" stroke-width="1"/>
+        <text id="lamp-label" x="140" y="27" text-anchor="middle"
+              font-size="12" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+              fill="#4a4a46" font-weight="500">UV light</text>
+      </g>
+
+      <!-- Rays -->
+      <g id="rays"></g>
+
+      <!-- Zinc plate label -->
+      <text x="140" y="64" text-anchor="middle" font-size="11"
+            font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#6b6a64">Zinc plate</text>
+
+      <!-- Zinc plate -->
+      <rect x="80" y="68" width="120" height="14" rx="3"
+            fill="#f0efea" stroke="#b0afaa" stroke-width="1"/>
+
+      <!-- Stem -->
+      <rect x="135" y="82" width="10" height="52" rx="2"
+            fill="#f0efea" stroke="#b0afaa" stroke-width="0.8"/>
+
+      <!-- Top bar -->
+      <rect x="115" y="134" width="50" height="8" rx="2"
+            fill="#f0efea" stroke="#b0afaa" stroke-width="0.8"/>
+
+      <!-- Housing box -->
+      <rect x="92" y="142" width="96" height="106" rx="8"
+            fill="#ffffff" stroke="#b0afaa" stroke-width="1"/>
+
+      <!-- Glass pane hints -->
+      <line x1="108" y1="142" x2="108" y2="248" stroke="#d0cfc8" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <line x1="172" y1="142" x2="172" y2="248" stroke="#d0cfc8" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+      <!-- Stem inside box -->
+      <rect x="135" y="142" width="10" height="18" rx="1"
+            fill="#f0efea" stroke="#b0afaa" stroke-width="0.5"/>
+
+      <!-- Pivot -->
+      <circle cx="140" cy="162" r="3" fill="#888780"/>
+
+      <!-- Leaves -->
+      <g id="leaf-left"  style="transform-origin:140px 162px; transform:rotate(0deg); transition:transform 0.9s ease;">
+        <line x1="140" y1="162" x2="133" y2="232" stroke="#C8A800" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="leaf-right" style="transform-origin:140px 162px; transform:rotate(0deg); transition:transform 0.9s ease;">
+        <line x1="140" y1="162" x2="147" y2="232" stroke="#C8A800" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+
+      <!-- Charge signs + electrons layers -->
+      <g id="charge-signs"></g>
+      <g id="electrons"></g>
+
+      <!-- Labels -->
+      <text x="206" y="100" font-size="11" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#6b6a64">Metal stem</text>
+      <line x1="202" y1="97" x2="148" y2="104" stroke="#c0bfba" stroke-width="0.5" marker-end="url(#ah)"/>
+
+      <text x="206" y="196" font-size="11" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#6b6a64">Movable, light</text>
+      <text x="206" y="209" font-size="11" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#6b6a64">gold leaf</text>
+      <line x1="202" y1="196" x2="176" y2="196" stroke="#c0bfba" stroke-width="0.5" marker-end="url(#ah)"/>
+
+      <!-- Status -->
+      <text id="status-text" x="140" y="268" text-anchor="middle" font-size="11"
+            font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+            fill="#888780" font-style="italic">uncharged</text>
+      <text x="140" y="282" text-anchor="middle" font-size="10"
+            font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#888780">Gold leaf electroscope</text>
+    </svg>
+
+    <!-- Observation panel -->
+    <div id="obs-panel">
+      <p style="font-size:13px; color:#888780;">Click <strong style="color:#1a1a18;">− Charge negatively</strong> to begin.</p>
+    </div>
+  </div>
+
+  <!-- Think box -->
+  <div class="think-box">
+    <div class="think-box-title">Think about it</div>
+    <p class="think-box-prompt">What do you think will happen if the gold leaf electroscope is charged <em>positively</em> instead, and UV light is shone on the zinc plate?</p>
+    <button class="btn charge-pos" id="btn-charge-pos" onclick="chargeScope('pos')">+ Charge positively</button>
+
+    <div id="pos-obs" style="display:none;">
+      <div class="obs-block" style="margin-top:14px;">
+        <span class="obs-tag pos">Positively charged</span>
+        <div class="obs-title">Gold leaf rises and spreads apart</div>
+        <div>The electroscope now lacks electrons — the positive charge on the plate, stem and leaves causes electrostatic repulsion and the leaves spread apart.</div>
+      </div>
+      <div id="pos-uv-obs" style="display:none;">
+        <span class="obs-tag noeffect">No effect from UV light</span>
+        <div class="obs-title" style="margin-top:4px;">Leaf stays raised even under UV light</div>
+        <div>UV light still ejects electrons from the zinc plate — but since the electroscope is positively charged, it <em>attracts</em> those electrons back. The positive charge is not removed, so the leaf remains spread.</div>
+      </div>
+      <div id="pos-light-btns" style="margin-top:12px; display:none;">
+        <p class="hint" style="margin-bottom:8px;">Now shine UV light on the positively charged plate:</p>
+        <button class="btn active" onclick="showPosUV()">UV light</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ?? state ??????????????????????????????????????????????????????????????????
+let state = 'uncharged';
+let chargeCount = 0;
+let chargeType = 'neg';
+let eIntervals = [];
+
+// ?? SVG helpers ????????????????????????????????????????????????????????????
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+
+function setLeaf(deg) {
+  document.getElementById('leaf-left').style.transform  = `rotate(${-Math.abs(deg)}deg)`;
+  document.getElementById('leaf-right').style.transform = `rotate(${Math.abs(deg)}deg)`;
+}
+
+function signPositions() {
+  const pts = [];
+  for (let i=0;i<5;i++) pts.push({x:88+i*24, y:75});   // plate
+  for (let i=0;i<3;i++) pts.push({x:138, y:90+i*14});   // stem
+  for (let i=1;i<=3;i++) {                               // left leaf
+    pts.push({x:140+(133-140)*(i/4), y:162+(232-162)*(i/4)});
+  }
+  for (let i=1;i<=3;i++) {                               // right leaf
+    pts.push({x:140+(147-140)*(i/4), y:162+(232-162)*(i/4)});
+  }
+  return pts; // 14 total
+}
+
+function drawSigns(n, type) {
+  const g = document.getElementById('charge-signs');
+  g.innerHTML = '';
+  const symbol = type === 'pos' ? '+' : '−';
+  const color  = type === 'pos' ? '#E24B4A' : '#7B5CF0';
+  signPositions().slice(0, Math.min(n, 14)).forEach(p => {
+    const t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', p.x); t.setAttribute('y', p.y);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('font-size', '11');
+    t.setAttribute('font-weight', '700');
+    t.setAttribute('font-family', FONT);
+    t.setAttribute('fill', color);
+    t.textContent = symbol;
+    g.appendChild(t);
+  });
+}
+
+// ?? light sources ??????????????????????????????????????????????????????????
+const LIGHT = {
+  'uv':       {label:'UV light',                color:'#7B5CF0', lampBg:'#EEEDFE', lampBorder:'#AFA9EC', lampText:'#3C3489', n:5},
+  'vis-low':  {label:'Visible — low intensity', color:'#D97706', lampBg:'#FAEEDA', lampBorder:'#EF9F27', lampText:'#633806', n:3},
+  'vis-high': {label:'Visible — high intensity',color:'#D97706', lampBg:'#FAEEDA', lampBorder:'#EF9F27', lampText:'#633806', n:8},
+};
+
+function drawRays(mode) {
+  const g = document.getElementById('rays');
+  g.innerHTML = '';
+  const m = LIGHT[mode];
+  for (let i=0; i<m.n; i++) {
+    const t = m.n === 1 ? 0.5 : i/(m.n-1);
+    const x2 = 88 + t * 104;
+    const x1 = 140 + (x2 - 140) * 0.3;
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', 36);
+    line.setAttribute('x2', x2); line.setAttribute('y2', 68);
+    line.setAttribute('stroke', m.color);
+    line.setAttribute('stroke-width', '1.8');
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('opacity', '0.9');
+    line.setAttribute('marker-end', 'url(#ah)');
+    g.appendChild(line);
+  }
+}
+
+function showLamp(mode) {
+  const m = LIGHT[mode];
+  document.getElementById('lamp-group').setAttribute('opacity', '1');
+  document.getElementById('lamp-rect').setAttribute('fill',   m.lampBg);
+  document.getElementById('lamp-rect').setAttribute('stroke', m.lampBorder);
+  document.getElementById('lamp-label').setAttribute('fill',  m.lampText);
+  document.getElementById('lamp-label').textContent = m.label;
+}
+
+// ?? electrons ??????????????????????????????????????????????????????????????
+function spawnElectron() {
+  const g = document.getElementById('electrons');
+  const el = document.createElementNS(SVG_NS, 'text');
+  const sx = 88 + Math.random() * 104;
+  const angleDeg = -150 + Math.random() * 120;
+  const dist = 45 + Math.random() * 30;
+  const rad = angleDeg * Math.PI / 180;
+  el.setAttribute('x', sx); el.setAttribute('y', '68');
+  el.setAttribute('fill', '#7B5CF0');
+  el.setAttribute('font-size', '12');
+  el.setAttribute('font-family', FONT);
+  el.setAttribute('font-weight', '500');
+  el.textContent = 'e⁻';
+  el.style.setProperty('--ex', Math.cos(rad)*dist + 'px');
+  el.style.setProperty('--ey', Math.sin(rad)*dist + 'px');
+  el.classList.add('e-particle');
+  g.appendChild(el);
+  setTimeout(() => { if (g.contains(el)) g.removeChild(el); }, 1100);
+}
+
+function clearElectrons() {
+  eIntervals.forEach(clearInterval); eIntervals = [];
+  const g = document.getElementById('electrons');
+  if (g) g.innerHTML = '';
+}
+
+// ?? button helpers ?????????????????????????????????????????????????????????
+function enableLightBtns(on) {
+  ['btn-uv','btn-vis-low','btn-vis-high'].forEach(id => {
+    document.getElementById(id).disabled = !on;
+  });
+}
+function clearActive() {
+  ['btn-uv','btn-vis-low','btn-vis-high'].forEach(id =>
+    document.getElementById(id).classList.remove('active'));
+}
+function setObs(html) { document.getElementById('obs-panel').innerHTML = html; }
+
+// ?? charge ?????????????????????????????????????????????????????????????????
+function chargeScope(type) {
+  clearElectrons();
+  document.getElementById('rays').innerHTML = '';
+  document.getElementById('lamp-group').setAttribute('opacity', '0');
+  clearActive(); enableLightBtns(false);
+
+  chargeType = type;
+  chargeCount = 14;
+
+  if (type === 'neg') {
+    state = 'charged';
+    setLeaf(28); drawSigns(14, 'neg');
+    document.getElementById('status-text').textContent = 'negatively charged';
+    enableLightBtns(true);
+    setObs(`
+      <div class="obs-block">
+        <span class="obs-tag neg">Negatively charged</span>
+        <div class="obs-title">Gold leaf rises and spreads apart</div>
+        <div>Excess electrons on the plate, stem and gold leaf cause electrostatic repulsion — the leaves push apart.</div>
+      </div>
+      <p class="hint">Now select a light source above.</p>
+    `);
+  } else {
+    state = 'pos-charged';
+    setLeaf(28); drawSigns(14, 'pos');
+    document.getElementById('status-text').textContent = 'positively charged';
+    document.getElementById('pos-obs').style.display = 'block';
+    document.getElementById('pos-uv-obs').style.display = 'none';
+    document.getElementById('pos-light-btns').style.display = 'block';
+    setObs(`<p style="font-size:13px;color:#888780;">The electroscope is now positively charged. See the panel below to continue.</p>`);
+  }
+}
+
+// ?? positive UV demo ???????????????????????????????????????????????????????
+function showPosUV() {
+  showLamp('uv'); drawRays('uv');
+  let tick = 0;
+  const iv = setInterval(() => {
+    tick++;
+    spawnElectron();
+    if (tick >= 12) { clearInterval(iv); clearElectrons(); }
+  }, 120);
+  eIntervals.push(iv);
+  document.getElementById('pos-uv-obs').style.display = 'block';
+  document.getElementById('pos-light-btns').style.display = 'none';
+}
+
+// ?? light ??????????????????????????????????????????????????????????????????
+function setLight(mode) {
+  if (state !== 'charged' && state !== 'visible') return;
+  clearActive();
+  document.getElementById('btn-' + mode).classList.add('active');
+  clearElectrons();
+  showLamp(mode); drawRays(mode);
+
+  if (mode === 'uv') {
+    state = 'discharging'; enableLightBtns(false);
+    document.getElementById('status-text').textContent = 'discharging…';
+    setObs(`
+      <div class="obs-block">
+        <span class="obs-tag discharge">Immediate discharge</span>
+        <div class="obs-title">UV light: leaf falls, electrons escape</div>
+        <div>UV photons carry energy <em>E = hf</em> above the minimum energy required by electrons to escape. Electrons are ejected — the negative charge drains and the leaf falls.</div>
+      </div>
+      <div id="discharged-block" style="display:none;">
+        <span class="obs-tag done">Fully discharged</span>
+        <div class="obs-title" style="margin-top:4px;">Electroscope is now neutral</div>
+        <div>All excess electrons have been ejected. The gold leaf hangs vertically and no charge remains.</div>
+        <p class="hint" style="margin-top:6px;">Emission depends on frequency, not intensity — this contradicts the classical wave model.</p>
+      </div>
+    `);
+
+    let tick = 0;
+    const iv = setInterval(() => {
+      tick++;
+      spawnElectron();
+      if (tick % 2 === 0) {
+        chargeCount = Math.max(0, chargeCount - 1);
+        drawSigns(chargeCount, 'neg');
+        setLeaf(Math.round(28 * chargeCount / 14));
+      }
+      if (tick >= 28) {
+        clearInterval(iv); clearElectrons();
+        state = 'discharged'; setLeaf(0); drawSigns(0, 'neg');
+        document.getElementById('status-text').textContent = 'neutral';
+        const db = document.getElementById('discharged-block');
+        if (db) db.style.display = 'block';
+        enableLightBtns(false);
+      }
+    }, 110);
+    eIntervals.push(iv);
+
+  } else {
+    state = 'visible'; setLeaf(28); drawSigns(chargeCount, 'neg');
+    document.getElementById('status-text').textContent = 'negatively charged';
+
+    if (mode === 'vis-low') {
+      setObs(`
+        <div class="obs-block">
+          <span class="obs-tag noeffect">No effect</span>
+          <div class="obs-title">Visible light (low intensity): leaf stays raised</div>
+          <div>Low intensity visible light has no effect. The leaf stays raised and no electrons escape.</div>
+        </div>
+        <div class="callout">
+          <strong>Classical prediction (wrong):</strong> Low intensity light should still cause emission if shone over a long period of time. Experiment shows this does not happen.
+        </div>
+        <p class="hint" style="margin-top:10px;">Try high intensity next — does more light make a difference?</p>
+      `);
+    } else {
+      setObs(`
+        <div class="obs-block">
+          <span class="obs-tag noeffect">No effect</span>
+          <div class="obs-title">Visible light (high intensity): leaf stays raised</div>
+          <div>Even with high intensity (more photons), no electrons are emitted — each photon still lacks enough energy to escape.</div>
+        </div>
+        <div class="callout">
+          <strong>Classical prediction (wrong):</strong> Brighter light should supply more energy and cause emission. Experiment shows this does not happen.
+        </div>
+        <p class="hint" style="margin-top:10px;">Now try UV light — what changes when the frequency is higher?</p>
+      `);
+    }
+  }
+}
+
+// ?? reset ??????????????????????????????????????????????????????????????????
+function resetAll() {
+  clearElectrons();
+  state = 'uncharged'; chargeCount = 0; chargeType = 'neg';
+  setLeaf(0); drawSigns(0, 'neg');
+  document.getElementById('rays').innerHTML = '';
+  document.getElementById('lamp-group').setAttribute('opacity', '0');
+  document.getElementById('status-text').textContent = 'uncharged';
+  clearActive(); enableLightBtns(false);
+  document.getElementById('pos-obs').style.display = 'none';
+  document.getElementById('pos-uv-obs').style.display = 'none';
+  document.getElementById('pos-light-btns').style.display = 'none';
+  setObs(`<p style="font-size:13px;color:#888780;">Click <strong style="color:#1a1a18;">− Charge negatively</strong> to begin.</p>`);
+}
+</script>
+
+    </div>
+    
+    
+</body>
+</html>

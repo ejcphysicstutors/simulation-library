@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E ⟂ B: Parallel-Plate Velocity Selector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#07111f; font-family:'Segoe UI',Arial,sans-serif; color:#c8ddf0;
+  height:100vh; display:flex; flex-direction:column; overflow:hidden;
+}
+#topbar {
+  background:rgba(4,12,28,0.98); border-bottom:1px solid #142040;
+  padding:7px 12px; display:flex; align-items:center; gap:10px; flex-shrink:0; z-index:20;
+}
+#topbar h1 { font-size:13px; font-weight:700; color:#6aaaff; letter-spacing:.5px; white-space:nowrap; }
+#main { display:flex; flex:1; overflow:hidden; min-height:0; }
+#plate-wrap { flex:1; position:relative; min-height:0; background:#050e1c; }
+#cPlate { display:block; width:100%; height:100%; }
+#panel {
+  width:256px; background:rgba(3,10,24,.99); border-left:1px solid #0f1e38;
+  display:flex; flex-direction:column; overflow-y:auto; flex-shrink:0;
+}
+#panel::-webkit-scrollbar{width:3px;}
+#panel::-webkit-scrollbar-thumb{background:#142040;border-radius:2px;}
+.pblock{padding:12px 14px;border-bottom:1px solid #0a1628;}
+.pblock h3{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#2a5080;margin-bottom:9px;}
+#scenario-desc{font-size:11px;color:#6888a8;line-height:1.75;}
+.preset-btn{width:100%;margin-bottom:8px;padding:10px 12px;border-radius:6px;border:1.5px solid #142040;background:rgba(8,22,52,.6);color:#8aaccc;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;font-size:11px;text-align:left;transition:all .2s;line-height:1.5;}
+.preset-btn:last-child{margin-bottom:0;}
+.preset-btn:hover{border-color:#2a5090;background:rgba(15,40,100,.5);color:#b0ccee;}
+.preset-btn.active{border-color:#3a80e0;background:rgba(15,55,150,.4);color:#90c8ff;}
+.preset-btn .pb-title{font-weight:700;font-size:12px;display:block;margin-bottom:2px;}
+.preset-btn .pb-desc{font-size:10px;color:#5a7898;}
+.preset-btn.active .pb-desc{color:#6898b8;}
+.leg-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11px;color:#7090b0;}
+.leg-item:last-child{margin-bottom:0;}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;}
+.btn{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;padding:6px 14px;border-radius:4px;border:1px solid #0f2040;background:rgba(8,22,52,.6);color:#5080a0;cursor:pointer;transition:all .15s;}
+.btn:hover{border-color:#2050a0;color:#80a8d0;background:rgba(15,40,100,.5);}
+.btn.primary{border-color:#1a50b0;color:#60a8ff;background:rgba(8,40,110,.4);}
+.btn.primary:hover{background:rgba(15,60,160,.5);}
+</style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">E ⟂ B: Parallel-Plate Velocity Selector</div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+<div id="topbar">
+  <h1>Sim 3 — E ⟂ B: Parallel-Plate Velocity Selector</h1>
+</div>
+<div id="main">
+  <div id="plate-wrap">
+    <canvas id="cPlate"></canvas>
+  </div>
+  <div id="panel">
+    <div class="pblock">
+      <div id="scenario-desc">
+        E = 1500 V/m (fixed), B = 0.5 mT (fixed).<br>
+        Only the electron's <b>speed</b> changes between cases.<br><br>
+        Balance condition: <b style="color:#20ff80">v = E/B = 3.0 Mm/s</b><br><br>
+        Too fast → <span style="color:#ff5050">Bqv dominates</span> → curves toward − plate<br>
+        Just right → <span style="color:#20ff80">straight line</span> through<br>
+        Too slow → <span style="color:#ffd020">qE dominates</span> → curves toward + plate
+      </div>
+    </div>
+    <div class="pblock">
+      <h3>Select Scenario</h3>
+      <button class="preset-btn" id="pb0" onclick="selectPreset(0)">
+        <span class="pb-title" style="color:#ff5050">v = 6.0 Mm/s  (too fast)</span>
+        <span class="pb-desc">Bqv > qE → magnetic force dominates, curves toward − plate</span>
+      </button>
+      <button class="preset-btn active" id="pb1" onclick="selectPreset(1)">
+        <span class="pb-title" style="color:#20ff80">v = 3.0 Mm/s  (balanced)</span>
+        <span class="pb-desc">qE = Bqv → forces balance, electron goes straight</span>
+      </button>
+      <button class="preset-btn" id="pb2" onclick="selectPreset(2)">
+        <span class="pb-title" style="color:#ffd020">v = 1.2 Mm/s  (too slow)</span>
+        <span class="pb-desc">qE > Bqv → electric force dominates, curves toward + plate</span>
+      </button>
+    </div>
+    <div class="pblock">
+      <h3>Legend</h3>
+      <div class="leg-item"><div class="leg-dot" style="background:#ffd020;box-shadow:0 0 5px #ffd02088"></div><span>qE — electric force on electron (upward)</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff30c0;box-shadow:0 0 5px #ff30c088"></div><span>Bqv — magnetic force on electron (downward)</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff5050;box-shadow:0 0 5px #ff505088"></div><span>v too fast → curves toward − plate</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#20ff80;box-shadow:0 0 5px #20ff8088"></div><span>v just right → straight through</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ffd020;box-shadow:0 0 5px #ffd02088"></div><span>v too slow → curves toward + plate</span></div>
+    </div>
+    <div class="pblock">
+      <h3>Simulation</h3>
+      <div class="btn-row">
+        <button class="btn primary" id="ppBtn" onclick="togglePP()">⏸ Pause</button>
+        <button class="btn" onclick="doReset()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const QE=-1.6e-19,ME=9.11e-31,B0=0.5e-3,V0=3.0e6;
+const E_BAL=V0*B0; // 1500 V/m
+const PLATE_W=0.055, PLATE_H=0.022;
+const PRESETS=[
+  {vFrac:2.0,col:0xff5050,desc:'Bqv > qE → magnetic force dominates, curves toward − plate'},
+  {vFrac:1.0,col:0x20ff80,desc:'qE = Bqv → forces balance, electron goes straight'},
+  {vFrac:0.4,col:0xffd020,desc:'qE > Bqv → electric force dominates, curves toward + plate'},
+];
+let activePreset=1,running=true;
+let p2={x:0,y:0,vx:0,vy:0},p2running=true,p2fullTrail=[];
+let plateResetTimer=null;
+
+const cPlate=document.getElementById('cPlate');
+const ctxP=cPlate.getContext('2d');
+function resizePlate(){cPlate.width=cPlate.parentElement.clientWidth;cPlate.height=cPlate.parentElement.clientHeight;}
+window.addEventListener('resize',resizePlate);resizePlate();
+
+function initPlate(idx){
+  activePreset=idx;
+  const v=V0*PRESETS[idx].vFrac;
+  p2={x:0,y:0,vx:v,vy:0};
+  p2fullTrail=[];p2running=true;
+  if(plateResetTimer){clearTimeout(plateResetTimer);plateResetTimer=null;}
+}
+
+function stepPlate(steps=25){
+  if(!p2running)return;
+  const dt2=2e-12;
+  for(let i=0;i<steps;i++){
+    const Fx=QE*(-p2.vy*B0);
+    const Fy=(-QE*E_BAL)+(QE*p2.vx*B0);
+    p2.vx+=Fx/ME*dt2;p2.vy+=Fy/ME*dt2;
+    p2.x+=p2.vx*dt2;p2.y+=p2.vy*dt2;
+    p2fullTrail.push({x:p2.x,y:p2.y});
+    if(p2.x>PLATE_W||Math.abs(p2.y)>PLATE_H){p2running=false;break;}
+  }
+}
+
+function drawPlate(){
+  const W=cPlate.width,H=cPlate.height;
+  ctxP.clearRect(0,0,W,H);
+  ctxP.fillStyle='#050e1c';ctxP.fillRect(0,0,W,H);
+  const marginL=80,marginR=40,marginT=72,marginB=50;
+  const plotW=W-marginL-marginR,plotH=H-marginT-marginB;
+  const scX=plotW/PLATE_W,scY=plotH/(2*PLATE_H);
+  const ox=marginL,oy=marginT+plotH/2;
+  function toSX(x){return ox+x*scX;}
+  function toSY(y){return oy-y*scY;}
+
+  const preset=PRESETS[activePreset];
+  const plateThk=14;
+
+  // TOP PLATE (+)
+  ctxP.fillStyle='#1f3a18';ctxP.fillRect(toSX(0),toSY(PLATE_H)-plateThk,plotW,plateThk);
+  ctxP.strokeStyle='#3a8040';ctxP.lineWidth=1.5;
+  for(let xi=0;xi<8;xi++){const px=toSX(PLATE_W*(xi+.5)/8),py=toSY(PLATE_H)-plateThk/2;ctxP.beginPath();ctxP.moveTo(px-5,py);ctxP.lineTo(px+5,py);ctxP.stroke();ctxP.beginPath();ctxP.moveTo(px,py-5);ctxP.lineTo(px,py+5);ctxP.stroke();}
+  ctxP.fillStyle='#50b060';ctxP.font='bold 13px Arial';ctxP.textAlign='left';ctxP.fillText('+ (positive plate)',toSX(0)+6,toSY(PLATE_H)-plateThk-6);
+
+  // BOTTOM PLATE (-)
+  ctxP.fillStyle='#2a1830';ctxP.fillRect(toSX(0),toSY(-PLATE_H),plotW,plateThk);
+  ctxP.strokeStyle='#883060';ctxP.lineWidth=1.5;
+  for(let xi=0;xi<8;xi++){const px=toSX(PLATE_W*(xi+.5)/8),py=toSY(-PLATE_H)+plateThk/2;ctxP.beginPath();ctxP.moveTo(px-5,py);ctxP.lineTo(px+5,py);ctxP.stroke();}
+  ctxP.fillStyle='#cc6090';ctxP.font='bold 13px Arial';ctxP.textAlign='left';ctxP.fillText('− (negative plate)',toSX(0)+6,toSY(-PLATE_H)+plateThk+16);
+
+  // E FIELD ARROWS (downward)
+  const eArrowY1=toSY(PLATE_H)+2,eArrowY2=toSY(-PLATE_H)-2;
+  ctxP.strokeStyle='rgba(255,210,30,0.45)';ctxP.fillStyle='rgba(255,210,30,0.45)';ctxP.lineWidth=1.5;ctxP.setLineDash([4,3]);
+  for(let xi=0;xi<6;xi++){
+    const ex=toSX(PLATE_W*(xi+.5)/6);
+    ctxP.beginPath();ctxP.moveTo(ex,eArrowY1);ctxP.lineTo(ex,eArrowY2-8);ctxP.stroke();
+    ctxP.setLineDash([]);
+    ctxP.beginPath();ctxP.moveTo(ex,eArrowY2);ctxP.lineTo(ex-5,eArrowY2-10);ctxP.lineTo(ex+5,eArrowY2-10);ctxP.closePath();ctxP.fill();
+    ctxP.setLineDash([4,3]);
+  }
+  ctxP.setLineDash([]);
+  ctxP.fillStyle='rgba(255,210,30,0.85)';ctxP.font='bold 12px Arial';ctxP.textAlign='right';ctxP.fillText('E',toSX(0)-8,oy-plotH*0.25);
+
+  // B FIELD (into page)
+  for(const fy of[-.3,.3])for(const fx of[.15,.35,.55,.75,.9]){
+    const bx=toSX(PLATE_W*fx),by=oy+fy*plotH*0.7;
+    ctxP.beginPath();ctxP.arc(bx,by,9,0,Math.PI*2);ctxP.fillStyle='rgba(255,130,50,0.12)';ctxP.fill();ctxP.strokeStyle='rgba(255,130,50,0.45)';ctxP.lineWidth=1.2;ctxP.stroke();
+    const d=5.5;ctxP.strokeStyle='rgba(255,130,50,0.6)';ctxP.lineWidth=1.5;
+    ctxP.beginPath();ctxP.moveTo(bx-d,by-d);ctxP.lineTo(bx+d,by+d);ctxP.stroke();
+    ctxP.beginPath();ctxP.moveTo(bx+d,by-d);ctxP.lineTo(bx-d,by+d);ctxP.stroke();
+  }
+  ctxP.fillStyle='rgba(255,130,50,0.75)';ctxP.font='bold 11px Arial';ctxP.textAlign='right';ctxP.fillText('B (into page)',toSX(0)-8,oy+plotH*0.3);
+
+  // ENTRY ARROW
+  const entryY=toSY(0);
+  ctxP.strokeStyle='rgba(100,160,255,0.7)';ctxP.fillStyle='rgba(100,160,255,0.7)';ctxP.lineWidth=2;ctxP.setLineDash([]);
+  ctxP.beginPath();ctxP.moveTo(toSX(0)-50,entryY);ctxP.lineTo(toSX(0)-4,entryY);ctxP.stroke();
+  ctxP.beginPath();ctxP.moveTo(toSX(0)+2,entryY);ctxP.lineTo(toSX(0)-12,entryY-6);ctxP.lineTo(toSX(0)-12,entryY+6);ctxP.closePath();ctxP.fill();
+  ctxP.font='11px Arial';ctxP.textAlign='right';ctxP.fillText('electron',toSX(0)-54,entryY-8);ctxP.fillText('→  v',toSX(0)-54,entryY+4);
+
+  // TRAIL
+  const hex=preset.col;const tr=(hex>>16)&0xff,tg=(hex>>8)&0xff,tb=hex&0xff;
+  if(p2fullTrail.length>1){
+    ctxP.strokeStyle=`rgba(${tr},${tg},${tb},0.9)`;ctxP.lineWidth=2.5;ctxP.setLineDash([]);
+    ctxP.beginPath();let started=false;
+    for(const pt of p2fullTrail){
+      if(Math.abs(pt.y)>PLATE_H||pt.x<0||pt.x>PLATE_W){started=false;continue;}
+      const sx=toSX(pt.x),sy=toSY(pt.y);
+      if(!started){ctxP.moveTo(sx,sy);started=true;}else ctxP.lineTo(sx,sy);
+    }
+    ctxP.stroke();
+    if(p2fullTrail.length>=8){
+      const mi=Math.floor(p2fullTrail.length*0.5);
+      const p0=p2fullTrail[Math.max(0,mi-3)],p1=p2fullTrail[Math.min(p2fullTrail.length-1,mi+3)];
+      const dx=p1.x-p0.x,dy=p1.y-p0.y,dlen=Math.sqrt(dx*dx+dy*dy);
+      if(dlen>0){const nx=dx/dlen,ny=dy/dlen,snx=nx,sny=-ny;const mx=toSX(p2fullTrail[mi].x),my=toSY(p2fullTrail[mi].y),as=16;
+        ctxP.fillStyle=`rgba(${tr},${tg},${tb},1)`;ctxP.beginPath();ctxP.moveTo(mx+snx*as,my+sny*as);ctxP.lineTo(mx-snx*as+sny*as*0.6,my-sny*as-snx*as*0.6);ctxP.lineTo(mx-snx*as-sny*as*0.6,my-sny*as+snx*as*0.6);ctxP.closePath();ctxP.fill();}
+    }
+  }
+
+  // ELECTRON + FORCE ARROWS
+  const ex=toSX(p2.x),ey=toSY(p2.y),inPlate=p2.x>=0&&p2.x<=PLATE_W&&Math.abs(p2.y)<=PLATE_H;
+  if(inPlate){
+    ctxP.fillStyle='#2060ff';ctxP.beginPath();ctxP.arc(ex,ey,8,0,Math.PI*2);ctxP.fill();
+    ctxP.fillStyle='rgba(64,144,255,.25)';ctxP.beginPath();ctxP.arc(ex,ey,15,0,Math.PI*2);ctxP.fill();
+    const F_E_mag=Math.abs(QE)*E_BAL,F_B_mag=Math.abs(QE)*Math.abs(p2.vx)*B0;
+    const forceScale=plotH*0.22/(Math.abs(QE)*E_BAL);
+    drawForceArrow(ctxP,ex,ey,ex,ey-Math.max(6,F_E_mag*forceScale),'#ffd020','qE\n(electric)','right');
+    drawForceArrow(ctxP,ex,ey,ex,ey+Math.max(6,F_B_mag*forceScale),'#ff30c0','Bqv\n(magnetic)','right');
+  }
+
+  // STATUS
+  const statusCols=['#ff7070','#20ff80','#ffd020'];
+  ctxP.fillStyle=statusCols[activePreset];ctxP.font='bold 13px Arial';ctxP.textAlign='center';
+  ctxP.fillText(preset.desc,W/2,H-14);
+
+  // FIXED LABELS
+  ctxP.font='11px Arial';ctxP.textAlign='right';ctxP.fillStyle='rgba(180,200,220,0.6)';
+  ctxP.fillText('E = 1500 V/m (fixed)',W-marginR,marginT-42);ctxP.fillText('B = 0.5 mT  (fixed)',W-marginR,marginT-26);
+  ctxP.fillStyle=statusCols[activePreset];ctxP.font='bold 12px Arial';
+  ctxP.fillText(`v = ${(V0*PRESETS[activePreset].vFrac/1e6).toFixed(1)} Mm/s`,W-marginR,marginT-10);
+
+  // LIVE FORCE VALUES
+  const F_E_disp=Math.abs(QE)*E_BAL,F_B_disp=Math.abs(QE)*Math.abs(p2.vx)*B0;
+  ctxP.font='11px Arial';ctxP.textAlign='left';
+  ctxP.fillStyle='#ffd020';ctxP.fillText(`qE  = ${(F_E_disp*1e16).toFixed(2)} × 10⁻¹⁶ N`,ox,marginT-38);
+  ctxP.fillStyle='#ff30c0';ctxP.fillText(`Bqv = ${(F_B_disp*1e16).toFixed(2)} × 10⁻¹⁶ N`,ox,marginT-22);
+  ctxP.fillStyle='rgba(180,200,220,0.6)';ctxP.fillText(`Bqv / qE = ${(F_B_disp/F_E_disp).toFixed(2)}`,ox,marginT-6);
+}
+
+function drawForceArrow(ctx,x1,y1,x2,y2,col,lbl){
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<3)return;
+  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  const ang=Math.atan2(dy,dx),hs=Math.min(12,len*.45);
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hs*Math.cos(ang-.4),y2-hs*Math.sin(ang-.4));ctx.lineTo(x2-hs*Math.cos(ang+.4),y2-hs*Math.sin(ang+.4));ctx.closePath();ctx.fill();
+  if(lbl){const lines=lbl.split('\n');ctx.font='bold 12px Arial';const tx=(x1+x2)/2+14,ty=(y1+y2)/2;lines.forEach((line,i)=>{ctx.textAlign='left';ctx.fillText(line,tx,ty+(i-lines.length/2+.5)*15);});}
+}
+
+function selectPreset(idx){
+  activePreset=idx;
+  document.querySelectorAll('.preset-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  initPlate(idx);
+}
+function togglePP(){running=!running;document.getElementById('ppBtn').textContent=running?'⏸ Pause':'▶ Play';}
+function doReset(){initPlate(activePreset);}
+
+initPlate(1);
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(running){
+    if(!p2running){
+      if(!plateResetTimer)plateResetTimer=setTimeout(()=>{initPlate(activePreset);plateResetTimer=null;},1200);
+    }else{stepPlate(25);}
+    drawPlate();
+  }else{drawPlate();}
+}
+animate();
+</script>
+
+    </div>
+    
+    
+</body>
+</html>

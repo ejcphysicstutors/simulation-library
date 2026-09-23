@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photoelectric Effect Using Gold Leaf Electroscope</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f1f5f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .control-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid #334155;
+        }
+        input[type="range"] {
+            accent-color: #3b82f6;
+        }
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        select {
+            background-color: #1e293b;
+            color: #f1f5f9;
+            border: 1px solid #334155;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-toggle {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Photoelectric Effect Using Gold Leaf Electroscope</div>
+            <div class="ejc-credit-author">Created by <strong>Seetoh Huixia</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left: Simulation Display -->
+        <div class="lg:col-span-2">
+            <div class="mb-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Photoelectric Effect</h1>
+                    <p class="text-slate-400 text-sm">Gold Leaf Electroscope Simulation</p>
+                </div>
+                <div id="charge-status" class="status-pill bg-slate-700 text-slate-300">Neutral</div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="simCanvas"></canvas>
+            </div>
+            
+            <div class="mt-6 p-4 rounded-lg bg-slate-800/50 border border-slate-700">
+                <h3 class="text-sm font-bold text-slate-300 mb-2">Scientific Context:</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Light can eject electrons when the photon energy <i>E</i> = <i>hf</i> exceeds the metal's <b>work function (Φ)</b>. 
+                    If the plate is <span class="text-slate-300 font-bold">Neutral</span>, it will become <span class="text-blue-400 font-bold">Positively Charged</span> (blue circles) as electrons leave. If it is already <span class="text-red-400 font-bold">Negative</span> (red circles), it will lose its charge and the leaf will fall.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right: Controls -->
+        <div class="space-y-6">
+            <div class="control-panel p-6 rounded-2xl space-y-6">
+                <h2 class="text-xl font-semibold border-b border-slate-700 pb-2">Equipment Controls</h2>
+                
+                <!-- Light Source Power -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Light Source Power:</label>
+                    <button id="powerBtn" onclick="toggleLight()" class="w-full py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600">
+                        <svg id="powerIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+                        <span id="powerTxt">Light Source OFF</span>
+                    </button>
+                </div>
+
+                <!-- Metal Selection -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Target Metal:</label>
+                    <select id="metalSelect" onchange="updateMetal()">
+                        <option value="cesium">Cesium (Φ = 2.10 eV)</option>
+                        <option value="sodium">Sodium (Φ = 2.36 eV)</option>
+                        <option value="calcium">Calcium (Φ = 2.90 eV)</option>
+                        <option value="zinc" selected>Zinc (Φ = 4.30 eV)</option>
+                        <option value="copper">Copper (Φ = 4.70 eV)</option>
+                        <option value="platinum">Platinum (Φ = 5.63 eV)</option>
+                    </select>
+                </div>
+
+                <!-- Electroscope State -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Charge Electroscope:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="chargeElectroscope(-1)" class="py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-bold transition-all">Negative (-)</button>
+                        <button onclick="chargeElectroscope(1)" class="py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-bold transition-all">Positive (+)</button>
+                    </div>
+                    <button onclick="resetSimulation()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-bold transition-all">Ground / Reset</button>
+                </div>
+
+                <!-- Radiation Frequency -->
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <label class="text-sm font-medium text-slate-300">Radiation Frequency</label>
+                        <span id="freq-val" class="text-xs text-blue-400 font-mono">Visible</span>
+                    </div>
+                    <input type="range" id="freqRange" min="0" max="100" value="30" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500">
+                        <span>INFRARED</span>
+                        <span>VISIBLE</span>
+                        <span>ULTRAVIOLET</span>
+                    </div>
+                </div>
+
+                <!-- Radiation Intensity -->
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <label class="text-sm font-medium text-slate-300">Intensity (Photon Flux)</label>
+                        <span id="intensity-val" class="text-xs text-blue-400 font-mono">Medium</span>
+                    </div>
+                    <input type="range" id="intensityRange" min="0" max="100" value="50" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- Observation Data -->
+                <div class="bg-black/30 p-4 rounded-xl space-y-2 border border-slate-700/50">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Work Function (Φ):</span>
+                        <span id="work-func-display" class="text-yellow-600 font-bold">4.30 eV</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Photon Energy:</span>
+                        <span id="photon-energy" class="text-blue-400 font-mono">-- eV</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Deflection Angle:</span>
+                        <span id="angle-display" class="text-green-400 font-mono">0°</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Emission Status:</span>
+                        <span id="emission-status" class="text-red-400 font-mono font-bold">OFF</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-blue-900/20 border border-blue-800/50 rounded-xl text-xs text-blue-200/70">
+                <strong>Measurement:</strong> Use the protractor overlay to observe the relationship between the net charge and the angle of deflection.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const freqRange = document.getElementById('freqRange');
+        const intensityRange = document.getElementById('intensityRange');
+        const metalSelect = document.getElementById('metalSelect');
+        const powerBtn = document.getElementById('powerBtn');
+        const powerTxt = document.getElementById('powerTxt');
+
+        const metals = {
+            cesium: { name: "Cesium", phi: 2.10, color: "#d1d5db" },
+            sodium: { name: "Sodium", phi: 2.36, color: "#e5e7eb" },
+            calcium: { name: "Calcium", phi: 2.90, color: "#cbd5e1" },
+            zinc: { name: "Zinc", phi: 4.30, color: "#94a3b8" },
+            copper: { name: "Copper", phi: 4.70, color: "#b45309" },
+            platinum: { name: "Platinum", phi: 5.63, color: "#e2e8f0" }
+        };
+        
+        let state = {
+            charge: 0, 
+            targetCharge: 0,
+            leafAngle: 0,
+            targetAngle: 0,
+            frequency: 30,
+            intensity: 50,
+            isLightOn: false, // Default to OFF on start
+            electrons: [],
+            photons: [],
+            lastUpdate: Date.now(),
+            currentMetal: 'zinc',
+            workFunction: 4.30,
+            electronSlots: {
+                plate: [], rod: [], staticLeaf: [], movingLeaf: []
+            }
+        };
+
+        const MAX_LEAF_ANGLE = Math.PI / 4; // 45 degrees
+
+        function generateElectronSlots() {
+            const scale = canvas.width / 400;
+            const slots = { plate: [], rod: [], staticLeaf: [], movingLeaf: [] };
+            for(let i=0; i<30; i++) slots.plate.push({ relX: Math.cos(Math.random()*Math.PI*2)*65*scale*Math.random()*0.85, relY: Math.sin(Math.random()*Math.PI*2)*18*scale*Math.random()*0.85 });
+            for(let i=0; i<20; i++) slots.rod.push({ relX: (Math.random()-0.5)*10*scale, relY: (Math.random()*180-90)*scale });
+            for(let i=0; i<15; i++) slots.staticLeaf.push({ relX: (Math.random()*5)*scale, relY: (Math.random()*85)*scale });
+            for(let i=0; i<15; i++) slots.movingLeaf.push({ relX: (Math.random()*4-2)*scale, relY: (Math.random()*85)*scale });
+            state.electronSlots = slots;
+        }
+
+        function resize() {
+            const size = canvas.parentElement.clientWidth;
+            canvas.width = size; canvas.height = size;
+            generateElectronSlots();
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function toggleLight() {
+            state.isLightOn = !state.isLightOn;
+            powerBtn.className = state.isLightOn ? "w-full py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500" : "w-full py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600";
+            powerTxt.innerText = state.isLightOn ? "Light Source ON" : "Light Source OFF";
+            if (!state.isLightOn) state.photons = [];
+        }
+
+        function updateMetal() {
+            const m = metalSelect.value;
+            state.currentMetal = m;
+            state.workFunction = metals[m].phi;
+            const display = document.getElementById('work-func-display');
+            if (display) display.innerText = state.workFunction.toFixed(2) + " eV";
+        }
+
+        function chargeElectroscope(val) {
+            state.targetCharge = val;
+            state.charge = val; 
+        }
+
+        function resetSimulation() {
+            state.targetCharge = 0; 
+            state.charge = 0;
+            state.electrons = []; 
+            state.photons = [];
+            state.isLightOn = false; // Turn off on reset
+            powerBtn.className = "w-full py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600";
+            powerTxt.innerText = "Light Source OFF";
+        }
+
+        function getColorFromFreq(f) {
+            if (f < 30) return '#ef4444'; 
+            if (f < 50) return '#eab308'; 
+            if (f < 70) return '#3b82f6'; 
+            return '#a855f7'; 
+        }
+
+        function drawElectron(ctx, x, y, scale) {
+            const r = 3 * scale;
+            ctx.fillStyle = '#ef4444'; 
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'white'; ctx.fillRect(x - 1.5 * scale, y - 0.4 * scale, 3 * scale, 0.8 * scale);
+        }
+
+        function drawPositiveCharge(ctx, x, y, scale) {
+            const r = 3 * scale;
+            ctx.fillStyle = '#3b82f6'; 
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.fillRect(x - 1.5 * scale, y - 0.4 * scale, 3 * scale, 0.8 * scale);
+            ctx.fillRect(x - 0.4 * scale, y - 1.5 * scale, 0.8 * scale, 3 * scale);
+        }
+
+        function drawProtractor(ctx, cx, cy, scale) {
+            const pivotX = cx + 4 * scale;
+            const pivotY = cy + 30 * scale;
+            const radius = 90 * scale;
+            
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // Draw arc background
+            ctx.beginPath();
+            ctx.moveTo(pivotX, pivotY);
+            ctx.arc(pivotX, pivotY, radius, Math.PI / 2, Math.PI / 2 + MAX_LEAF_ANGLE * 1.2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw markings
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = `${10 * scale}px monospace`;
+            
+            for (let deg = 0; deg <= 60; deg += 5) {
+                const rad = deg * (Math.PI / 180);
+                const angle = Math.PI / 2 + rad;
+                
+                const xStart = pivotX + Math.cos(angle) * (radius - 5 * scale);
+                const yStart = pivotY + Math.sin(angle) * (radius - 5 * scale);
+                const xEnd = pivotX + Math.cos(angle) * radius;
+                const yEnd = pivotY + Math.sin(angle) * radius;
+                
+                ctx.beginPath();
+                ctx.moveTo(xStart, yStart);
+                ctx.lineTo(xEnd, yEnd);
+                ctx.stroke();
+                
+                if (deg % 15 === 0) {
+                    const xText = pivotX + Math.cos(angle) * (radius + 12 * scale);
+                    const yText = pivotY + Math.sin(angle) * (radius + 12 * scale);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.fillText(deg + '°', xText, yText);
+                }
+            }
+            ctx.restore();
+        }
+
+        function update() {
+            const now = Date.now();
+            const dt = (now - state.lastUpdate) / 1000;
+            state.lastUpdate = now;
+            const cx = canvas.width / 2; const cy = canvas.height / 2; const scale = canvas.width / 400;
+
+            state.frequency = parseInt(freqRange.value);
+            state.intensity = parseInt(intensityRange.value);
+
+            const photonEnergy = 1.5 + (state.frequency / 100) * 5.5;
+            const photonDisplay = document.getElementById('photon-energy');
+            if (photonDisplay) photonDisplay.innerText = photonEnergy.toFixed(2) + " eV";
+            
+            const currentAngleDeg = (state.leafAngle * (180 / Math.PI)).toFixed(1);
+            const angleDisplay = document.getElementById('angle-display');
+            if (angleDisplay) angleDisplay.innerText = currentAngleDeg + "°";
+            
+            let freqText = state.frequency < 25 ? "Infrared" : (state.frequency > 75 ? "Ultraviolet" : "Visible");
+            const freqDisplay = document.getElementById('freq-val');
+            if (freqDisplay) freqDisplay.innerText = freqText;
+            
+            const intensityDisplay = document.getElementById('intensity-val');
+            if (intensityDisplay) intensityDisplay.innerText = state.intensity > 70 ? "High" : (state.intensity < 30 ? "Low" : "Medium");
+
+            const statusPill = document.getElementById('charge-status');
+            if (statusPill) {
+                if (state.charge < -0.05) { statusPill.innerText = "Negative (-)"; statusPill.className = "status-pill bg-red-900 text-red-100"; }
+                else if (state.charge > 0.05) { statusPill.innerText = "Positive (+)"; statusPill.className = "status-pill bg-blue-900 text-blue-100"; }
+                else { statusPill.innerText = "Neutral"; statusPill.className = "status-pill bg-slate-700 text-slate-300"; }
+            }
+
+            const isEmitting = state.isLightOn && photonEnergy > state.workFunction && state.intensity > 0 && state.charge < 0.25;
+            
+            let statusStr = "OFF";
+            if (isEmitting) statusStr = "EMITTING";
+            else if (!state.isLightOn) statusStr = "OFF (Power)";
+            else if (photonEnergy <= state.workFunction) statusStr = "OFF (Threshold)";
+            else if (state.charge >= 0.25) statusStr = "OFF (Saturation)";
+            
+            const emissionDisplay = document.getElementById('emission-status');
+            if (emissionDisplay) {
+                emissionDisplay.innerText = statusStr;
+                emissionDisplay.className = isEmitting ? "text-green-400 font-mono font-bold" : "text-red-400 font-mono font-bold";
+            }
+
+            if (state.isLightOn && Math.random() < state.intensity / 200) {
+                const lx = cx - 100 * scale; const ly = 50 * scale;
+                const px = cx + (Math.random() - 0.5) * 60 * scale; const py = cy - 100 * scale;
+                const dx = px - lx, dy = py - ly, dist = Math.sqrt(dx*dx + dy*dy), speed = 6 + Math.random() * 4;
+                state.photons.push({ x: lx, y: ly, vx: (dx/dist)*speed, vy: (dy/dist)*speed, color: getColorFromFreq(state.frequency), angle: Math.atan2(dy, dx) });
+            }
+
+            if (isEmitting) {
+                const lossRate = (photonEnergy - state.workFunction) * (state.intensity / 5000);
+                state.charge += lossRate;
+                if (state.charge > 0.25) state.charge = 0.25;
+            }
+
+            state.targetAngle = Math.abs(state.charge) * MAX_LEAF_ANGLE;
+            state.leafAngle += (state.targetAngle - state.leafAngle) * 0.1;
+
+            state.photons.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.y > cy - 110 * scale && p.y < cy - 90 * scale && Math.abs(p.x - cx) < 65 * scale) {
+                    p.collided = true;
+                    if (isEmitting) {
+                        state.electrons.push({ x: p.x, y: p.y, vx: (Math.random()-0.5)*4, vy: -3-Math.random()*5, life: 1.0 });
+                    }
+                }
+            });
+            state.photons = state.photons.filter(p => !p.collided && p.y < canvas.height && p.x < canvas.width);
+            state.electrons.forEach(e => { e.x += e.vx; e.y += e.vy; e.life -= 0.015; });
+            state.electrons = state.electrons.filter(e => e.life > 0);
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2; const cy = canvas.height / 2; const scale = canvas.width / 400;
+
+            // 1. Protractor (Drawn behind leaves)
+            drawProtractor(ctx, cx, cy, scale);
+
+            // 2. Light Source
+            const lx = cx - 100 * scale, ly = 50 * scale;
+            if (state.isLightOn) {
+                ctx.shadowBlur = 20; ctx.shadowColor = getColorFromFreq(state.frequency);
+                ctx.fillStyle = ctx.shadowColor; ctx.beginPath(); ctx.arc(lx, ly, 30*scale, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+            } else { ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(lx, ly, 30*scale, 0, Math.PI*2); ctx.fill(); }
+
+            // 3. Photons
+            state.photons.forEach(p => {
+                ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+                ctx.beginPath(); for (let i = -10; i < 10; i++) ctx.lineTo(i, Math.sin(i*0.5)*4); ctx.stroke(); ctx.restore();
+            });
+
+            // 4. Container & Metal
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(cx-85*scale, cy-60*scale, 170*scale, 220*scale, 20); ctx.stroke();
+            ctx.fillStyle = metals[state.currentMetal].color; ctx.beginPath(); ctx.ellipse(cx, cy-100*scale, 65*scale, 18*scale, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(cx-5*scale, cy-100*scale, 10*scale, 185*scale);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(cx+1*scale, cy+30*scale, 5*scale, 85*scale);
+
+            // 5. Moving Leaf
+            ctx.save(); ctx.translate(cx+4*scale, cy+30*scale); ctx.rotate(state.leafAngle); ctx.fillRect(-2.5*scale, 0, 4*scale, 85*scale);
+            if (state.charge < -0.05) {
+                const count = Math.floor(Math.abs(state.charge) * state.electronSlots.movingLeaf.length);
+                for (let i = 0; i < count; i++) drawElectron(ctx, state.electronSlots.movingLeaf[i].relX, state.electronSlots.movingLeaf[i].relY, scale);
+            } else if (state.charge > 0.05) {
+                const count = Math.floor(Math.abs(state.charge) * state.electronSlots.movingLeaf.length);
+                for (let i = 0; i < count; i++) drawPositiveCharge(ctx, state.electronSlots.movingLeaf[i].relX, state.electronSlots.movingLeaf[i].relY, scale);
+            }
+            ctx.restore();
+
+            // 6. Static Charges
+            if (state.charge < -0.05) {
+                // Negative (Electrons - Red)
+                let c = Math.floor(Math.abs(state.charge) * state.electronSlots.plate.length);
+                for (let i=0; i<c; i++) drawElectron(ctx, cx + state.electronSlots.plate[i].relX, (cy-100*scale)+state.electronSlots.plate[i].relY, scale);
+                c = Math.floor(Math.abs(state.charge) * state.electronSlots.rod.length);
+                for (let i=0; i<c; i++) drawElectron(ctx, cx + state.electronSlots.rod[i].relX, (cy-10*scale)+state.electronSlots.rod[i].relY, scale);
+                c = Math.floor(Math.abs(state.charge) * state.electronSlots.staticLeaf.length);
+                for (let i=0; i<c; i++) drawElectron(ctx, (cx+1*scale)+state.electronSlots.staticLeaf[i].relX, (cy+30*scale)+state.electronSlots.staticLeaf[i].relY, scale);
+            } else if (state.charge > 0.05) {
+                // Positive (Ions - Blue)
+                let c = Math.floor(Math.abs(state.charge) * state.electronSlots.plate.length);
+                for (let i=0; i<c; i++) drawPositiveCharge(ctx, cx + state.electronSlots.plate[i].relX, (cy-100*scale)+state.electronSlots.plate[i].relY, scale);
+                c = Math.floor(Math.abs(state.charge) * state.electronSlots.rod.length);
+                for (let i=0; i<c; i++) drawPositiveCharge(ctx, cx + state.electronSlots.rod[i].relX, (cy-10*scale)+state.electronSlots.rod[i].relY, scale);
+                c = Math.floor(Math.abs(state.charge) * state.electronSlots.staticLeaf.length);
+                for (let i=0; i<c; i++) drawPositiveCharge(ctx, (cx+1*scale)+state.electronSlots.staticLeaf[i].relX, (cy+30*scale)+state.electronSlots.staticLeaf[i].relY, scale);
+            }
+
+            // 7. Ejected Electrons (Red)
+            state.electrons.forEach(e => { 
+                ctx.shadowBlur = 10; ctx.shadowColor = '#f87171';
+                ctx.fillStyle = `rgba(248, 113, 113, ${e.life})`;
+                ctx.beginPath(); ctx.arc(e.x, e.y, 4*scale, 0, Math.PI*2); ctx.fill(); 
+                ctx.shadowBlur = 0; 
+            });
+        }
+        update();
+    </script>
+
+    </div>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</body>
+</html>

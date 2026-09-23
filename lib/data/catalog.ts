@@ -107,9 +107,9 @@ export const simulations: SimulationSummary[] = [
     primaryTopicId: "9478-motion-forces",
     relatedTopicIds: ["9478-energy-fields"],
     status: "migration",
-    migrationStatus: "needs-repair",
+    migrationStatus: "needs-review",
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/forces-on-an-object-sliding-down-a-curved-path.html",
-    migrationNote: "Angle and interface symbols show encoding corruption in the legacy source."
+    migrationNote: "Held for physics review: the legacy explanation states that the normal force balances mg cos θ, which is not generally true on a curved path when normal acceleration is present."
   },
   {
     id: "legacy-car-chase",
@@ -242,10 +242,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H1", "H2"],
     primaryTopicId: "9478-electromagnetic-forces",
     relatedTopicIds: ["9478-electric-fields"],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/motion-of-electron-launched-at-angle-to-a-uniform-magnetic-field-b/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/motion-of-electron-launched-at-angle-to-a-uniform-magnetic-field-b.html",
-    migrationNote: "Angle, parallel/perpendicular and vector notation show encoding corruption."
+    migrationNote: "Repaired θ, v∥/v⊥, cross-product and perpendicular notation; removed accidentally duplicated Three.js/script blocks during migration."
   },
   {
     id: "legacy-helix-pitch",
@@ -256,10 +258,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H3"],
     primaryTopicId: "h3-electric-magnetic-fields",
     relatedTopicIds: ["9478-electric-fields"],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/e-b-changing-helix-pitch/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/e-b-changing-helix-pitch.html",
-    migrationNote: "Cross-product, parallel/perpendicular, angle and arrow symbols show extensive encoding corruption."
+    migrationNote: "Repaired parallel/perpendicular, angle, arrow and interface symbols; removed an accidentally duplicated Three.js/script block during migration."
   },
   {
     id: "legacy-velocity-selector",
@@ -270,10 +274,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H3"],
     primaryTopicId: "h3-electric-magnetic-fields",
     relatedTopicIds: ["9478-electric-fields"],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/e-b-parallel-plate-velocity-selector/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/e-b-parallel-plate-velocity-selector.html",
-    migrationNote: "Cross-product, charge, arrow and scientific-notation symbols show encoding corruption."
+    migrationNote: "Repaired perpendicular-field notation, charge signs, arrows and scientific notation; removed an accidentally duplicated inline script during migration."
   },
   {
     id: "legacy-photoelectric-gold-leaf",
@@ -284,10 +290,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-quantum-physics",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/photoelectric-effect-using-gold-leaf-electroscope/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/photoelectric-effect-using-gold-leaf-electroscope.html",
-    migrationNote: "Contains raw LaTeX without MathJax/KaTeX and corrupted phi symbols."
+    migrationNote: "Replaced raw LaTeX with browser-safe physics notation, repaired Φ and degree symbols, and removed an accidentally duplicated inline script during migration."
   },
   {
     id: "legacy-gold-leaf-experiment",
@@ -298,10 +306,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-quantum-physics",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/the-gold-leaf-electroscope-experiment/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/the-gold-leaf-electroscope-experiment.html",
-    migrationNote: "Electron, minus and arrow symbols show encoding corruption."
+    migrationNote: "Repaired electron/minus signs and explanatory separators; removed an accidentally duplicated inline script during migration."
   },
   {
     id: "legacy-photoelectric",
@@ -312,10 +322,12 @@ export const simulations: SimulationSummary[] = [
     levels: ["H2"],
     primaryTopicId: "9478-quantum-physics",
     relatedTopicIds: [],
-    status: "migration",
-    migrationStatus: "needs-repair",
+    status: "published",
+    migrationStatus: "ready",
+    contentPath: "/simulations/photoelectric-effect/index.html",
+    publishedVersion: 1,
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/photoelectric-effect.html",
-    migrationNote: "Electron charge and several interface symbols show encoding corruption."
+    migrationNote: "Repaired electron and interface notation, clarified below-threshold wording, and removed an accidentally duplicated inline script during migration."
   },
   {
     id: "legacy-heisenberg",
@@ -327,9 +339,9 @@ export const simulations: SimulationSummary[] = [
     primaryTopicId: "9478-quantum-physics",
     relatedTopicIds: [],
     status: "migration",
-    migrationStatus: "needs-repair",
+    migrationStatus: "needs-review",
     legacyUrl: "https://ejcphysicstutors.github.io/simulations/simulations/heisenberg-uncertainty.html",
-    migrationNote: "Delta, psi, infinity and other mathematical symbols show encoding corruption."
+    migrationNote: "Held for physics review: the legacy text uses an approximate uncertainty relation Δx·Δp ≈ h; this should be aligned to the intended syllabus statement before publication."
   },
   {
     id: "legacy-rutherford",

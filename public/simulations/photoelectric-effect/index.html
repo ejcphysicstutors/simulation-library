@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photoelectric effect </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .ejc-credit-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+        }
+        
+        .ejc-credit-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ejc-credit-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .ejc-credit-author {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .ejc-credit-author strong {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+    </style>
+    <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 24px;
+    width: 100%;
+    max-width: 760px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+  }
+  .slider-section { margin-top: 16px; }
+  .s-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .s-row label {
+    font-size: 12px;
+    color: #666;
+    min-width: 72px;
+  }
+  .s-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .track-wrap {
+    position: relative;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .spectrum-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 5px;
+    background: linear-gradient(to right,
+      #ff2200 0%, #ff6600 12.5%, #ffcc00 25%,
+      #44cc00 37.5%, #0088ff 50%, #7700cc 62.5%,
+      #9900ee 75%, #ff00ff 100%);
+  }
+  .intensity-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 5px;
+    background: linear-gradient(to right, rgba(180,180,220,0.15), rgba(180,180,220,0.95));
+  }
+  .s-col input[type=range] { width: 100%; margin: 2px 0 0; cursor: pointer; }
+  .tick-row {
+    display: flex;
+    font-size: 10px;
+    color: #888;
+  }
+  .tick-row span { display: inline-block; text-align: center; }
+  .tick-row span.uv { color: #9933cc; font-weight: 600; }
+  .sv {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 130px;
+    color: #222;
+  }
+  .explain {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    background: #f8f8f8;
+    min-height: 60px;
+  }
+  .etitle {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .ebody {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .int-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #777;
+    font-style: italic;
+    min-height: 18px;
+  }
+  .leg {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #666;
+  }
+  .ld {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .footer-note {
+    margin-top: 14px;
+    font-size: 11px;
+    color: #aaa;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+    <div class="ejc-credit-banner">
+        <div class="ejc-credit-content">
+            <div class="ejc-credit-title">Photoelectric effect </div>
+            <div class="ejc-credit-author">Created by <strong>Lim Hwee Ke</strong> | EJC Physics</div>
+        </div>
+    </div>
+    
+    <div class="ejc-simulation-container">
+        
+<div class="card">
+  <h1>Photoelectric Effect</h1>
+  <p class="subtitle">Drag the sliders to explore how light frequency and intensity affect electron emission.</p>
+
+  <canvas id="c" height="320"></canvas>
+
+  <div class="slider-section">
+    <div class="s-row">
+      <label>Light type</label>
+      <div class="s-col">
+        <div class="track-wrap"><div class="spectrum-track"></div></div>
+        <input type="range" id="sl" min="0" max="1" value="0" step="0.001">
+        <div class="tick-row" id="ticks"></div>
+      </div>
+      <span class="sv" id="lbl">Red light</span>
+    </div>
+    <div class="s-row">
+      <label>Intensity</label>
+      <div class="s-col">
+        <div class="track-wrap"><div class="intensity-track"></div></div>
+        <input type="range" id="sl2" min="1" max="10" value="2" step="1">
+      </div>
+      <span class="sv" id="lbl2">Low</span>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="etitle" id="etitle" style="color:#ff4422">Red light</div>
+    <div class="ebody" id="ebody">Each photon carries a small packet of energy. When it enters the metal and hits an electron, the energy is not enough to pull the electron free. No electron is emitted, no matter how many photons arrive. In this simplified animation, a photon that does not eject an electron is shown scattering away.</div>
+    <div class="int-note" id="inote"></div>
+  </div>
+
+  <div class="leg">
+    <div class="li"><div class="ld" style="background:#99aadd"></div>Electron (e⁻) in metal</div>
+    <div class="li"><div class="ld" style="background:#cc88ff"></div>Photon (wave packet)</div>
+    <div class="li"><div class="ld" style="background:#ffee44"></div>Liberated electron</div>
+  </div>
+
+  <p class="footer-note">Simulation — no numerical values shown intentionally. Depth of electron indicates energy needed to escape.</p>
+</div>
+
+<script>
+// ?? Tick labels ??????????????????????????????????????????????????????????????
+const TICK_DEFS=[
+  {label:'Red',    w:'12.5%'},
+  {label:'Orange', w:'12.5%'},
+  {label:'Yellow', w:'12.5%'},
+  {label:'Green',  w:'12.5%'},
+  {label:'Blue',   w:'12.5%'},
+  {label:'Violet', w:'12.5%'},
+  {label:'UV',  w:'25%', uv:true},
+];
+const tickRow=document.getElementById('ticks');
+TICK_DEFS.forEach(td=>{
+  const sp=document.createElement('span');
+  sp.textContent=td.label;
+  sp.style.width=td.w;
+  if(td.uv) sp.className='uv';
+  tickRow.appendChild(sp);
+});
+
+// ?? Canvas setup ?????????????????????????????????????????????????????????????
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const W=700,H=320;
+cv.width=W; cv.height=H;
+const SURF=185;
+const MX=26,MY=SURF+14,MW=W-52,MH=H-SURF-18;
+const COLS=14,ROWS=6;
+
+const slFreq=document.getElementById('sl');
+const slInt=document.getElementById('sl2');
+
+// ?? Light settings ????????????????????????????????????????????????????????????
+function getLS(v){
+  if(v<0.125) return {name:'Red light',    col:'#ff3311',r:4.5,uv:false,uvFrac:0};
+  if(v<0.25)  return {name:'Orange light', col:'#ff7700',r:5.1,uv:false,uvFrac:0};
+  if(v<0.375) return {name:'Yellow light', col:'#ddcc00',r:5.7,uv:false,uvFrac:0};
+  if(v<0.50)  return {name:'Green light',  col:'#22bb44',r:6.2,uv:false,uvFrac:0};
+  if(v<0.625) return {name:'Blue light',   col:'#2277ff',r:6.8,uv:false,uvFrac:0};
+  if(v<0.75)  return {name:'Violet light', col:'#8833ee',r:7.3,uv:false,uvFrac:0};
+  const f=Math.min(1,(v-0.75)/0.25);
+  return {
+    name: f<0.5?'UV (lower energy)':'UV (higher energy)',
+    col:`hsl(290,100%,${62-f*10}%)`,
+    r:8+f*5, uv:true, uvFrac:f
+  };
+}
+
+function getIntLabel(v){
+  if(v<=2)return'Low'; if(v<=5)return'Medium'; if(v<=8)return'High'; return'Very high';
+}
+
+function getIntNote(fv,iv){
+  if(fv<0.75) return iv>=5
+    ?'Higher intensity means more photons arriving — but each photon still lacks the energy to free an electron.'
+    :'';
+  if(iv<=2) return'Low intensity: fewer photons arrive, so fewer electrons are liberated — but each photoemission event is still effectively instantaneous.';
+  if(iv<=5) return'Medium intensity: more photons → more electrons liberated per second.';
+  if(iv<=8) return'High intensity: many photons arriving — notice how many more electrons are freed.';
+  return'Very high intensity: a large number of photons liberating electrons rapidly. Intensity controls the rate, not the speed of each electron.';
+}
+
+const EXPLAINS=[
+  {maxV:0.124, col:'#ff3311',
+   body:'Each photon carries a small packet of energy. When it enters the metal and hits an electron, the energy is not enough to pull the electron free. No electron is emitted, no matter how many photons arrive. In this simplified animation, a photon that does not eject an electron is shown scattering away.'},
+  {maxV:0.749, col:'#2277ff',
+   body:'As we increase the frequency of visible light, the energy of each photon increases — but it is still below the threshold required for photoelectron emission. No photoelectrons are emitted, regardless of intensity or exposure time.'},
+  {maxV:9,     col:'#cc44ff',
+   body:'UV photons carry enough energy to free electrons. Each photon transfers its energy to a single electron in one interaction — effectively instantaneously. Whatever energy remains after freeing the electron becomes kinetic energy: electrons struck by higher-energy UV photons fly off noticeably faster.'},
+];
+
+function updateExplain(){
+  const v=+slFreq.value, iv=+slInt.value, ls=getLS(v);
+  for(const e of EXPLAINS){
+    if(v<=e.maxV){
+      document.getElementById('etitle').textContent=ls.name;
+      document.getElementById('etitle').style.color=e.col;
+      document.getElementById('ebody').textContent=e.body;
+      break;
+    }
+  }
+  document.getElementById('inote').textContent=getIntNote(v,iv);
+}
+
+// ?? Electrons ????????????????????????????????????????????????????????????????
+function makeElectron(ci,ri){
+  const bx=MX+(ci+0.5)*(MW/COLS)+(Math.random()-0.5)*16;
+  const by=MY+(ri+0.5)*(MH/ROWS)+(Math.random()-0.5)*10;
+  const depth=Math.max(0,Math.min(1,(by-SURF)/MH));
+  const spd=0.13+Math.random()*0.22, ang=Math.random()*Math.PI*2;
+  return {ci,ri,x:bx,y:by,depth,freed:false,flash:0,
+          vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,
+          tvx:Math.cos(ang)*spd,tvy:Math.sin(ang)*spd,
+          alpha:1,r:6,wt:Math.floor(Math.random()*120)};
+}
+
+function respawnElectron(e){
+  const ne=makeElectron(e.ci,e.ri);
+  Object.assign(e,ne);
+}
+
+const electrons=[];
+for(let ci=0;ci<COLS;ci++) for(let ri=0;ri<ROWS;ri++) electrons.push(makeElectron(ci,ri));
+
+// ?? Photons ??????????????????????????????????????????????????????????????????
+const photons=[];
+let tick=0;
+
+function spawnPhoton(){
+  const ls=getLS(+slFreq.value);
+  const sx=ls.r+Math.random()*(W-ls.r*2);
+  photons.push({
+    x:sx, y:-ls.r-2,
+    dx:(Math.random()-0.5)*0.3, dy:1,
+    speed:2.6,
+    col:ls.col, r:ls.r, uv:ls.uv, uvFrac:ls.uvFrac||0,
+    state:'beam', bounceDx:0, bounceDy:0, alpha:1, wp:Math.random()*Math.PI*2
+  });
+}
+
+// ?? Helpers ???????????????????????????????????????????????????????????????????
+function resolveAlpha(col,a){
+  if(col.startsWith('#')){
+    const r=parseInt(col.slice(1,3),16),g=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  return col.replace('hsl(','hsla(').replace(')',`,${a})`);
+}
+
+function drawWP(x,y,r,col,phase,alpha){
+  cx.save(); cx.globalAlpha=alpha;
+  cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2);
+  cx.strokeStyle=col; cx.lineWidth=1.5; cx.stroke();
+  cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2);
+  cx.fillStyle=resolveAlpha(col,0.13); cx.fill();
+  cx.save();
+  cx.beginPath(); cx.arc(x,y,r-1,0,Math.PI*2); cx.clip();
+  cx.beginPath();
+  for(let i=0;i<=30;i++){
+    const t=i/30, wx=x-r+t*r*2, wy=y+Math.sin(t*Math.PI*3+phase)*r*0.42;
+    i===0?cx.moveTo(wx,wy):cx.lineTo(wx,wy);
+  }
+  cx.strokeStyle=col; cx.lineWidth=1; cx.stroke();
+  cx.restore(); cx.restore();
+}
+
+function drawElectron(e){
+  if(e.freed&&e.alpha<=0) return;
+  cx.save();
+  cx.globalAlpha=e.freed?e.alpha:(0.40+0.60*(1-e.depth));
+  const col=e.freed?'#ffee44':'#99aadd';
+  if(e.flash>0){ cx.shadowBlur=22; cx.shadowColor='#ffee44'; }
+  cx.beginPath(); cx.arc(e.x,e.y,e.freed?e.r+1:e.r,0,Math.PI*2);
+  cx.fillStyle=e.freed?'#332200':'#151c30'; cx.fill();
+  cx.strokeStyle=col; cx.lineWidth=e.freed?2:1.5; cx.stroke();
+  cx.shadowBlur=0;
+  cx.fillStyle=col; cx.font=`bold ${e.freed?8:7}px sans-serif`;
+  cx.textAlign='center'; cx.textBaseline='middle';
+  cx.fillText('e⁻',e.x,e.y);
+  cx.restore();
+  e.flash=Math.max(0,e.flash-1);
+}
+
+// ?? Update logic ??????????????????????????????????????????????????????????????
+function updateElectrons(){
+  electrons.forEach(e=>{
+    if(e.freed){
+      e.x+=e.vx; e.y+=e.vy; e.vy*=0.997;
+      if(e.y<SURF) e.alpha-=0.010;
+      if(e.alpha<=0||e.y<-60||e.x<-60||e.x>W+60){ respawnElectron(e); }
+      return;
+    }
+    e.wt--;
+    if(e.wt<=0){
+      e.wt=55+Math.floor(Math.random()*85);
+      const spd=0.12+Math.random()*0.22, ang=Math.random()*Math.PI*2;
+      e.tvx=Math.cos(ang)*spd; e.tvy=Math.sin(ang)*spd;
+    }
+    e.vx+=(e.tvx-e.vx)*0.035; e.vy+=(e.tvy-e.vy)*0.035;
+    e.x+=e.vx; e.y+=e.vy;
+    if(e.y<MY+4){e.y=MY+4;e.tvy=Math.abs(e.tvy);}
+    if(e.y>H-6) {e.y=H-6; e.tvy=-Math.abs(e.tvy);}
+    if(e.x<MX+4){e.x=MX+4;e.tvx=Math.abs(e.tvx);}
+    if(e.x>MX+MW-4){e.x=MX+MW-4;e.tvx=-Math.abs(e.tvx);}
+  });
+}
+
+function updatePhotons(){
+  const v=+slFreq.value, uvActive=v>=0.75;
+  photons.forEach(p=>{
+    if(p.state==='beam'){
+      p.x+=p.dx*p.speed; p.y+=p.dy*p.speed; p.wp+=0.18;
+      if(p.y>=SURF-p.r) p.state='metal';
+    } else if(p.state==='metal'){
+      p.x+=p.dx*p.speed*0.5; p.y+=p.dy*p.speed*0.65; p.wp+=0.18;
+      let hit=null;
+      for(const e of electrons){
+        if(e.freed) continue;
+        if(Math.hypot(p.x-e.x,p.y-e.y)<p.r+e.r+1){hit=e;break;}
+      }
+      if(hit){
+        if(uvActive){
+          hit.freed=true; hit.flash=24; hit.alpha=1;
+          const spd=1.8+p.uvFrac*4.5;
+          const ang=-Math.PI/2+(Math.random()-0.5)*1.0;
+          hit.vx=Math.cos(ang)*spd*0.45*(Math.random()>0.5?1:-1);
+          hit.vy=-spd;
+          p.state='done'; p.alpha=0;
+        } else {
+          const dx2=p.x-hit.x, dy2=p.y-hit.y, dist=Math.hypot(dx2,dy2)||1;
+          p.bounceDx=dx2/dist+(Math.random()-0.5)*0.4;
+          p.bounceDy=Math.abs(dy2/dist)*-0.8-0.15;
+          p.state='bounce'; p.speed*=0.80; hit.flash=5;
+        }
+      }
+      if(p.y>H+10){p.state='done';p.alpha=0;}
+    } else if(p.state==='bounce'){
+      p.x+=p.bounceDx*p.speed; p.y+=p.bounceDy*p.speed;
+      p.wp+=0.18; p.alpha-=0.024;
+      if(p.alpha<=0||p.y<-24||p.x<-24||p.x>W+24) p.state='done';
+    }
+  });
+  for(let i=photons.length-1;i>=0;i--) if(photons[i].state==='done') photons.splice(i,1);
+}
+
+// ?? Draw scene ????????????????????????????????????????????????????????????????
+function drawScene(){
+  cx.clearRect(0,0,W,H);
+  cx.fillStyle='#06080f'; cx.fillRect(0,0,W,H);
+
+  // Metal body
+  const gm=cx.createLinearGradient(0,SURF,0,H);
+  gm.addColorStop(0,'#141830'); gm.addColorStop(1,'#090c1a');
+  cx.fillStyle=gm; cx.fillRect(0,SURF,W,H-SURF);
+  cx.strokeStyle='#2a3560'; cx.lineWidth=1.5;
+  cx.beginPath(); cx.moveTo(0,SURF); cx.lineTo(W,SURF); cx.stroke();
+  cx.fillStyle='rgba(80,110,200,0.30)'; cx.font='11px sans-serif'; cx.textAlign='left';
+  cx.fillText('metal surface',8,SURF+14);
+
+  // Depth bar
+  cx.fillStyle='rgba(80,100,180,0.18)'; cx.fillRect(W-11,SURF+8,5,H-SURF-16);
+  cx.font='9px sans-serif'; cx.textAlign='right'; cx.fillStyle='rgba(80,100,180,0.40)';
+  cx.fillText('shallow',W-14,SURF+21); cx.fillText('deep',W-14,H-8);
+
+  // Status line
+  const v=+slFreq.value;
+  cx.font='11px sans-serif'; cx.textAlign='left';
+  if(v>=0.75){
+    cx.fillStyle='rgba(200,100,255,0.88)';
+    cx.fillText('UV — photons can eject electrons above threshold',10,18);
+  } else {
+    cx.fillStyle='rgba(255,100,80,0.60)';
+    cx.fillText('No emission — photon energy is below threshold',10,18);
+  }
+
+  electrons.forEach(drawElectron);
+  photons.forEach(p=>drawWP(p.x,p.y,p.r,p.col,p.wp,p.alpha));
+}
+
+// ?? Main loop ?????????????????????????????????????????????????????????????????
+function frame(){
+  tick++;
+  const intensity=+slInt.value;
+  const interval=Math.max(3,20-intensity*2);
+  if(tick%interval===0) spawnPhoton();
+  updateElectrons(); updatePhotons(); drawScene();
+  requestAnimationFrame(frame);
+}
+
+slFreq.addEventListener('input',()=>{
+  document.getElementById('lbl').textContent=getLS(+slFreq.value).name;
+  updateExplain();
+});
+slInt.addEventListener('input',()=>{
+  document.getElementById('lbl2').textContent=getIntLabel(+slInt.value);
+  updateExplain();
+});
+
+updateExplain();
+frame();
+</script>
+
+    </div>
+    
+    
+</body>
+</html>
