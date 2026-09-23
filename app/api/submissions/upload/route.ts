@@ -95,6 +95,7 @@ export async function POST(request: Request): Promise<Response> {
       const { presignedUrl } = await presignUrl(token, {
         pathname,
         operation: "put",
+        access: "private",
         validUntil,
       });
 
