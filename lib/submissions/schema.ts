@@ -52,7 +52,7 @@ export function parseSubmissionMetadata(input: unknown): SubmissionMetadata {
   return {
     submissionId,
     kind,
-    existingSimulationId,
+    ...(existingSimulationId ? { existingSimulationId } : {}),
     title,
     description,
     levels,
