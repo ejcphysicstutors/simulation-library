@@ -43,6 +43,10 @@ export type ManagedSimulation = {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+  archivedAt?: string;
+  archivedBy?: string;
+  restoredAt?: string;
+  restoredBy?: string;
 };
 
 function toSummary(record: ManagedSimulation): SimulationSummary {
@@ -64,12 +68,17 @@ function toSummary(record: ManagedSimulation): SimulationSummary {
   };
 }
 
-export async function listManagedSimulations(): Promise<ManagedSimulation[]> {
+export async function listAllManagedSimulations(): Promise<ManagedSimulation[]> {
   if (!adminDb) return [];
   const snapshot = await adminDb.collection("simulations").get();
   return snapshot.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<ManagedSimulation, "id">) }))
-    .filter((record) => record.status === "published");
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function listManagedSimulations(): Promise<ManagedSimulation[]> {
+  const records = await listAllManagedSimulations();
+  return records.filter((record) => record.status === "published");
 }
 
 export async function getManagedSimulation(id: string): Promise<ManagedSimulation | null> {
