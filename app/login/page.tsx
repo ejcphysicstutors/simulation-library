@@ -13,10 +13,8 @@ export default async function LoginPage() {
 
   return (
     <main className="auth-page">
-      <section className="auth-card auth-card-simple">
-        <p className="eyebrow">EJC Physics</p>
-        <h1>Sign in</h1>
-        <p>Use your <strong>@ejc.edu.sg</strong> account.</p>
+      <section className="auth-card">
+        <h1>Access the library</h1>
         <LoginForm />
       </section>
     </main>

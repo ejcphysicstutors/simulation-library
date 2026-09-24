@@ -15,7 +15,6 @@ function destinationForRole(role: string): string {
 export function LoginForm() {
   const router = useRouter();
   const [busy, setBusy] = useState<"google" | "demo" | null>(null);
-  const [demoOpen, setDemoOpen] = useState(false);
   const [demoPassword, setDemoPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -74,42 +73,31 @@ export function LoginForm() {
 
   return (
     <>
-      <button className="auth-button google auth-button-primary" type="button" onClick={handleGoogle} disabled={busy !== null}>
-        {busy === "google" ? "Signing in…" : "Sign in with EJC account"}
+      <button className="auth-button google" type="button" onClick={handleGoogle} disabled={busy !== null}>
+        {busy === "google" ? "Signing in…" : "Login with ejc.edu.sg email"}
       </button>
 
-      <button
-        className="demo-access-toggle"
-        type="button"
-        onClick={() => {
-          setDemoOpen((open) => !open);
-          setError("");
-        }}
-        aria-expanded={demoOpen}
-      >
-        {demoOpen ? "Hide demo access" : "Demo access"}
-      </button>
+      <div className="divider"><span>or</span></div>
 
-      {demoOpen ? (
-        <form className="demo-access-form" onSubmit={handleDemo}>
-          <label className="field-label" htmlFor="demo-password">Demo password</label>
-          <input
-            id="demo-password"
-            className="text-field"
-            type="password"
-            autoComplete="current-password"
-            value={demoPassword}
-            onChange={(event) => setDemoPassword(event.target.value)}
-            placeholder="Enter demo password"
-            required
-          />
-          <button className="auth-button" type="submit" disabled={busy !== null}>
-            {busy === "demo" ? "Checking…" : "Enter demo"}
-          </button>
-        </form>
-      ) : null}
+      <form onSubmit={handleDemo}>
+        <label className="field-label" htmlFor="demo-password">Demo password</label>
+        <input
+          id="demo-password"
+          className="text-field"
+          type="password"
+          autoComplete="current-password"
+          value={demoPassword}
+          onChange={(event) => setDemoPassword(event.target.value)}
+          placeholder="Enter demo password"
+          required
+        />
+        <button className="auth-button" type="submit" disabled={busy !== null}>
+          {busy === "demo" ? "Checking…" : "Enter demo"}
+        </button>
+      </form>
 
       {error ? <p className="form-error" role="alert">{error}</p> : null}
+      <p className="auth-note">Demo access is read-only.</p>
     </>
   );
 }
