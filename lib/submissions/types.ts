@@ -66,4 +66,6 @@ export type SubmissionRecord = SubmissionMetadata & {
   stagingDeleteAfter?: string;
   publishedSimulationDeletedAt?: string;
   publishedSimulationDeletedBy?: string;
+  archivedAt?: string | null;
+  archivedBy?: string | null;
 };

@@ -486,3 +486,13 @@ button, input { font: inherit; }
 .owner-choice-card > div:first-child span { color: var(--teal-dark); font-weight: 800; }
 .owner-choice-options { display: flex; gap: 10px; flex-wrap: wrap; }
 .owner-choice-options label { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: #475569; font-size: .82rem; font-weight: 700; }
+
+/* Contributor submission archiving */
+.submission-history-tools { margin-top: 12px; min-height: 20px; }
+.submission-history-tools a { color: var(--teal-dark); font-size: .78rem; font-weight: 800; text-decoration: none; }
+.submission-history-tools a:hover { text-decoration: underline; }
+.submission-history-tools span { color: var(--muted); font-size: .76rem; }
+.submission-row-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.submission-row-actions form { margin: 0; }
+.submission-archive-button { border: 0; padding: 4px 0; background: transparent; color: var(--muted); font: inherit; font-size: .74rem; font-weight: 800; cursor: pointer; }
+.submission-archive-button:hover { color: var(--teal-dark); text-decoration: underline; }
