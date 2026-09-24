@@ -47,6 +47,61 @@ function contentType(path: string): string {
   } as Record<string, string>)[ext] ?? "application/octet-stream";
 }
 
+
+function encodePreviewPath(path: string): string {
+  return path.split("/").map((part) => encodeURIComponent(part)).join("/");
+}
+
+function isExternalOrSpecialUrl(value: string): boolean {
+  const trimmed = value.trim();
+  return (
+    !trimmed ||
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("//") ||
+    /^(?:https?:|data:|blob:|mailto:|tel:|javascript:)/i.test(trimmed)
+  );
+}
+
+function resolveVirtualAssetPath(currentVirtualPath: string, reference: string): string | null {
+  const cleanReference = reference.split("#", 1)[0].split("?", 1)[0];
+  const suffix = reference.slice(cleanReference.length);
+  const baseDir = dirname(currentVirtualPath);
+  const candidate = cleanReference.startsWith("/")
+    ? cleanReference.slice(1)
+    : baseDir
+      ? `${baseDir}/${cleanReference}`
+      : cleanReference;
+  const normalised = normalisePath(candidate);
+  if (!normalised || normalised === "__invalid__") return null;
+  return `${normalised}${suffix}`;
+}
+
+function rewriteHtmlAssetUrls(html: string, submissionId: string, currentVirtualPath: string): string {
+  const rewrite = (value: string): string => {
+    if (isExternalOrSpecialUrl(value)) return value;
+    const resolved = resolveVirtualAssetPath(currentVirtualPath, value);
+    if (!resolved) return value;
+    const [pathPart, suffix = ""] = resolved.split(/(?=[?#])/u, 2);
+    return `/api/admin/submissions/${encodeURIComponent(submissionId)}/preview/${encodePreviewPath(pathPart)}${suffix}`;
+  };
+
+  let output = html.replace(/\b(src|href)=(['"])(.*?)\2/giu, (_match, attr: string, quote: string, value: string) => {
+    return `${attr}=${quote}${rewrite(value)}${quote}`;
+  });
+
+  output = output.replace(/\bsrcset=(['"])(.*?)\1/giu, (_match, quote: string, value: string) => {
+    const rewritten = value.split(",").map((candidate) => {
+      const parts = candidate.trim().split(/\s+/u);
+      if (!parts[0]) return candidate;
+      parts[0] = rewrite(parts[0]);
+      return parts.join(" ");
+    }).join(", ");
+    return `srcset=${quote}${rewritten}${quote}`;
+  });
+
+  return output;
+}
+
 function previewCsp(): string {
   return [
     "default-src 'none'",
@@ -110,7 +165,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     });
 
     if (type.startsWith("text/html")) {
-      return new Response(strFromU8(file), { headers });
+      const html = strFromU8(file);
+      const virtualPath = requested;
+      const rewrittenHtml = rewriteHtmlAssetUrls(html, id, virtualPath);
+      return new Response(rewrittenHtml, { headers });
     }
     return new Response(Uint8Array.from(file).buffer as ArrayBuffer, { headers });
   } catch (error) {
