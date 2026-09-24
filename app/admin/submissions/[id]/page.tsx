@@ -110,8 +110,10 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
           ) : (
             <p className="empty-submissions">The preview could not be loaded from private storage. Run the checks again; if this persists, the review page will show a validation error.</p>
           )
+        ) : validation?.entrypoint && validation.errors === 0 ? (
+          <div className="admin-preview-frame-wrap"><iframe className="admin-preview-frame" title={`Preview of ${submission.title}`} sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock" referrerPolicy="no-referrer" src={`/api/admin/submissions/${submission.submissionId}/preview/index.html`} /></div>
         ) : (
-          <p className="empty-submissions">ZIP projects are source-checked automatically. Live multi-file preview becomes available immediately after publication.</p>
+          <p className="empty-submissions">Run the automated checks successfully before previewing this ZIP project.</p>
         )}
       </section>
     </main>
