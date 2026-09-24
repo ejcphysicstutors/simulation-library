@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { requireAdminAccess } from "@/lib/auth/session";
-import { topics } from "@/lib/data/catalog";
-import { getSubmissionRecord } from "@/lib/submissions/data";
-import { approveSubmission, markNeedsChanges, rejectSubmission } from "../actions";
 import { RevalidationButton } from "@/components/admin/revalidation-button";
+import { requireAdminAccess } from "@/lib/auth/session";
+import { simulations as staticSimulations, topics } from "@/lib/data/catalog";
+import { getManagedSimulation } from "@/lib/library/managed";
 import { getPrivateBlobBytes } from "@/lib/submissions/blob";
+import { getSubmissionRecord } from "@/lib/submissions/data";
+import { approveSubmission, markNeedsChanges, rejectSubmission, saveSubmissionMetadata } from "../actions";
 
 export default async function SubmissionReviewPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminAccess();
@@ -17,6 +18,14 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
   const topic = topics.find((item) => item.id === submission.primaryTopicId);
   const validation = submission.validation;
   const canApprove = Boolean(validation && validation.errors === 0 && submission.status !== "published");
+
+  let currentOwner = submission.ownerName?.trim() || "";
+  if (!currentOwner && submission.kind === "update" && submission.existingSimulationId) {
+    const managed = await getManagedSimulation(submission.existingSimulationId);
+    const baseline = staticSimulations.find((item) => item.id === submission.existingSimulationId);
+    currentOwner = managed?.author?.trim() || baseline?.author?.trim() || "";
+  }
+  if (!currentOwner) currentOwner = submission.contributorName || submission.contributorEmail;
 
   let previewHtml = "";
   if (submission.packageType === "html" && submission.blobPathname) {
@@ -43,6 +52,64 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
         </div>
         <span className={`submission-status large status-${submission.status}`}>{submission.status.replaceAll("-", " ")}</span>
       </div>
+
+      <section className="admin-panel editorial-panel">
+        <div className="panel-heading-row">
+          <div>
+            <h2>Publication details</h2>
+            <p>Edit the canonical metadata here before publishing. These are the details students will see.</p>
+          </div>
+        </div>
+        <form className="editorial-form" action={saveSubmissionMetadata}>
+          <input type="hidden" name="submissionId" value={submission.submissionId} />
+          <label className="editorial-field editorial-span-2">
+            <span>Simulation title</span>
+            <input name="title" defaultValue={submission.title} minLength={3} maxLength={120} required />
+          </label>
+          <label className="editorial-field editorial-span-2">
+            <span>Brief description</span>
+            <textarea name="description" rows={3} defaultValue={submission.description} minLength={20} maxLength={900} required />
+          </label>
+          <label className="editorial-field editorial-span-2">
+            <span>Owner / original creator</span>
+            <input name="ownerName" defaultValue={currentOwner} maxLength={120} required />
+            <small>This controls the public creator credit. The uploader remains recorded separately for audit purposes.</small>
+          </label>
+
+          <fieldset className="editorial-fieldset">
+            <legend>Levels</legend>
+            <div className="editorial-levels">
+              {(["H1", "H2", "H3"] as const).map((level) => (
+                <label key={level}><input type="checkbox" name="levels" value={level} defaultChecked={submission.levels.includes(level)} /> {level}</label>
+              ))}
+            </div>
+          </fieldset>
+
+          <label className="editorial-field">
+            <span>Primary topic</span>
+            <select name="primaryTopicId" defaultValue={submission.primaryTopicId} required>
+              {topics.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.availabilityLabel})</option>)}
+            </select>
+          </label>
+
+          <fieldset className="editorial-fieldset editorial-span-2 related-topic-editor">
+            <legend>Related topics <small>optional, up to 5</small></legend>
+            <div className="editorial-topic-grid">
+              {topics.map((item) => (
+                <label key={item.id}>
+                  <input type="checkbox" name="relatedTopicIds" value={item.id} defaultChecked={submission.relatedTopicIds.includes(item.id)} />
+                  <span>{item.name} <small>({item.availabilityLabel})</small></span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="editorial-actions editorial-span-2">
+            <button className="button primary" type="submit">Save publication details</button>
+            <small>Saving does not publish. Review the preview and automated checks before approval.</small>
+          </div>
+        </form>
+      </section>
 
       <div className="review-detail-grid">
         <section className="admin-panel review-main-panel">
