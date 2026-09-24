@@ -4,6 +4,7 @@ import { getAccessSession } from "@/lib/auth/session";
 import { adminDb } from "@/lib/firebase/admin";
 import { inferPackageType, parseSubmissionMetadata, sanitiseFilename } from "@/lib/submissions/schema";
 import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
+import { getLibrarySimulations } from "@/lib/library/managed";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const UPLOAD_URL_TTL_MS = 15 * 60 * 1000;
@@ -55,7 +56,14 @@ export async function POST(request: Request): Promise<Response> {
     const body = (await request.json()) as RequestBody;
 
     if (body.action === "prepare") {
-      const metadata = parseSubmissionMetadata(body.metadata);
+      const parsedMetadata = parseSubmissionMetadata(body.metadata);
+      const metadata = { ...parsedMetadata, ownerName: parsedMetadata.ownerName || session.name || session.email };
+      if (metadata.kind === "update") {
+        const available = await getLibrarySimulations();
+        if (!available.some((item) => item.id === metadata.existingSimulationId)) {
+          throw new Error("Choose a valid existing simulation to update.");
+        }
+      }
       const originalFilename = sanitiseFilename(String(body.originalFilename ?? ""));
       const packageType = inferPackageType(originalFilename);
       const fileSize = Number(body.fileSize ?? 0);
