@@ -1,4 +1,4 @@
-import { simulations, topics } from "@/lib/data/catalog";
+import { topics } from "@/lib/data/catalog";
 import type { SyllabusLevel } from "@/lib/data/types";
 import type { SubmissionMetadata } from "./types";
 
@@ -28,13 +28,12 @@ export function parseSubmissionMetadata(input: unknown): SubmissionMetadata {
   const levels = asStringArray(raw.levels).filter((level): level is SyllabusLevel => VALID_LEVELS.has(level as SyllabusLevel));
   const primaryTopicId = asString(raw.primaryTopicId);
   const relatedTopicIds = Array.from(new Set(asStringArray(raw.relatedTopicIds))).filter((id) => id !== primaryTopicId);
+  const ownerName = asString(raw.ownerName) || undefined;
 
   if (!SUBMISSION_ID_PATTERN.test(submissionId)) throw new Error("Invalid submission ID.");
   if (kind !== "new" && kind !== "update") throw new Error("Choose whether this is a new simulation or an update.");
-  if (kind === "update") {
-    if (!existingSimulationId || !simulations.some((simulation) => simulation.id === existingSimulationId)) {
-      throw new Error("Choose the existing simulation being updated.");
-    }
+  if (kind === "update" && !existingSimulationId) {
+    throw new Error("Choose the existing simulation being updated.");
   }
   if (title.length < 3 || title.length > 120) throw new Error("Title must be between 3 and 120 characters.");
   if (description.length < 20 || description.length > 900) throw new Error("Description must be between 20 and 900 characters.");
@@ -58,6 +57,7 @@ export function parseSubmissionMetadata(input: unknown): SubmissionMetadata {
     levels,
     primaryTopicId,
     relatedTopicIds,
+    ...(ownerName ? { ownerName } : {}),
   };
 }
 
