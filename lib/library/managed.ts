@@ -104,15 +104,30 @@ export async function listManagedVersions(simulationId: string): Promise<Managed
 }
 
 export async function getLibrarySimulations(): Promise<SimulationSummary[]> {
-  const managed = await listManagedSimulations();
+  // Read all managed records, including archived ones. A legacy simulation can
+  // have a lightweight "shadow" record whose only job is to hide/restore
+  // the static baseline without deleting the known-good source files.
+  const managed = await listAllManagedSimulations();
   const managedById = new Map(managed.map((record) => [record.id, record]));
-  const merged = staticSimulations.map((item) => {
+  const merged: SimulationSummary[] = [];
+
+  for (const item of staticSimulations) {
     const record = managedById.get(item.id);
-    if (!record || record.currentVersionId === "legacy-v1") return item;
-    return toSummary(record);
-  });
+    if (record?.status === "archived") continue;
+    if (!record || record.currentVersionId === "legacy-v1") {
+      merged.push(item);
+      continue;
+    }
+    merged.push(toSummary(record));
+  }
+
   const staticIds = new Set(staticSimulations.map((item) => item.id));
-  for (const record of managed) if (!staticIds.has(record.id)) merged.push(toSummary(record));
+  for (const record of managed) {
+    if (!staticIds.has(record.id) && record.status === "published") {
+      merged.push(toSummary(record));
+    }
+  }
+
   return merged.filter((item) => item.status === "published");
 }
 
