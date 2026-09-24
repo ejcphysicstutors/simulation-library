@@ -518,7 +518,8 @@ button, input { font: inherit; }
 .topic-card-compact:hover { transform: translateY(-2px); border-color: #bfd2d5; box-shadow: 0 10px 26px rgba(18,41,58,.06); }
 .topic-card-empty { opacity: .48; background: rgba(255,255,255,.55); }
 .topic-card-empty:hover { transform: none; box-shadow: none; border-color: var(--line); }
-.topic-symbol { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #e9f4f2; color: var(--teal-dark); font-size: 1.2rem; font-weight: 900; letter-spacing: -.05em; }
+.topic-symbol { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #e9f4f2; color: var(--teal-dark); }
+.topic-symbol svg { width: 22px; height: 22px; display: block; }
 .topic-card-copy { min-width: 0; display: grid; gap: 4px; }
 .topic-card-copy strong { font-size: .9rem; line-height: 1.25; }
 .topic-card-copy small { color: var(--muted); font-size: .69rem; }
