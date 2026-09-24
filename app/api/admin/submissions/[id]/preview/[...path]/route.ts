@@ -48,10 +48,6 @@ function contentType(path: string): string {
 }
 
 
-function encodePreviewPath(path: string): string {
-  return path.split("/").map((part) => encodeURIComponent(part)).join("/");
-}
-
 function isExternalOrSpecialUrl(value: string): boolean {
   const trimmed = value.trim();
   return (
@@ -62,41 +58,68 @@ function isExternalOrSpecialUrl(value: string): boolean {
   );
 }
 
-function resolveVirtualAssetPath(currentVirtualPath: string, reference: string): string | null {
+function resolveArchiveAssetPath(currentSourcePath: string, reference: string): string | null {
   const cleanReference = reference.split("#", 1)[0].split("?", 1)[0];
-  const suffix = reference.slice(cleanReference.length);
-  const baseDir = dirname(currentVirtualPath);
+  const baseDir = dirname(currentSourcePath);
   const candidate = cleanReference.startsWith("/")
     ? cleanReference.slice(1)
     : baseDir
       ? `${baseDir}/${cleanReference}`
       : cleanReference;
   const normalised = normalisePath(candidate);
-  if (!normalised || normalised === "__invalid__") return null;
-  return `${normalised}${suffix}`;
+  return !normalised || normalised === "__invalid__" ? null : normalised;
 }
 
-function rewriteHtmlAssetUrls(html: string, submissionId: string, currentVirtualPath: string): string {
-  const rewrite = (value: string): string => {
-    if (isExternalOrSpecialUrl(value)) return value;
-    const resolved = resolveVirtualAssetPath(currentVirtualPath, value);
-    if (!resolved) return value;
-    const [pathPart, suffix = ""] = resolved.split(/(?=[?#])/u, 2);
-    return `/api/admin/submissions/${encodeURIComponent(submissionId)}/preview/${encodePreviewPath(pathPart)}${suffix}`;
-  };
+function bytesToBase64(bytes: Uint8Array): string {
+  return Buffer.from(bytes).toString("base64");
+}
 
-  let output = html.replace(/\b(src|href)=(['"])(.*?)\2/giu, (_match, attr: string, quote: string, value: string) => {
-    return `${attr}=${quote}${rewrite(value)}${quote}`;
+function rewriteCssUrls(css: string, cssSourcePath: string, archive: Map<string, Uint8Array>): string {
+  return css.replace(/url\(\s*(['"]?)(.*?)\1\s*\)/giu, (match, _quote: string, rawValue: string) => {
+    const value = rawValue.trim();
+    if (isExternalOrSpecialUrl(value)) return match;
+    const assetPath = resolveArchiveAssetPath(cssSourcePath, value);
+    if (!assetPath) return match;
+    const asset = archive.get(assetPath);
+    if (!asset) return match;
+    return `url("data:${contentType(assetPath).split(";")[0]};base64,${bytesToBase64(asset)}")`;
+  });
+}
+
+function inlineLocalAssets(html: string, htmlSourcePath: string, archive: Map<string, Uint8Array>): string {
+  let output = html;
+
+  // Inline local stylesheets, including local assets referenced from CSS via url(...).
+  output = output.replace(/<link\b([^>]*?)\bhref=(['"])(.*?)\2([^>]*)>/giu, (match, before: string, _quote: string, href: string, after: string) => {
+    if (isExternalOrSpecialUrl(href) || !/\brel\s*=\s*(['"]?)stylesheet\1/i.test(`${before} ${after}`)) return match;
+    const cssPath = resolveArchiveAssetPath(htmlSourcePath, href);
+    if (!cssPath) return match;
+    const bytes = archive.get(cssPath);
+    if (!bytes) return match;
+    const css = rewriteCssUrls(strFromU8(bytes), cssPath, archive);
+    return `<style data-preview-source="${cssPath.replace(/"/g, "&quot;")}">\n${css}\n</style>`;
   });
 
-  output = output.replace(/\bsrcset=(['"])(.*?)\1/giu, (_match, quote: string, value: string) => {
-    const rewritten = value.split(",").map((candidate) => {
-      const parts = candidate.trim().split(/\s+/u);
-      if (!parts[0]) return candidate;
-      parts[0] = rewrite(parts[0]);
-      return parts.join(" ");
-    }).join(", ");
-    return `srcset=${quote}${rewritten}${quote}`;
+  // Inline local JavaScript files. Preserve other script attributes (e.g. type="module").
+  output = output.replace(/<script\b([^>]*?)\bsrc=(['"])(.*?)\2([^>]*)>\s*<\/script>/giu, (match, before: string, _quote: string, src: string, after: string) => {
+    if (isExternalOrSpecialUrl(src)) return match;
+    const jsPath = resolveArchiveAssetPath(htmlSourcePath, src);
+    if (!jsPath) return match;
+    const bytes = archive.get(jsPath);
+    if (!bytes) return match;
+    const js = strFromU8(bytes).replace(/<\/script/giu, "<\\/script");
+    return `<script${before}${after}>\n${js}\n</script>`;
+  });
+
+  // Inline common local media so the sandbox does not need authenticated follow-up requests.
+  output = output.replace(/\b(src|poster)=(['"])(.*?)\2/giu, (match, attr: string, quote: string, value: string) => {
+    if (isExternalOrSpecialUrl(value)) return match;
+    const assetPath = resolveArchiveAssetPath(htmlSourcePath, value);
+    if (!assetPath) return match;
+    const bytes = archive.get(assetPath);
+    if (!bytes) return match;
+    const mime = contentType(assetPath).split(";")[0];
+    return `${attr}=${quote}data:${mime};base64,${bytesToBase64(bytes)}${quote}`;
   });
 
   return output;
@@ -166,9 +189,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
     if (type.startsWith("text/html")) {
       const html = strFromU8(file);
-      const virtualPath = requested;
-      const rewrittenHtml = rewriteHtmlAssetUrls(html, id, virtualPath);
-      return new Response(rewrittenHtml, { headers });
+      const selfContainedHtml = inlineLocalAssets(html, sourcePath, normalisedArchive);
+      return new Response(selfContainedHtml, { headers });
     }
     return new Response(Uint8Array.from(file).buffer as ArrayBuffer, { headers });
   } catch (error) {
