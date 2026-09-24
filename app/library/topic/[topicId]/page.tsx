@@ -55,13 +55,15 @@ export default async function TopicPage({ params }: { params: Promise<{ topicId:
               </Link>
 
               <div className="topic-simulation-copy">
-                <div className="level-row">
-                  {simulation.levels.map((item) => <span key={item}>{item}</span>)}
+                <div className="simulation-row-meta">
+                  <div className="level-row">
+                    {simulation.levels.map((item) => <span key={item}>{item}</span>)}
+                  </div>
+                  {simulation.author ? <span className="simulation-byline">By {simulation.author}</span> : null}
                 </div>
                 <h2><Link href={`/library/${simulation.slug}`}>{simulation.title}</Link></h2>
-                {simulation.author ? <p className="simulation-byline">By {simulation.author}</p> : null}
-                <p>{simulation.description}</p>
-                <Link className="simulation-open-link" href={`/library/${simulation.slug}`}>Open simulation →</Link>
+                <p className="simulation-row-description">{simulation.description}</p>
+                <Link className="simulation-open-link" href={`/library/${simulation.slug}`}>Open simulation <span aria-hidden="true">→</span></Link>
               </div>
             </article>
           ))}
