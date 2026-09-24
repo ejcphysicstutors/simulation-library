@@ -1,6 +1,7 @@
 import { SubmissionForm } from "@/components/contribute/submission-form";
 import { requireContributorAccess } from "@/lib/auth/session";
-import { simulations, topics } from "@/lib/data/catalog";
+import { topics } from "@/lib/data/catalog";
+import { getLibrarySimulations } from "@/lib/library/managed";
 import { listContributorSubmissions } from "@/lib/submissions/data";
 import type { SubmissionStatus } from "@/lib/submissions/types";
 
@@ -18,6 +19,7 @@ const STATUS_LABELS: Record<SubmissionStatus, string> = {
 export default async function ContributePage() {
   const session = await requireContributorAccess();
   const submissions = await listContributorSubmissions(session.email);
+  const simulations = await getLibrarySimulations();
 
   return (
     <main className="shell section contributor-page">
@@ -31,7 +33,7 @@ export default async function ContributePage() {
       </div>
 
       <div className="contributor-layout">
-        <SubmissionForm topics={topics} simulations={simulations.filter((simulation) => simulation.status === "published")} />
+        <SubmissionForm topics={topics} simulations={simulations.filter((simulation) => simulation.status === "published")} contributorName={session.name || session.email} />
 
         <aside className="submission-history">
           <div className="panel-heading-row"><div><p className="eyebrow">Your submissions</p><h2>Recent activity</h2></div><span>{submissions.length}</span></div>
