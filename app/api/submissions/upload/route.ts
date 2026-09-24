@@ -5,7 +5,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { inferPackageType, parseSubmissionMetadata, sanitiseFilename } from "@/lib/submissions/schema";
 import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
 import { getLibrarySimulations } from "@/lib/library/managed";
-import { notifySubmissionReceived } from "@/lib/notifications/email";
+import { notifySubmissionReceivedInApp } from "@/lib/notifications/in-app";
 import { getSubmissionRecord } from "@/lib/submissions/data";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -161,7 +161,7 @@ export async function POST(request: Request): Promise<Response> {
       const validation = await validateSubmissionRecord(submissionId);
       const completedRecord = await getSubmissionRecord(submissionId);
       if (completedRecord) {
-        await notifySubmissionReceived(completedRecord).catch((error) => {
+        await notifySubmissionReceivedInApp(completedRecord).catch((error) => {
           console.error("Submission notification failed", error);
         });
       }

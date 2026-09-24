@@ -2,13 +2,11 @@ import { getInitialAdminEmails } from "@/lib/auth/config";
 import { adminDb } from "@/lib/firebase/admin";
 import { listAllManagedSimulations } from "@/lib/library/managed";
 import { listAllSubmissions } from "@/lib/submissions/data";
-import { getEmailNotificationConfig, listAdminNotificationEmails } from "@/lib/notifications/email";
 
 export async function getAdminDashboardData() {
-  const [submissions, simulations, adminEmails] = await Promise.all([
+  const [submissions, simulations] = await Promise.all([
     listAllSubmissions(),
     listAllManagedSimulations(),
-    listAdminNotificationEmails(),
   ]);
 
   const accessRows: Array<{ email: string; role: "contributor" | "admin"; active: boolean }> = [];
@@ -23,7 +21,10 @@ export async function getAdminDashboardData() {
   }
 
   const bootstrapAdmins = new Set(getInitialAdminEmails());
-  const admins = new Set([...adminEmails, ...bootstrapAdmins]);
+  const admins = new Set([
+    ...accessRows.filter((row) => row.role === "admin").map((row) => row.email),
+    ...bootstrapAdmins,
+  ]);
   const contributors = new Set(
     accessRows.filter((row) => row.role === "contributor").map((row) => row.email),
   );
@@ -64,6 +65,5 @@ export async function getAdminDashboardData() {
     recentPublishes,
     contributorCount: contributors.size,
     adminCount: admins.size,
-    notificationConfig: getEmailNotificationConfig(),
   };
 }

@@ -103,18 +103,12 @@ export default async function AdminDashboardPage() {
         <section className="admin-panel admin-dashboard-panel">
           <div className="panel-heading-row">
             <div>
-              <h2>Notifications</h2>
-              <p>Email delivery is optional and never blocks a publish or review action.</p>
+              <h2>In-app notifications</h2>
+              <p>Updates are shown inside the library, with no external email service required.</p>
             </div>
-            <span className={`health-pill ${data.notificationConfig.configured ? "healthy" : "warning"}`}>
-              {data.notificationConfig.configured ? "Configured" : "Setup needed"}
-            </span>
+            <span className="health-pill healthy">Active</span>
           </div>
-          {data.notificationConfig.configured ? (
-            <p className="dashboard-note">Sending from <strong>{data.notificationConfig.from}</strong>. Contributors are notified on receipt, changes requested and publication; admins are notified about new submissions.</p>
-          ) : (
-            <p className="dashboard-note">Add <code>RESEND_API_KEY</code> and <code>NOTIFICATION_FROM_EMAIL</code> in Vercel to enable email notifications.</p>
-          )}
+          <p className="dashboard-note">Contributors see submission, changes-requested and publication updates. Admins see new submissions awaiting review. Unread updates appear in the header.</p>
         </section>
 
         <section className="admin-panel admin-dashboard-panel">

@@ -7,7 +7,7 @@ import { topics } from "@/lib/data/catalog";
 import type { SyllabusLevel } from "@/lib/data/types";
 import { adminDb } from "@/lib/firebase/admin";
 import { publishSubmission } from "@/lib/library/publish";
-import { notifyChangesRequested, notifyPublished } from "@/lib/notifications/email";
+import { notifyChangesRequestedInApp, notifyPublishedInApp } from "@/lib/notifications/in-app";
 import { getSubmissionRecord } from "@/lib/submissions/data";
 import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
 
@@ -147,7 +147,7 @@ async function updateReview(formData: FormData, status: "needs-changes" | "appro
   if (status === "needs-changes") {
     const record = await getSubmissionRecord(submissionId);
     if (record) {
-      await notifyChangesRequested(record, adminNote).catch((error) => {
+      await notifyChangesRequestedInApp(record, adminNote).catch((error) => {
         console.error("Changes-requested notification failed", error);
       });
     }
@@ -167,7 +167,7 @@ export async function approveSubmission(formData: FormData) {
   const result = await publishSubmission(submissionId, session.email, note);
   const record = await getSubmissionRecord(submissionId);
   if (record) {
-    await notifyPublished(record, result.simulation.slug).catch((error) => {
+    await notifyPublishedInApp(record, result.simulation.slug).catch((error) => {
       console.error("Published notification failed", error);
     });
   }
