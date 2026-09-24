@@ -32,7 +32,7 @@ export default async function AccessManagementPage() {
           <h1>Access management</h1>
           <p>Add teachers as contributors or admins. Admin access automatically includes contributor permissions.</p>
         </div>
-        <Link className="button secondary" href="/admin/submissions">Review submissions</Link>
+        <div className="admin-nav-inline"><Link className="button secondary" href="/admin">Dashboard</Link><Link className="button secondary" href="/admin/submissions">Review submissions</Link></div>
       </div>
 
       <section className="admin-panel">

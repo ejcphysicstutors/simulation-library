@@ -55,3 +55,13 @@ Before testing uploads in Vercel:
 Accepted simulation packages: standalone `.html`/`.htm` files or `.zip` projects, maximum 10 MB.
 
 The uploaded package is staging data. Once the later publish workflow has copied and verified the approved version, the submission blob can be deleted without affecting the published simulation.
+
+## Email notifications
+
+Email notifications are optional and non-blocking. The application uses the Resend HTTP API when these Vercel environment variables are present:
+
+- `RESEND_API_KEY` — secret API key.
+- `NOTIFICATION_FROM_EMAIL` — verified sender, for example `EJC Physics Simulation Library <simulations@your-domain>`.
+- `NEXT_PUBLIC_APP_URL` — optional canonical site URL used in notification links. Vercel production URLs are used automatically when this is omitted.
+
+When configured, contributors receive email when a submission is received, when changes are requested, and when it is published. Admins receive email when a new submission reaches the review pipeline. Notification failures are logged but never block uploads, review actions or publishing.

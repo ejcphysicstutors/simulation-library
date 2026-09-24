@@ -7,6 +7,8 @@ import { topics } from "@/lib/data/catalog";
 import type { SyllabusLevel } from "@/lib/data/types";
 import { adminDb } from "@/lib/firebase/admin";
 import { publishSubmission } from "@/lib/library/publish";
+import { notifyChangesRequested, notifyPublished } from "@/lib/notifications/email";
+import { getSubmissionRecord } from "@/lib/submissions/data";
 import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
 
 function cleanNote(value: FormDataEntryValue | null): string {
@@ -132,14 +134,24 @@ async function updateReview(formData: FormData, status: "needs-changes" | "appro
   if (!snapshot.exists) throw new Error("Submission was not found.");
 
   const now = new Date();
+  const adminNote = cleanNote(formData.get("adminNote"));
   await ref.update({
     status,
-    adminNote: cleanNote(formData.get("adminNote")),
+    adminNote,
     reviewedBy: session.email,
     reviewedAt: now.toISOString(),
     ...(status === "rejected" ? { stagingDeleteAfter: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() } : {}),
     updatedAt: now.toISOString(),
   });
+
+  if (status === "needs-changes") {
+    const record = await getSubmissionRecord(submissionId);
+    if (record) {
+      await notifyChangesRequested(record, adminNote).catch((error) => {
+        console.error("Changes-requested notification failed", error);
+      });
+    }
+  }
   refreshSubmission(submissionId);
 }
 
@@ -153,6 +165,12 @@ export async function approveSubmission(formData: FormData) {
   if (!submissionId) throw new Error("Submission ID is missing.");
   const note = cleanNote(formData.get("adminNote"));
   const result = await publishSubmission(submissionId, session.email, note);
+  const record = await getSubmissionRecord(submissionId);
+  if (record) {
+    await notifyPublished(record, result.simulation.slug).catch((error) => {
+      console.error("Published notification failed", error);
+    });
+  }
   refreshSubmission(submissionId, result.simulation.id, result.simulation.slug);
 }
 

@@ -22,7 +22,7 @@ export async function SiteHeader() {
           {session?.kind === "google" && (session.role === "contributor" || session.role === "admin") ? (
             <Link href="/contribute">Contribute</Link>
           ) : null}
-          {session?.kind === "google" && session.role === "admin" ? <Link href="/admin/submissions">Admin</Link> : null}
+          {session?.kind === "google" && session.role === "admin" ? <Link href="/admin">Admin</Link> : null}
           {session?.kind === "demo" ? <span className="access-badge">Demo</span> : null}
           {session?.kind === "google" && session.role !== "student" ? <span className="access-badge">{session.role}</span> : null}
           {session ? <SignOutButton /> : <Link href="/login">Sign in</Link>}

@@ -15,7 +15,7 @@ export default async function AdminSimulationsPage() {
 
   return (
     <main className="shell section admin-page">
-      <Link className="back-link" href="/admin/submissions">← Administration</Link>
+      <Link className="back-link" href="/admin">← Administration</Link>
       <div className="admin-title-row">
         <div>
           <p className="eyebrow">Administration</p>
@@ -23,6 +23,7 @@ export default async function AdminSimulationsPage() {
           <p className="lead-copy">Archive hides a simulation from students. Permanent deletion also removes all managed version files.</p>
         </div>
         <div className="admin-nav-inline">
+          <Link className="button secondary" href="/admin">Dashboard</Link>
           <Link className="button secondary" href="/admin/submissions">Review queue</Link>
         </div>
       </div>
