@@ -9,6 +9,7 @@ import type { SubmissionKind } from "@/lib/submissions/types";
 type Props = {
   topics: Topic[];
   simulations: SimulationSummary[];
+  contributorName: string;
 };
 
 const LEVELS: SyllabusLevel[] = ["H1", "H2", "H3"];
@@ -17,10 +18,12 @@ function topicLabel(topic: Topic) {
   return `${topic.name} (${topic.availabilityLabel})`;
 }
 
-export function SubmissionForm({ topics, simulations }: Props) {
+export function SubmissionForm({ topics, simulations, contributorName }: Props) {
   const router = useRouter();
   const [kind, setKind] = useState<SubmissionKind>("new");
   const [existingSimulationId, setExistingSimulationId] = useState("");
+  const [existingOwner, setExistingOwner] = useState("");
+  const [ownerChoice, setOwnerChoice] = useState<"original" | "self">("original");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [levels, setLevels] = useState<SyllabusLevel[]>(["H2"]);
@@ -40,6 +43,8 @@ export function SubmissionForm({ topics, simulations }: Props) {
   function resetForNewKind(nextKind: SubmissionKind) {
     setKind(nextKind);
     setExistingSimulationId("");
+    setExistingOwner("");
+    setOwnerChoice("original");
     setTitle("");
     setDescription("");
     setLevels(["H2"]);
@@ -55,6 +60,8 @@ export function SubmissionForm({ topics, simulations }: Props) {
     setExistingSimulationId(id);
     const simulation = simulations.find((item) => item.id === id);
     if (!simulation) return;
+    setExistingOwner(simulation.author || "");
+    setOwnerChoice("original");
     setTitle(simulation.title);
     setDescription(simulation.description);
     setLevels(simulation.levels);
@@ -99,6 +106,7 @@ export function SubmissionForm({ topics, simulations }: Props) {
       levels,
       primaryTopicId,
       relatedTopicIds,
+      ownerName: kind === "update" && ownerChoice === "original" && existingOwner ? existingOwner : contributorName,
     };
 
     try {
@@ -183,13 +191,24 @@ export function SubmissionForm({ topics, simulations }: Props) {
           <button type="button" className={kind === "update" ? "active" : ""} onClick={() => resetForNewKind("update")}>Update existing</button>
         </div>
         {kind === "update" ? (
-          <label className="form-field">
-            <span>Existing simulation</span>
-            <select value={existingSimulationId} onChange={(event) => chooseExisting(event.target.value)} required>
-              <option value="">Choose a simulation…</option>
-              {simulations.map((simulation) => <option key={simulation.id} value={simulation.id}>{simulation.title}</option>)}
-            </select>
-          </label>
+          <>
+            <label className="form-field">
+              <span>Existing simulation</span>
+              <select value={existingSimulationId} onChange={(event) => chooseExisting(event.target.value)} required>
+                <option value="">Choose a simulation…</option>
+                {simulations.map((simulation) => <option key={simulation.id} value={simulation.id}>{simulation.title}</option>)}
+              </select>
+            </label>
+            {existingSimulationId ? (
+              <div className="owner-choice-card">
+                <div><strong>Current owner</strong><span>{existingOwner || "Not recorded"}</span></div>
+                <div className="owner-choice-options" role="group" aria-label="Owner for this update">
+                  <label><input type="radio" name="ownerChoice" checked={ownerChoice === "original"} onChange={() => setOwnerChoice("original")} /> Keep original owner</label>
+                  <label><input type="radio" name="ownerChoice" checked={ownerChoice === "self"} onChange={() => setOwnerChoice("self")} /> Change owner to {contributorName}</label>
+                </div>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
 
