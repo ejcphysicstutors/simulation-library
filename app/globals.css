@@ -412,3 +412,43 @@ button, input { font: inherit; }
     justify-content: flex-start;
   }
 }
+
+
+.owner-edit-form {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.4rem;
+  max-width: 36rem;
+}
+
+.owner-edit-form label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #5b6b7f);
+}
+
+.owner-edit-row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.owner-edit-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border, #d7e2ec);
+  border-radius: 10px;
+  padding: 0.72rem 0.82rem;
+  font: inherit;
+  background: #fff;
+  color: inherit;
+}
+
+@media (max-width: 680px) {
+  .owner-edit-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

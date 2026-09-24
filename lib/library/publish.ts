@@ -158,7 +158,7 @@ export async function rollbackSimulation(simulationId: string, versionId: string
   const now = new Date().toISOString();
   await adminDb.collection("simulations").doc(simulationId).update({
     currentVersionId: version.id, currentVersionNumber: version.versionNumber,
-    title: version.title, description: version.description, author: version.author ?? simulation.author,
+    title: version.title, description: version.description,
     levels: version.levels, primaryTopicId: version.primaryTopicId, relatedTopicIds: version.relatedTopicIds,
     updatedAt: now, lastRollbackBy: adminEmail, lastRollbackAt: now,
   });
@@ -172,7 +172,7 @@ export async function rollbackToLegacyBaseline(simulationId: string, adminEmail:
   const now = new Date().toISOString();
   await adminDb.collection("simulations").doc(simulationId).update({
     currentVersionId: "legacy-v1", currentVersionNumber: baseline.publishedVersion ?? 1,
-    title: baseline.title, description: baseline.description, author: baseline.author ?? simulation.author,
+    title: baseline.title, description: baseline.description,
     levels: baseline.levels, primaryTopicId: baseline.primaryTopicId, relatedTopicIds: baseline.relatedTopicIds,
     updatedAt: now, lastRollbackBy: adminEmail, lastRollbackAt: now,
   });

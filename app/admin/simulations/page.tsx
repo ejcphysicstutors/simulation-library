@@ -4,7 +4,7 @@ import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import { requireAdminAccess } from "@/lib/auth/session";
 import { simulations as staticSimulations } from "@/lib/data/catalog";
 import { listAllManagedSimulations } from "@/lib/library/managed";
-import { archiveSimulation, deleteSimulation, restoreSimulation } from "./actions";
+import { archiveSimulation, deleteSimulation, restoreSimulation, updateSimulationOwner } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +45,21 @@ export default async function AdminSimulationsPage() {
                 </div>
                 <small>v{simulation.currentVersionNumber} · {hasLegacyBaseline ? "legacy simulation with managed updates" : "new managed simulation"}</small>
                 <span>{simulation.description}</span>
+                <form className="owner-edit-form" action={updateSimulationOwner}>
+                  <input type="hidden" name="simulationId" value={simulation.id} />
+                  <label htmlFor={`owner-${simulation.id}`}>Owner / original creator</label>
+                  <div className="owner-edit-row">
+                    <input
+                      id={`owner-${simulation.id}`}
+                      name="ownerName"
+                      type="text"
+                      defaultValue={simulation.author ?? ""}
+                      maxLength={160}
+                      required
+                    />
+                    <button className="button secondary" type="submit">Save owner</button>
+                  </div>
+                </form>
               </div>
               <div className="managed-simulation-actions">
                 <Link className="button secondary" href={`/admin/simulations/${simulation.id}/versions`}>Version history</Link>

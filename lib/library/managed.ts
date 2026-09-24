@@ -47,9 +47,12 @@ export type ManagedSimulation = {
   archivedBy?: string;
   restoredAt?: string;
   restoredBy?: string;
+  ownerUpdatedAt?: string;
+  ownerUpdatedBy?: string;
 };
 
 function toSummary(record: ManagedSimulation): SimulationSummary {
+  const legacyBaseline = staticSimulations.find((item) => item.id === record.id);
   return {
     id: record.id,
     slug: record.slug,
@@ -64,6 +67,7 @@ function toSummary(record: ManagedSimulation): SimulationSummary {
     publishedVersion: record.currentVersionNumber,
     managed: true,
     currentVersionId: record.currentVersionId,
+    ...(legacyBaseline?.migrationCredit ? { migrationCredit: legacyBaseline.migrationCredit } : {}),
     contentPath: `/api/library/simulations/${record.id}/current/index.html`,
   };
 }
