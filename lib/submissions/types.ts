@@ -40,6 +40,7 @@ export type SubmissionMetadata = {
   levels: SyllabusLevel[];
   primaryTopicId: string;
   relatedTopicIds: string[];
+  ownerName?: string;
 };
 
 export type SubmissionRecord = SubmissionMetadata & {
