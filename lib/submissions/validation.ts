@@ -1,10 +1,9 @@
 import { strFromU8, unzipSync } from "fflate";
 
 import type { SubmissionRecord, ValidationCheck, ValidationSummary } from "./types";
+import { inspectZipBeforeExtraction, MAX_ZIP_FILES, MAX_ZIP_UNCOMPRESSED_BYTES } from "./safe-zip";
 
 const TEXT_EXTENSIONS = new Set([".html", ".htm", ".css", ".js", ".mjs", ".json", ".txt", ".svg"]);
-const MAX_ZIP_FILES = 400;
-const MAX_UNCOMPRESSED_BYTES = 25 * 1024 * 1024;
 
 function extname(path: string): string {
   const slash = path.lastIndexOf("/");
@@ -201,6 +200,18 @@ export function validateSubmissionBytes(record: SubmissionRecord, bytes: Uint8Ar
     ], record.originalFilename);
   }
 
+  let inspection;
+  try {
+    inspection = inspectZipBeforeExtraction(bytes);
+  } catch (error) {
+    return summarise([{
+      code: "ZIP_SAFETY",
+      label: "ZIP safety",
+      severity: "error",
+      message: error instanceof Error ? error.message : "The ZIP package failed safety checks.",
+    }]);
+  }
+
   let archive: Record<string, Uint8Array>;
   try {
     archive = unzipSync(bytes);
@@ -217,7 +228,7 @@ export function validateSubmissionBytes(record: SubmissionRecord, bytes: Uint8Ar
   const unsafePaths = rawPaths.filter((path) => normalisePath(path) === "__invalid__" || path.startsWith("/") || /^[A-Za-z]:/.test(path));
   const normalisedPaths = rawPaths.map(normalisePath).filter((path) => path !== "__invalid__");
   const availablePaths = new Set(normalisedPaths);
-  const totalBytes = rawPaths.reduce((sum, path) => sum + archive[path].byteLength, 0);
+  const totalBytes = inspection.uncompressedBytes;
 
   const checks: ValidationCheck[] = [{
     code: "ZIP_READ",
@@ -238,7 +249,7 @@ export function validateSubmissionBytes(record: SubmissionRecord, bytes: Uint8Ar
     checks.push({ code: "ZIP_PATHS", label: "ZIP paths", severity: "pass", message: "ZIP paths are safely contained." });
   }
 
-  if (rawPaths.length > MAX_ZIP_FILES || totalBytes > MAX_UNCOMPRESSED_BYTES) {
+  if (rawPaths.length > MAX_ZIP_FILES || totalBytes > MAX_ZIP_UNCOMPRESSED_BYTES) {
     checks.push({
       code: "ZIP_SIZE",
       label: "Expanded ZIP size",

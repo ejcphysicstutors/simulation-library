@@ -1,6 +1,7 @@
 import { del } from "@vercel/blob";
 
 import { adminDb } from "@/lib/firebase/admin";
+import { makeAuditEvent } from "@/lib/admin/audit";
 import { getManagedSimulation, listManagedVersions } from "./managed";
 
 async function deletePublishedBlobs(simulationId: string) {
@@ -20,12 +21,17 @@ export async function archiveManagedSimulation(simulationId: string, adminEmail:
   if (simulation.status === "archived") return;
 
   const now = new Date().toISOString();
-  await adminDb.collection("simulations").doc(simulationId).update({
+  const simRef = adminDb.collection("simulations").doc(simulationId);
+  const audit = makeAuditEvent("simulation.archive", adminEmail, simulationId);
+  const batch = adminDb.batch();
+  batch.update(simRef, {
     status: "archived",
     updatedAt: now,
     archivedAt: now,
     archivedBy: adminEmail,
   });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
 }
 
 export async function restoreManagedSimulation(simulationId: string, adminEmail: string) {
@@ -35,12 +41,17 @@ export async function restoreManagedSimulation(simulationId: string, adminEmail:
   if (simulation.status === "published") return;
 
   const now = new Date().toISOString();
-  await adminDb.collection("simulations").doc(simulationId).update({
+  const simRef = adminDb.collection("simulations").doc(simulationId);
+  const audit = makeAuditEvent("simulation.restore", adminEmail, simulationId);
+  const batch = adminDb.batch();
+  batch.update(simRef, {
     status: "published",
     updatedAt: now,
     restoredAt: now,
     restoredBy: adminEmail,
   });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
 }
 
 export async function deleteManagedSimulationPermanently(simulationId: string, adminEmail: string) {
@@ -67,6 +78,11 @@ export async function deleteManagedSimulationPermanently(simulationId: string, a
       updatedAt: now,
     });
   });
+  const audit = makeAuditEvent("simulation.delete", adminEmail, simulationId, {
+    title: simulation.title,
+    deletedVersionCount: versions.size,
+  });
+  batch.set(audit.ref, audit.data);
 
   await batch.commit();
 }

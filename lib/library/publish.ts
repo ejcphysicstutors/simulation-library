@@ -6,6 +6,8 @@ import { adminDb } from "@/lib/firebase/admin";
 import { getPrivateBlobBytes } from "@/lib/submissions/blob";
 import { getSubmissionRecord } from "@/lib/submissions/data";
 import type { SubmissionRecord } from "@/lib/submissions/types";
+import { inspectZipBeforeExtraction } from "@/lib/submissions/safe-zip";
+import { makeAuditEvent } from "@/lib/admin/audit";
 import { getManagedSimulation, listManagedSimulations, listManagedVersions, type ManagedSimulation, type ManagedVersion, type PublishedFile } from "./managed";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,6 +38,7 @@ function contentType(path: string): string {
 
 function packageFiles(record: SubmissionRecord, bytes: Uint8Array): { entrypoint: string; files: Array<{path:string; bytes:Uint8Array}> } {
   if (record.packageType === "html") return { entrypoint: "index.html", files: [{ path: "index.html", bytes }] };
+  inspectZipBeforeExtraction(bytes);
   const archive = unzipSync(bytes) as Record<string, Uint8Array>;
   const entries = Object.entries(archive).filter(([path]) => !path.endsWith("/")).map(([path, file]) => ({ path: normalisePath(path), bytes: file }));
   const requested = record.validation?.entrypoint;
@@ -131,8 +134,14 @@ export async function publishSubmission(submissionId: string, adminEmail: string
 
   const batch = adminDb.batch();
   const simRef = adminDb.collection("simulations").doc(simulationId);
+  const publishAudit = makeAuditEvent("simulation.publish", adminEmail, simulationId, {
+    submissionId,
+    versionId,
+    versionNumber,
+  });
   batch.set(simRef, simulation);
   batch.set(simRef.collection("versions").doc(versionId), version);
+  batch.set(publishAudit.ref, publishAudit.data);
   batch.update(adminDb.collection("submissions").doc(submissionId), {
     status: "published",
     reviewedBy: adminEmail,
@@ -156,12 +165,20 @@ export async function rollbackSimulation(simulationId: string, versionId: string
   if (!versionSnap.exists) throw new Error("Version was not found.");
   const version = versionSnap.data() as ManagedVersion;
   const now = new Date().toISOString();
-  await adminDb.collection("simulations").doc(simulationId).update({
+  const simRef = adminDb.collection("simulations").doc(simulationId);
+  const audit = makeAuditEvent("simulation.rollback", adminEmail, simulationId, {
+    fromVersionId: simulation.currentVersionId,
+    toVersionId: version.id,
+  });
+  const batch = adminDb.batch();
+  batch.update(simRef, {
     currentVersionId: version.id, currentVersionNumber: version.versionNumber,
     title: version.title, description: version.description,
     levels: version.levels, primaryTopicId: version.primaryTopicId, relatedTopicIds: version.relatedTopicIds,
     updatedAt: now, lastRollbackBy: adminEmail, lastRollbackAt: now,
   });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
 }
 
 export async function rollbackToLegacyBaseline(simulationId: string, adminEmail: string) {
@@ -170,10 +187,18 @@ export async function rollbackToLegacyBaseline(simulationId: string, adminEmail:
   const simulation = await getManagedSimulation(simulationId);
   if (!baseline || !simulation) throw new Error("Legacy baseline is not available.");
   const now = new Date().toISOString();
-  await adminDb.collection("simulations").doc(simulationId).update({
+  const simRef = adminDb.collection("simulations").doc(simulationId);
+  const audit = makeAuditEvent("simulation.rollback_legacy", adminEmail, simulationId, {
+    fromVersionId: simulation.currentVersionId,
+    toVersionId: "legacy-v1",
+  });
+  const batch = adminDb.batch();
+  batch.update(simRef, {
     currentVersionId: "legacy-v1", currentVersionNumber: baseline.publishedVersion ?? 1,
     title: baseline.title, description: baseline.description,
     levels: baseline.levels, primaryTopicId: baseline.primaryTopicId, relatedTopicIds: baseline.relatedTopicIds,
     updatedAt: now, lastRollbackBy: adminEmail, lastRollbackAt: now,
   });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
 }
