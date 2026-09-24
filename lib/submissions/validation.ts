@@ -264,8 +264,8 @@ export function validateSubmissionBytes(record: SubmissionRecord, bytes: Uint8Ar
     checks.push({
       code: "ENTRYPOINT",
       label: "Entry page",
-      severity: "warning",
-      message: `index.html is nested at ${entrypoint}. The publisher can normalise this during approval.`,
+      severity: "pass",
+      message: `index.html found at ${entrypoint}. The package root will be normalised automatically.`,
     });
   } else if (indexCandidates.length === 0) {
     checks.push({ code: "ENTRYPOINT", label: "Entry page", severity: "error", message: "No index.html file was found." });
