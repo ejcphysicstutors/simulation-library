@@ -5,15 +5,16 @@ import { SignOutButton } from "./sign-out-button";
 
 export async function SiteHeader() {
   const session = await getAccessSession();
+  const homeHref = session ? "/library" : "/";
 
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <Link className="brand" href={session ? "/library" : "/"}>
+        <Link className="brand" href={homeHref}>
           <span className="brand-mark">EJC</span>
           <span>
             <strong>Physics Simulation Library</strong>
-            <small>Explore • interact • understand</small>
+            <small>Explore · interact · understand</small>
           </span>
         </Link>
         <nav className="nav-links" aria-label="Main navigation">
@@ -22,7 +23,8 @@ export async function SiteHeader() {
             <Link href="/contribute">Contribute</Link>
           ) : null}
           {session?.kind === "google" && session.role === "admin" ? <Link href="/admin/submissions">Admin</Link> : null}
-          {session?.kind === "demo" ? <span className="demo-badge">Demo</span> : null}
+          {session?.kind === "demo" ? <span className="access-badge">Demo</span> : null}
+          {session?.kind === "google" && session.role !== "student" ? <span className="access-badge">{session.role}</span> : null}
           {session ? <SignOutButton /> : <Link href="/login">Sign in</Link>}
         </nav>
       </div>
