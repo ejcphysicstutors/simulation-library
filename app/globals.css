@@ -1014,3 +1014,51 @@ a.dashboard-list-row:hover { background: #fbfdfd; }
     justify-content: space-between;
   }
 }
+
+/* Simplified sign-in */
+.auth-card-simple {
+  width: min(430px, 100%);
+  padding: 38px;
+}
+.auth-card-simple h1 {
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+}
+.auth-card-simple > p:not(.eyebrow) {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+.auth-card-simple > p strong {
+  color: var(--ink);
+  font-weight: 800;
+}
+.auth-button-primary {
+  margin-top: 28px !important;
+  min-height: 52px;
+  font-size: 1rem;
+}
+.demo-access-toggle {
+  display: block;
+  margin: 22px auto 0;
+  border: 0;
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .86rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.demo-access-toggle:hover {
+  color: var(--ink);
+}
+.demo-access-form {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 560px) {
+  .auth-page { padding: 24px 16px; }
+  .auth-card-simple { padding: 28px 24px; border-radius: 22px; }
+}

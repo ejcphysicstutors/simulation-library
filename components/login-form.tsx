@@ -15,13 +15,14 @@ function destinationForRole(role: string): string {
 export function LoginForm() {
   const router = useRouter();
   const [busy, setBusy] = useState<"google" | "demo" | null>(null);
+  const [demoOpen, setDemoOpen] = useState(false);
   const [demoPassword, setDemoPassword] = useState("");
   const [error, setError] = useState("");
 
   async function handleGoogle() {
     setError("");
     if (!firebaseAuth || !isFirebaseConfigured) {
-      setError("Google sign-in has not been configured for this deployment yet.");
+      setError("Sign-in is not available right now. Please try again later.");
       return;
     }
 
@@ -73,32 +74,42 @@ export function LoginForm() {
 
   return (
     <>
-      <button className="auth-button google" type="button" onClick={handleGoogle} disabled={busy !== null}>
-        {busy === "google" ? "Signing in…" : "Continue with Google"}
-        <small>EJC users are taken to the access level assigned to their account.</small>
+      <button className="auth-button google auth-button-primary" type="button" onClick={handleGoogle} disabled={busy !== null}>
+        {busy === "google" ? "Signing in…" : "Sign in with EJC account"}
       </button>
 
-      <div className="divider"><span>or</span></div>
+      <button
+        className="demo-access-toggle"
+        type="button"
+        onClick={() => {
+          setDemoOpen((open) => !open);
+          setError("");
+        }}
+        aria-expanded={demoOpen}
+      >
+        {demoOpen ? "Hide demo access" : "Demo access"}
+      </button>
 
-      <form onSubmit={handleDemo}>
-        <label className="field-label" htmlFor="demo-password">Demo password</label>
-        <input
-          id="demo-password"
-          className="text-field"
-          type="password"
-          autoComplete="current-password"
-          value={demoPassword}
-          onChange={(event) => setDemoPassword(event.target.value)}
-          placeholder="Enter demo password"
-          required
-        />
-        <button className="auth-button" type="submit" disabled={busy !== null}>
-          {busy === "demo" ? "Checking…" : "Enter demo"}
-        </button>
-      </form>
+      {demoOpen ? (
+        <form className="demo-access-form" onSubmit={handleDemo}>
+          <label className="field-label" htmlFor="demo-password">Demo password</label>
+          <input
+            id="demo-password"
+            className="text-field"
+            type="password"
+            autoComplete="current-password"
+            value={demoPassword}
+            onChange={(event) => setDemoPassword(event.target.value)}
+            placeholder="Enter demo password"
+            required
+          />
+          <button className="auth-button" type="submit" disabled={busy !== null}>
+            {busy === "demo" ? "Checking…" : "Enter demo"}
+          </button>
+        </form>
+      ) : null}
 
       {error ? <p className="form-error" role="alert">{error}</p> : null}
-      <p className="auth-note">Demo access is read-only and never grants contributor or admin permissions.</p>
     </>
   );
 }
