@@ -4,24 +4,23 @@ import { topics } from "@/lib/data/catalog";
 import { getLibrarySimulations } from "@/lib/library/managed";
 
 export const dynamic = "force-dynamic";
+
 export default async function LibraryPage() {
   const session = await requireStudentAccess();
   const simulations = await getLibrarySimulations();
 
   return (
-    <main className="shell section">
-      <div className="library-heading syllabus-heading">
+    <main className="shell student-library-page">
+      <header className="student-library-heading">
         <div>
-          <p className="eyebrow">EJC Physics Simulation Library</p>
-          <h1>Explore physics interactively.</h1>
-          <p>Search or browse by level and topic to find an interactive simulation.</p>
+          <p className="eyebrow">Simulation library</p>
+          <h1>What would you like to explore?</h1>
+          <p>
+            Search by idea, then narrow the library by syllabus level or topic.
+          </p>
         </div>
-        <aside className="catalog-stat" aria-label="Simulation library summary">
-          <strong>{simulations.length}</strong>
-          <span>simulations</span>
-          <small>across H1, H2 and H3 Physics</small>
-        </aside>
-      </div>
+        <p className="library-count"><strong>{simulations.length}</strong> simulations</p>
+      </header>
 
       <LibraryBrowser simulations={simulations} topics={topics} isDemo={session.kind === "demo"} />
     </main>

@@ -9,7 +9,7 @@ export async function SiteHeader() {
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <Link className="brand" href="/">
+        <Link className="brand" href={session ? "/library" : "/"}>
           <span className="brand-mark">EJC</span>
           <span>
             <strong>Physics Simulation Library</strong>
@@ -22,14 +22,8 @@ export async function SiteHeader() {
             <Link href="/contribute">Contribute</Link>
           ) : null}
           {session?.kind === "google" && session.role === "admin" ? <Link href="/admin/submissions">Admin</Link> : null}
-          {session ? (
-            <>
-              <span className="access-badge">{session.kind === "demo" ? "Demo" : session.role}</span>
-              <SignOutButton />
-            </>
-          ) : (
-            <Link href="/login">Sign in</Link>
-          )}
+          {session?.kind === "demo" ? <span className="demo-badge">Demo</span> : null}
+          {session ? <SignOutButton /> : <Link href="/login">Sign in</Link>}
         </nav>
       </div>
     </header>

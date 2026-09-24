@@ -42,90 +42,111 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
     return topics.filter((topic) => topic.levels.includes(level));
   }, [level, topics]);
 
+  const clearFilters = () => {
+    setQuery("");
+    setLevel("All");
+    setTopicId("all");
+  };
+
+  const filtersActive = query.trim() !== "" || level !== "All" || topicId !== "all";
+
   return (
     <>
-      <section className="library-toolbar" aria-label="Library filters">
-        <div className="search-wrap">
-          <label htmlFor="simulation-search">Search simulations</label>
-          <input
-            id="simulation-search"
-            className="library-search"
-            type="search"
-            placeholder="Try ‘photoelectric’, ‘fields’ or an author name"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-
-        <div>
-          <span className="filter-label">Level</span>
-          <div className="level-pills" aria-label="Syllabus level filters">
-            {levelOptions.map((option) => (
-              <button
-                type="button"
-                className={`pill ${level === option ? "active" : ""}`}
-                key={option}
-                onClick={() => {
-                  setLevel(option);
-                  if (option !== "All" && !topics.find((topic) => topic.id === topicId)?.levels.includes(option)) {
-                    setTopicId("all");
-                  }
-                }}
-              >
-                {option}
-              </button>
-            ))}
+      <section className="student-library-controls" aria-label="Library filters">
+        <div className="student-search-wrap">
+          <label htmlFor="simulation-search">Search</label>
+          <div className="student-search-field">
+            <span aria-hidden="true">⌕</span>
+            <input
+              id="simulation-search"
+              type="search"
+              placeholder="Search a topic, idea or simulation…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
           </div>
         </div>
 
-        <div className="topic-filter-wrap">
-          <label htmlFor="topic-filter">Topic</label>
-          <select
-            id="topic-filter"
-            className="topic-select"
-            value={topicId}
-            onChange={(event) => setTopicId(event.target.value)}
-          >
-            <option value="all">All topics</option>
-            {availableTopics.map((topic) => (
-              <option value={topic.id} key={topic.id}>
-                {topic.order}. {topic.name} ({topic.availabilityLabel})
-              </option>
-            ))}
-          </select>
+        <div className="student-filter-row">
+          <div className="student-level-filter">
+            <span className="filter-label">Level</span>
+            <div className="level-pills" aria-label="Syllabus level filters">
+              {levelOptions.map((option) => (
+                <button
+                  type="button"
+                  className={`pill ${level === option ? "active" : ""}`}
+                  key={option}
+                  onClick={() => {
+                    setLevel(option);
+                    if (option !== "All" && !topics.find((topic) => topic.id === topicId)?.levels.includes(option)) {
+                      setTopicId("all");
+                    }
+                  }}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="student-topic-filter">
+            <label htmlFor="topic-filter">Topic</label>
+            <select
+              id="topic-filter"
+              value={topicId}
+              onChange={(event) => setTopicId(event.target.value)}
+            >
+              <option value="all">All topics</option>
+              {availableTopics.map((topic) => (
+                <option value={topic.id} key={topic.id}>
+                  {topic.name} · {topic.availabilityLabel}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </section>
 
-      <div className="result-summary">
-        <strong>{filtered.length}</strong> {filtered.length === 1 ? "simulation" : "simulations"}
-        {level !== "All" ? ` for ${level}` : ""}
-        {isDemo ? " · demo view" : ""}
+      <div className="student-results-bar">
+        <p>
+          <strong>{filtered.length}</strong> {filtered.length === 1 ? "simulation" : "simulations"}
+          {level !== "All" ? ` for ${level}` : ""}
+          {isDemo ? " · Demo access" : ""}
+        </p>
+        {filtersActive ? (
+          <button type="button" className="clear-filters" onClick={clearFilters}>Clear filters</button>
+        ) : null}
       </div>
 
       {filtered.length === 0 ? (
-        <section className="empty-state">
-          <h2>No simulations match these filters.</h2>
-          <p>Try another level, topic or search term.</p>
+        <section className="empty-state student-empty-state">
+          <h2>No simulations found</h2>
+          <p>Try a broader search or clear one of the filters.</p>
+          <button type="button" className="button secondary" onClick={clearFilters}>Clear filters</button>
         </section>
       ) : (
-        <div className="simulation-grid">
+        <div className="student-simulation-grid">
           {filtered.map((simulation) => {
             const topic = topicById.get(simulation.primaryTopicId);
             return (
-              <Link className="simulation-card interactive-card" href={`/library/${simulation.slug}`} key={simulation.id}>
-                <div className="card-visual">
-                  <span>{topic ? `${topic.name} (${topic.availabilityLabel})` : "Physics"}</span>
-                </div>
-                <div className="card-body">
-                  <div className="level-row">
+              <Link className="student-simulation-card" href={`/library/${simulation.slug}`} key={simulation.id}>
+                <div className="student-card-topline">
+                  <span className="student-topic-chip">{topic?.name ?? "Physics"}</span>
+                  <div className="student-level-badges" aria-label={`Levels: ${simulation.levels.join(", ")}`}>
                     {simulation.levels.map((item) => <span key={item}>{item}</span>)}
                   </div>
+                </div>
+
+                <div className="student-card-content">
                   <h2>{simulation.title}</h2>
                   <p>{simulation.description}</p>
-                  <div className="card-footer-row">
-                    <span className="topic-label compact">{topic?.strand} · {topic?.name}</span>
-                    <span className="card-arrow" aria-hidden="true">→</span>
-                  </div>
+                </div>
+
+                <div className="student-card-footer">
+                  <span className="student-card-author">
+                    {simulation.author ? `By ${simulation.author}` : topic?.strand ?? "EJC Physics"}
+                  </span>
+                  <span className="student-open-link">Open <span aria-hidden="true">→</span></span>
                 </div>
               </Link>
             );
