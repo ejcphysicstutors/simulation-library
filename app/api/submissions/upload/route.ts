@@ -81,19 +81,27 @@ export async function POST(request: Request): Promise<Response> {
       const pathname = `submissions/${metadata.submissionId}/${originalFilename}`;
       const now = new Date().toISOString();
 
-      await adminDb.collection("submissions").doc(metadata.submissionId).set({
-        ...metadata,
-        contributorEmail: session.email.toLowerCase(),
-        contributorName: session.name ?? "",
-        status: "uploading",
-        originalFilename,
-        packageType,
-        blobSize: fileSize,
-        blobPathname: pathname,
-        blobContentType: contentType,
-        createdAt: now,
-        updatedAt: now,
-      });
+      try {
+        await adminDb.collection("submissions").doc(metadata.submissionId).create({
+          ...metadata,
+          contributorEmail: session.email.toLowerCase(),
+          contributorName: session.name ?? "",
+          status: "uploading",
+          originalFilename,
+          packageType,
+          blobSize: fileSize,
+          blobPathname: pathname,
+          blobContentType: contentType,
+          createdAt: now,
+          updatedAt: now,
+        });
+      } catch (error) {
+        const code = (error as { code?: number | string } | null)?.code;
+        if (code === 6 || code === "already-exists") {
+          return Response.json({ error: "That submission ID already exists." }, { status: 409 });
+        }
+        throw error;
+      }
 
       const validUntil = Date.now() + UPLOAD_URL_TTL_MS;
       const token = await issueSignedToken({
