@@ -7,12 +7,12 @@ New-generation simulation library for EJC Physics.
 - Next.js application deployed on Vercel.
 - Firebase Authentication for Google sign-in.
 - Cloud Firestore for roles, taxonomy, simulation metadata, submissions, versions and validation results.
-- Firebase Storage for private incoming uploads and screenshots.
-- Teacher-uploaded simulation code will run on a separate origin from the application/admin portal.
+- Private Vercel Blob storage for incoming contributor packages and published managed-simulation files.
+- Contributor-uploaded code is sandboxed when served from the main application origin. A separate simulation-serving origin remains the preferred longer-term defence-in-depth design.
 - Approved EJC Google-account domains receive student access automatically.
 - Contributor/admin access is explicitly allowlisted in Firestore.
-- `INITIAL_ADMIN_EMAILS` provides a server-side bootstrap admin list so the first admin never needs to be hard-coded in GitHub.
-- External demo access is read-only and protected by a server-side shared password with a short-lived signed session cookie.
+- `INITIAL_ADMIN_EMAILS` provides a server-side bootstrap admin list so the first admin never needs to be hard-coded in GitHub. Bootstrap admins must be removed from that environment variable; the Access page cannot revoke them by itself.
+- External demo access is read-only and protected by a server-side shared password with a short-lived signed session cookie. Use a long, unique demo password.
 - Firestore is wrapped behind a data-access layer so a future SQL migration remains possible.
 
 ## Local setup
@@ -20,11 +20,12 @@ New-generation simulation library for EJC Physics.
 1. Copy `.env.example` to `.env.local`.
 2. Add the Firebase web app configuration values.
 3. Create a Firebase service account and add the Admin SDK values to `.env.local` / Vercel environment variables.
-4. Set `NEXT_PUBLIC_STUDENT_EMAIL_DOMAINS` to the Google-account domain(s) that receive student access.
+4. Set `NEXT_PUBLIC_STUDENT_EMAIL_DOMAINS` or `ALLOWED_EJC_DOMAINS` to the Google-account domain(s) that receive student access.
 5. Put your own email in `INITIAL_ADMIN_EMAILS` for the first deployment.
-6. Set `DEMO_ACCESS_PASSWORD` (and optionally `DEMO_SESSION_SECRET`).
+6. Set a long `DEMO_ACCESS_PASSWORD` (and optionally `DEMO_SESSION_SECRET`).
 7. In Firebase Authentication, enable the **Google** sign-in provider and add your deployed Vercel domain to authorised domains.
-8. Run `npm install` then `npm run dev`.
+8. Connect a private Vercel Blob store to the project.
+9. Run `npm install`, then `npm run dev`.
 
 ## Access model
 
@@ -54,14 +55,18 @@ Before testing uploads in Vercel:
 
 Accepted simulation packages: standalone `.html`/`.htm` files or `.zip` projects, maximum 10 MB.
 
-The uploaded package is staging data. Once the later publish workflow has copied and verified the approved version, the submission blob can be deleted without affecting the published simulation.
+The uploaded package is staging data. Once the publish workflow has copied and verified the approved version, the staging blob can be deleted without affecting the published simulation.
 
-## Email notifications
+## Notifications
 
-Email notifications are optional and non-blocking. The application uses the Resend HTTP API when these Vercel environment variables are present:
+Workflow notifications are in-app. Contributors can see submission/review/publish updates in the application, and admins receive in-app review-pipeline notifications. Notification failures are logged and do not block uploads, review actions or publishing.
 
-- `RESEND_API_KEY` — secret API key.
-- `NOTIFICATION_FROM_EMAIL` — verified sender, for example `EJC Physics Simulation Library <simulations@your-domain>`.
-- `NEXT_PUBLIC_APP_URL` — optional canonical site URL used in notification links. Vercel production URLs are used automatically when this is omitted.
+## Simulation-file access and sandboxing
 
-When configured, contributors receive email when a submission is received, when changes are requested, and when it is published. Admins receive email when a new submission reaches the review pipeline. Notification failures are logged but never block uploads, review actions or publishing.
+The library pages require an authenticated library session, but the underlying legacy `/simulations/...` files and managed `/api/library/simulations/...` file routes are intentionally readable without sign-in so simulations can open directly and load their own assets reliably. Treat those URLs as public content URLs; do not put private information in simulation packages.
+
+Managed HTML responses and contributor ZIP previews are served with a CSP `sandbox` that permits only the capabilities simulations need (`allow-scripts`, forms, modals, pointer lock and popups) and does **not** grant same-origin privileges. The single-HTML review preview is also sandboxed. Longer term, serving uploaded simulations from a separate origin is still recommended so untrusted simulation code is physically isolated from authenticated application cookies and server actions.
+
+## Deployment checks
+
+Before calling the workflow production-ready, run an end-to-end staging test with real Firebase and Vercel credentials covering Google sign-in, contributor upload, validation/preview, review decisions, publishing, version history and rollback.
