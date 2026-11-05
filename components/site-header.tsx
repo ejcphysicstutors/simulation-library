@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getAccessSession } from "@/lib/auth/session";
@@ -16,7 +17,7 @@ export async function SiteHeader() {
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="brand" href={homeHref}>
-          <span className="brand-mark">EJC</span>
+          <span className="brand-mark"><Image src="/ejc-physics-icon.png" alt="" width={44} height={44} priority /></span>
           <span>
             <strong>Physics Simulation Library</strong>
             <small>Explore · interact · understand</small>

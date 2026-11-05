@@ -123,6 +123,11 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
     return Array.from(groups.entries());
   }, [filteredTopics]);
 
+  const visibleSimulationCount = useMemo(
+    () => filteredTopics.reduce((total, item) => total + item.count, 0),
+    [filteredTopics],
+  );
+
   return (
     <>
       <section className="topic-library-toolbar" aria-label="Library filters">
@@ -156,7 +161,7 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
       </section>
 
       <div className="topic-library-summary">
-        <span>{simulations.length} simulations</span>
+        <span>{visibleSimulationCount} {visibleSimulationCount === 1 ? "simulation" : "simulations"}</span>
         {isDemo ? <span>Demo view</span> : null}
       </div>
 
@@ -171,7 +176,10 @@ export function LibraryBrowser({ simulations, topics, isDemo }: Props) {
             <section className="topic-strand" key={strand}>
               <div className="topic-strand-heading">
                 <h2>{strand}</h2>
-                <span>{items.reduce((total, item) => total + item.count, 0)} simulations</span>
+                {(() => {
+                  const count = items.reduce((total, item) => total + item.count, 0);
+                  return <span>{count} {count === 1 ? "simulation" : "simulations"}</span>;
+                })()}
               </div>
               <div className="topic-grid-compact">
                 {items.map(({ topic, count }) => {

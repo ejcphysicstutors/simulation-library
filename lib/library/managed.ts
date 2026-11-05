@@ -88,7 +88,7 @@ export async function listManagedSimulations(): Promise<ManagedSimulation[]> {
 export async function getManagedSimulation(id: string): Promise<ManagedSimulation | null> {
   if (!adminDb) return null;
   const snap = await adminDb.collection("simulations").doc(id).get();
-  return snap.exists ? (snap.data() as ManagedSimulation) : null;
+  return snap.exists ? ({ id: snap.id, ...(snap.data() as Omit<ManagedSimulation, "id">) }) : null;
 }
 
 export async function getManagedVersion(simulationId: string, versionId: string): Promise<ManagedVersion | null> {

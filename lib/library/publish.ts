@@ -8,7 +8,7 @@ import { getSubmissionRecord } from "@/lib/submissions/data";
 import type { SubmissionRecord } from "@/lib/submissions/types";
 import { inspectZipBeforeExtraction } from "@/lib/submissions/safe-zip";
 import { makeAuditEvent } from "@/lib/admin/audit";
-import { getManagedSimulation, listManagedSimulations, listManagedVersions, type ManagedSimulation, type ManagedVersion, type PublishedFile } from "./managed";
+import { getManagedSimulation, listAllManagedSimulations, listManagedVersions, type ManagedSimulation, type ManagedVersion, type PublishedFile } from "./managed";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -54,7 +54,7 @@ function packageFiles(record: SubmissionRecord, bytes: Uint8Array): { entrypoint
 
 async function uniqueSlug(title: string, simulationId?: string): Promise<string> {
   const base = slugify(title);
-  const managed = await listManagedSimulations();
+  const managed = await listAllManagedSimulations();
   const used = new Set([...staticSimulations.filter((x) => x.id !== simulationId).map((x) => x.slug), ...managed.filter((x) => x.id !== simulationId).map((x) => x.slug)]);
   if (!used.has(base)) return base;
   for (let n=2;n<1000;n++) if (!used.has(`${base}-${n}`)) return `${base}-${n}`;
