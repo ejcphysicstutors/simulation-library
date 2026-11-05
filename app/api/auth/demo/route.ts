@@ -6,6 +6,7 @@ import { createDemoSessionToken, passwordMatches } from "@/lib/auth/demo-session
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as { password?: string } | null;
   if (!body?.password || !passwordMatches(body.password)) {
+    await new Promise((resolve) => setTimeout(resolve, 750));
     return NextResponse.json({ error: "Incorrect demo password." }, { status: 401 });
   }
 
