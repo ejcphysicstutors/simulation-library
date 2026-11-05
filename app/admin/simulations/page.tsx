@@ -143,7 +143,12 @@ export default async function AdminSimulationsPage() {
               {simulation.status === "published" ? (
                 <form action={archiveSimulation}>
                   <input type="hidden" name="simulationId" value={simulation.id} />
-                  <button className="button secondary" type="submit">Archive</button>
+                  <ConfirmSubmitButton
+                    className="button secondary"
+                    message={`Archive ${simulation.title}? It will disappear from the student library but can be restored here later.`}
+                  >
+                    Archive
+                  </ConfirmSubmitButton>
                 </form>
               ) : (
                 <form action={restoreSimulation}>

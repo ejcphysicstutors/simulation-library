@@ -68,14 +68,16 @@ export default async function AccessManagementPage() {
             <tbody>
               {bootstrapAdmins.map((email) => (
                 <tr key={`bootstrap-${email}`}>
-                  <td>{email}</td><td>Admin</td><td>Environment bootstrap</td><td></td>
+                  <td>{email}</td><td>Admin</td><td>Environment bootstrap</td><td><span className="muted">Remove from INITIAL_ADMIN_EMAILS</span></td>
                 </tr>
               ))}
               {accessUsers.map((user) => (
                 <tr key={user.email}>
                   <td>{user.email}</td><td>{user.role === "admin" ? "Admin" : "Contributor"}</td><td>Active</td>
                   <td>
-                    {user.email !== session.email ? (
+                    {bootstrapAdmins.includes(user.email) ? (
+                      <span className="muted">Environment bootstrap</span>
+                    ) : user.email !== session.email ? (
                       <form action={removeAccessUser}>
                         <input type="hidden" name="email" value={user.email} />
                         <button className="text-button danger" type="submit">Remove</button>

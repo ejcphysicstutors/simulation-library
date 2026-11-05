@@ -132,6 +132,9 @@ async function updateReview(formData: FormData, status: "needs-changes" | "appro
   const ref = adminDb.collection("submissions").doc(submissionId);
   const snapshot = await ref.get();
   if (!snapshot.exists) throw new Error("Submission was not found.");
+  if (snapshot.data()?.status === "published") {
+    throw new Error("Published submissions cannot be moved back into review. Archive or update the live simulation instead.");
+  }
 
   const now = new Date();
   const adminNote = cleanNote(formData.get("adminNote"));

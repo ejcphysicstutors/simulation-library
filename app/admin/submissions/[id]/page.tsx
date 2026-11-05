@@ -155,11 +155,13 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
             <form className="review-action-form">
               <input type="hidden" name="submissionId" value={submission.submissionId} />
               <label><span>Note to contributor</span><textarea name="adminNote" rows={4} defaultValue={submission.adminNote ?? ""} placeholder="Optional for approval; recommended when changes are needed." /></label>
-              <div className="review-action-buttons">
-                <button className="button primary" formAction={approveSubmission} disabled={!canApprove}>Approve & publish</button>
-                <button className="button secondary" formAction={markNeedsChanges}>Needs changes</button>
-                <button className="button danger-button" formAction={rejectSubmission}>Reject</button>
-              </div>
+              {submission.status !== "published" ? (
+                <div className="review-action-buttons">
+                  <button className="button primary" formAction={approveSubmission} disabled={!canApprove}>Approve & publish</button>
+                  <button className="button secondary" formAction={markNeedsChanges}>Needs changes</button>
+                  <button className="button danger-button" formAction={rejectSubmission}>Reject</button>
+                </div>
+              ) : <small className="review-help">This submission is already published. Review decisions are locked.</small>}
               {!canApprove && submission.status !== "published" ? <small className="review-help">Resolve validation errors before approval.</small> : null}
               {submission.publishedSimulationId ? <Link className="button secondary" href={`/admin/simulations/${submission.publishedSimulationId}/versions`}>Version history</Link> : null}
             </form>
