@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!result || result.statusCode !== 200 || !result.stream) return new Response("Not found", { status: 404 });
     const headers = new Headers({ "Content-Type": file.contentType, "Cache-Control": "private, max-age=60" });
     if (file.contentType.startsWith("text/html")) {
-      headers.set("Content-Security-Policy", "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src data: https:; connect-src https:; media-src 'self' blob: data: https:; worker-src blob:; frame-src https:; base-uri 'none'; form-action 'none'");
+      headers.set("Content-Security-Policy", "sandbox allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups; default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src data: https:; connect-src https:; media-src 'self' blob: data: https:; worker-src blob:; frame-src https:; base-uri 'none'; form-action 'none'");
       headers.set("X-Content-Type-Options", "nosniff");
     }
     return new Response(result.stream, { headers });
