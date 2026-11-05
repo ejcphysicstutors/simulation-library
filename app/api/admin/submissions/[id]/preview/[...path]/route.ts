@@ -127,6 +127,7 @@ function inlineLocalAssets(html: string, htmlSourcePath: string, archive: Map<st
 
 function previewCsp(): string {
   return [
+    "sandbox allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups",
     "default-src 'none'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
     "style-src 'self' 'unsafe-inline' https:",
