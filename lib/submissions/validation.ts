@@ -300,7 +300,7 @@ export function validateSubmissionBytes(record: SubmissionRecord, bytes: Uint8Ar
     code: "PACKAGE_CONTENTS",
     label: "Package contents",
     severity: "info",
-    message: `${textFiles.length} text/code file${textFiles.length === 1 ? "" : "s"} detected for later runtime checks.`,
+    message: `${textFiles.length} text/code file${textFiles.length === 1 ? "" : "s"} detected. This is informational only: no action is required by itself, but the preview should still be used to confirm the project works at runtime.`,
   });
 
   return summarise(checks, entrypoint);

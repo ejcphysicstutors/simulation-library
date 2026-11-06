@@ -9,6 +9,30 @@ import { getPrivateBlobBytes } from "@/lib/submissions/blob";
 import { getSubmissionRecord } from "@/lib/submissions/data";
 import { approveSubmission, markNeedsChanges, rejectSubmission, saveSubmissionMetadata } from "../actions";
 
+const VALIDATION_HELP: Record<string, { meaning: string; importance: string }> = {
+  PACKAGE: { meaning: "Identifies how the uploaded simulation is packaged.", importance: "This tells the reviewer whether the app is a standalone HTML file or a multi-file ZIP project." },
+  ZIP_READ: { meaning: "Checks that the ZIP can be opened and its files can be read.", importance: "A damaged or unreadable archive cannot be previewed or published safely." },
+  ZIP_SAFETY: { meaning: "Checks the archive for unsafe or malformed ZIP structures.", importance: "This protects the review system from files designed to escape normal extraction limits." },
+  ZIP_PATHS: { meaning: "Checks that files stay inside the project folder when extracted.", importance: "Path traversal could overwrite or expose files outside the simulation package." },
+  ZIP_SIZE: { meaning: "Checks the expanded size and number of files in the ZIP.", importance: "Very large expanded packages can exhaust storage or memory even when the uploaded ZIP itself is small." },
+  ENTRYPOINT: { meaning: "Finds the index.html page that should launch the simulation.", importance: "The library needs one unambiguous entry page in order to preview and publish the simulation." },
+  HTML_DOCUMENT: { meaning: "Checks that the main HTML has the expected document structure.", importance: "Incomplete HTML can render unpredictably across browsers and may indicate a truncated AI-generated file." },
+  LOCAL_ASSETS: { meaning: "Checks references to local scripts, stylesheets, images and other project files.", importance: "Missing local files often cause a simulation to look correct in source code but fail when opened." },
+  EXTERNAL_DEPENDENCIES: { meaning: "Notes scripts, styles or other resources loaded from the internet.", importance: "External services can later change, disappear or be blocked by school networks, so the preview should confirm they work." },
+  DUPLICATE_IDS: { meaning: "Looks for repeated HTML element IDs.", importance: "Duplicate IDs can cause JavaScript or accessibility behaviour to target the wrong element." },
+  MATH_RENDERING: { meaning: "Checks whether LaTeX-style maths appears to have a compatible renderer such as MathJax or KaTeX.", importance: "Without a renderer, students may see raw commands instead of formatted equations." },
+  ENCODING: { meaning: "Looks for common signs of damaged character encoding.", importance: "Encoding damage can corrupt physics symbols such as degree signs, Greek letters and mathematical operators." },
+  PACKAGE_CONTENTS: { meaning: "Counts text and code files in a ZIP. INFO is not a failure and does not require a correction by itself.", importance: "Automated source checks cannot execute every code path. The count is a reminder that the reviewer should still use the preview and perform any relevant runtime interactions." },
+  VALIDATION_FAILURE: { meaning: "The automated checker itself could not finish normally.", importance: "The result is not trustworthy until the check can run successfully, so approval is blocked." },
+};
+
+function validationHelp(code: string, severity: string) {
+  return VALIDATION_HELP[code] ?? {
+    meaning: severity === "info" ? "This is an informational observation, not a failure." : "This automated check highlights a condition found in the uploaded project.",
+    importance: severity === "error" ? "Errors must be resolved before approval." : severity === "warning" ? "Warnings need reviewer judgement but do not automatically block approval." : "Use this alongside the preview when deciding whether the simulation is ready."
+  };
+}
+
 export default async function SubmissionReviewPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminAccess();
   const { id } = await params;
@@ -125,13 +149,27 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
                 <span>{validation.passes} passed</span>
               </div>
               <div className="validation-list">
-                {validation.checks.map((check) => (
+                {validation.checks.map((check) => {
+                  const help = validationHelp(check.code, check.severity);
+                  return (
                   <article key={check.code} className={`validation-check validation-${check.severity}`}>
-                    <div><strong>{check.label}</strong><span>{check.severity}</span></div>
+                    <div>
+                      <div className="validation-check-title"><strong>{check.label}</strong>
+                        <details className="validation-help">
+                          <summary aria-label={`More information about ${check.label}`}>i</summary>
+                          <div className="validation-help-card">
+                            <strong>What this means</strong><p>{help.meaning}</p>
+                            <strong>Why it matters</strong><p>{help.importance}</p>
+                          </div>
+                        </details>
+                      </div>
+                      <span>{check.severity}</span>
+                    </div>
                     <p>{check.message}</p>
                     {check.details?.length ? <ul>{check.details.map((detail) => <li key={detail}>{detail}</li>)}</ul> : null}
                   </article>
-                ))}
+                  );
+                })}
               </div>
             </>
           ) : <p className="empty-submissions">This submission has not been checked yet.</p>}
@@ -149,6 +187,19 @@ export default async function SubmissionReviewPage({ params }: { params: Promise
               {validation?.entrypoint ? <div><dt>Entry page</dt><dd>{validation.entrypoint}</dd></div> : null}
             </dl>
           </section>
+
+          {submission.reviewHistory?.length ? (
+            <section className="admin-panel review-history-panel">
+              <h2>Previous review feedback</h2>
+              {submission.reviewHistory.slice().reverse().map((review, index) => (
+                <div className="review-history-item" key={`${review.reviewedAt ?? index}-${index}`}>
+                  <strong>{review.status === "rejected" ? "Not accepted" : "Changes requested"}</strong>
+                  {review.note ? <p>{review.note}</p> : <p>No reviewer note was recorded.</p>}
+                  {review.reviewedAt ? <small>{new Date(review.reviewedAt).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })}</small> : null}
+                </div>
+              ))}
+            </section>
+          ) : null}
 
           <section className="admin-panel review-decision-panel">
             <h2>Review decision</h2>

@@ -1,15 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type DragEvent, type FormEvent } from "react";
 
 import type { SimulationSummary, SyllabusLevel, Topic } from "@/lib/data/types";
-import type { SubmissionKind } from "@/lib/submissions/types";
+import type { SubmissionKind, SubmissionRecord } from "@/lib/submissions/types";
 
 type Props = {
   topics: Topic[];
   simulations: SimulationSummary[];
   contributorName: string;
+  editingSubmission?: SubmissionRecord;
 };
 
 const LEVELS: SyllabusLevel[] = ["H1", "H2", "H3"];
@@ -18,18 +20,23 @@ function topicLabel(topic: Topic) {
   return `${topic.name} (${topic.availabilityLabel})`;
 }
 
-export function SubmissionForm({ topics, simulations, contributorName }: Props) {
+export function SubmissionForm({ topics, simulations, contributorName, editingSubmission }: Props) {
   const router = useRouter();
-  const [kind, setKind] = useState<SubmissionKind>("new");
-  const [existingSimulationId, setExistingSimulationId] = useState("");
-  const [existingOwner, setExistingOwner] = useState("");
+  const revising = Boolean(editingSubmission);
+  const [kind, setKind] = useState<SubmissionKind>(editingSubmission?.kind ?? "new");
+  const [existingSimulationId, setExistingSimulationId] = useState(editingSubmission?.existingSimulationId ?? "");
+  const initialSimulation = editingSubmission?.existingSimulationId
+    ? simulations.find((item) => item.id === editingSubmission.existingSimulationId)
+    : undefined;
+  const [existingOwner, setExistingOwner] = useState(editingSubmission?.ownerName ?? initialSimulation?.author ?? "");
   const [ownerChoice, setOwnerChoice] = useState<"original" | "self">("original");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [levels, setLevels] = useState<SyllabusLevel[]>(["H2"]);
-  const [primaryTopicId, setPrimaryTopicId] = useState("");
-  const [relatedTopicIds, setRelatedTopicIds] = useState<string[]>([]);
+  const [title, setTitle] = useState(editingSubmission?.title ?? "");
+  const [description, setDescription] = useState(editingSubmission?.description ?? "");
+  const [levels, setLevels] = useState<SyllabusLevel[]>(editingSubmission?.levels ?? ["H2"]);
+  const [primaryTopicId, setPrimaryTopicId] = useState(editingSubmission?.primaryTopicId ?? "");
+  const [relatedTopicIds, setRelatedTopicIds] = useState<string[]>(editingSubmission?.relatedTopicIds ?? []);
   const [file, setFile] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,6 +48,7 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
   );
 
   function resetForNewKind(nextKind: SubmissionKind) {
+    if (revising) return;
     setKind(nextKind);
     setExistingSimulationId("");
     setExistingOwner("");
@@ -82,21 +90,43 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
     );
   }
 
+  function chooseFile(nextFile: File | null) {
+    setError("");
+    if (!nextFile) {
+      setFile(null);
+      return;
+    }
+    if (nextFile.size > 10 * 1024 * 1024) {
+      setFile(null);
+      setError("Simulation files must be 10 MB or smaller.");
+      return;
+    }
+    if (!/\.(html?|zip)$/i.test(nextFile.name)) {
+      setFile(null);
+      setError("Upload a standalone HTML file or ZIP project.");
+      return;
+    }
+    setFile(nextFile);
+  }
+
+  function handleDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setDragActive(false);
+    chooseFile(event.dataTransfer.files?.[0] ?? null);
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSuccess("");
 
-    if (!file) return setError("Choose a standalone HTML file or ZIP project.");
+    if (!file) return setError(revising ? "Choose the corrected HTML file or ZIP project to resubmit." : "Choose a standalone HTML file or ZIP project.");
     if (file.size > 10 * 1024 * 1024) return setError("Simulation files must be 10 MB or smaller.");
     if (!/\.(html?|zip)$/i.test(file.name)) return setError("Upload a standalone HTML file or ZIP project.");
     if (!primaryTopicId) return setError("Choose a primary topic.");
     if (kind === "update" && !existingSimulationId) return setError("Choose the simulation you are updating.");
 
-    const submissionId = crypto.randomUUID();
-    const safeFilename = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(-140);
-    const pathname = `submissions/${submissionId}/${safeFilename}`;
-
+    const submissionId = editingSubmission?.submissionId ?? crypto.randomUUID();
     const metadata = {
       submissionId,
       kind,
@@ -118,6 +148,7 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
         body: JSON.stringify({
           action: "prepare",
           metadata,
+          revisionSubmissionId: editingSubmission?.submissionId,
           originalFilename: file.name,
           fileSize: file.size,
           contentType: file.type || "application/octet-stream",
@@ -138,8 +169,8 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", prepared.presignedUrl!, true);
         xhr.setRequestHeader("Content-Type", prepared.contentType || file.type || "application/octet-stream");
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) setProgress(Math.round((event.loaded / event.total) * 90));
+        xhr.upload.onprogress = (uploadEvent) => {
+          if (uploadEvent.lengthComputable) setProgress(Math.round((uploadEvent.loaded / uploadEvent.total) * 90));
         };
         xhr.onerror = () => reject(new Error("The file could not be uploaded to private storage."));
         xhr.onload = () => {
@@ -167,10 +198,11 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
       } else if (completed.validation?.warnings) {
         setSuccess(`Uploaded and checked. ${completed.validation.warnings} warning${completed.validation.warnings === 1 ? "" : "s"} will be shown to the reviewer.`);
       } else {
-        setSuccess("Uploaded and checked successfully. It is now waiting for review.");
+        setSuccess(revising ? "Changes resubmitted and checked successfully. It is now waiting for review." : "Uploaded and checked successfully. It is now waiting for review.");
       }
       setFile(null);
       setProgress(100);
+      router.replace("/contribute");
       router.refresh();
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "The upload could not be completed.");
@@ -180,21 +212,36 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
   }
 
   return (
-    <form className="submission-form" onSubmit={submit}>
+    <form id="submission-form" className="submission-form" onSubmit={submit}>
+      {revising ? (
+        <div className="revision-banner">
+          <div>
+            <strong>{editingSubmission?.status === "rejected" ? "Edit and resubmit this submission" : "Make the requested changes"}</strong>
+            <p>The existing submission record will be updated. Upload a corrected file and adjust any details below before resubmitting.</p>
+            {editingSubmission?.adminNote ? <p className="revision-feedback"><strong>Reviewer feedback:</strong> {editingSubmission.adminNote}</p> : null}
+          </div>
+          <Link href="/contribute">Cancel</Link>
+        </div>
+      ) : null}
+
       <div className="submission-section">
         <div className="submission-section-heading">
           <span>1</span>
-          <div><h2>What are you submitting?</h2><p>Create something new or safely replace an existing simulation.</p></div>
+          <div><h2>What are you submitting?</h2><p>{revising ? "The original submission type is kept so the review history stays connected." : "Create something new or safely replace an existing simulation."}</p></div>
         </div>
-        <div className="segmented-control" role="group" aria-label="Submission type">
-          <button type="button" className={kind === "new" ? "active" : ""} onClick={() => resetForNewKind("new")}>New simulation</button>
-          <button type="button" className={kind === "update" ? "active" : ""} onClick={() => resetForNewKind("update")}>Update existing</button>
-        </div>
+        {revising ? (
+          <div className="revision-kind-summary"><strong>{kind === "update" ? "Update existing simulation" : "New simulation"}</strong></div>
+        ) : (
+          <div className="segmented-control" role="group" aria-label="Submission type">
+            <button type="button" className={kind === "new" ? "active" : ""} onClick={() => resetForNewKind("new")}>New simulation</button>
+            <button type="button" className={kind === "update" ? "active" : ""} onClick={() => resetForNewKind("update")}>Update existing</button>
+          </div>
+        )}
         {kind === "update" ? (
           <>
             <label className="form-field">
               <span>Existing simulation</span>
-              <select value={existingSimulationId} onChange={(event) => chooseExisting(event.target.value)} required>
+              <select value={existingSimulationId} onChange={(event) => chooseExisting(event.target.value)} required disabled={revising}>
                 <option value="">Choose a simulation…</option>
                 {simulations.map((simulation) => <option key={simulation.id} value={simulation.id}>{simulation.title}</option>)}
               </select>
@@ -202,10 +249,12 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
             {existingSimulationId ? (
               <div className="owner-choice-card">
                 <div><strong>Current owner</strong><span>{existingOwner || "Not recorded"}</span></div>
-                <div className="owner-choice-options" role="group" aria-label="Owner for this update">
-                  <label><input type="radio" name="ownerChoice" checked={ownerChoice === "original"} onChange={() => setOwnerChoice("original")} /> Keep original owner</label>
-                  <label><input type="radio" name="ownerChoice" checked={ownerChoice === "self"} onChange={() => setOwnerChoice("self")} /> Change owner to {contributorName}</label>
-                </div>
+                {!revising ? (
+                  <div className="owner-choice-options" role="group" aria-label="Owner for this update">
+                    <label><input type="radio" name="ownerChoice" checked={ownerChoice === "original"} onChange={() => setOwnerChoice("original")} /> Keep original owner</label>
+                    <label><input type="radio" name="ownerChoice" checked={ownerChoice === "self"} onChange={() => setOwnerChoice("self")} /> Change owner to {contributorName}</label>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </>
@@ -252,19 +301,25 @@ export function SubmissionForm({ topics, simulations, contributorName }: Props) 
       <div className="submission-section">
         <div className="submission-section-heading">
           <span>4</span>
-          <div><h2>Upload the simulation</h2><p>One standalone HTML file or one ZIP project. Maximum 10 MB.</p></div>
+          <div><h2>{revising ? "Upload the corrected simulation" : "Upload the simulation"}</h2><p>One standalone HTML file or one ZIP project. Maximum 10 MB.</p></div>
         </div>
-        <label className="upload-box">
-          <input type="file" accept=".html,.htm,.zip,text/html,application/zip" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-          <strong>{file ? file.name : "Choose HTML or ZIP"}</strong>
-          <span>{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "The system will determine how the simulation is packaged."}</span>
+        <label
+          className={`upload-box${dragActive ? " drag-active" : ""}`}
+          onDragEnter={(event) => { event.preventDefault(); setDragActive(true); }}
+          onDragOver={(event) => { event.preventDefault(); setDragActive(true); }}
+          onDragLeave={(event) => { event.preventDefault(); if (event.currentTarget === event.target) setDragActive(false); }}
+          onDrop={handleDrop}
+        >
+          <input type="file" accept=".html,.htm,.zip,text/html,application/zip" onChange={(event) => chooseFile(event.target.files?.[0] ?? null)} />
+          <strong>{file ? file.name : "Choose or drag & drop HTML / ZIP"}</strong>
+          <span>{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "Drop a file here, or click to browse. The system will determine how the simulation is packaged."}</span>
         </label>
         {busy || progress > 0 ? <div className="upload-progress"><div style={{ width: `${progress}%` }} /><span>{progress}%</span></div> : null}
       </div>
 
       {error ? <p className="submission-message error">{error}</p> : null}
       {success ? <p className="submission-message success">{success}</p> : null}
-      <button className="button primary submit-simulation" type="submit" disabled={busy}>{busy ? "Uploading…" : "Submit for review"}</button>
+      <button className="button primary submit-simulation" type="submit" disabled={busy}>{busy ? "Uploading…" : revising ? "Resubmit for review" : "Submit for review"}</button>
     </form>
   );
 }

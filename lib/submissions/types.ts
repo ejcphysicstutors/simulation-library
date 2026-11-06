@@ -69,4 +69,12 @@ export type SubmissionRecord = SubmissionMetadata & {
   publishedSimulationDeletedBy?: string;
   archivedAt?: string | null;
   archivedBy?: string | null;
+  revisionNumber?: number;
+  resubmittedAt?: string;
+  reviewHistory?: Array<{
+    status: "needs-changes" | "rejected";
+    note?: string;
+    reviewedBy?: string;
+    reviewedAt?: string;
+  }>;
 };

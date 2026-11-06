@@ -1,12 +1,14 @@
-import { issueSignedToken, list, presignUrl } from "@vercel/blob";
+import { del, issueSignedToken, list, presignUrl } from "@vercel/blob";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { getAccessSession } from "@/lib/auth/session";
 import { adminDb } from "@/lib/firebase/admin";
-import { inferPackageType, parseSubmissionMetadata, sanitiseFilename } from "@/lib/submissions/schema";
-import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
 import { getLibrarySimulations } from "@/lib/library/managed";
 import { notifySubmissionReceivedInApp } from "@/lib/notifications/in-app";
 import { getSubmissionRecord } from "@/lib/submissions/data";
+import { inferPackageType, parseSubmissionMetadata, sanitiseFilename } from "@/lib/submissions/schema";
+import type { SubmissionMetadata, SubmissionRecord } from "@/lib/submissions/types";
+import { validateSubmissionRecord } from "@/lib/submissions/validate-record";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const UPLOAD_URL_TTL_MS = 15 * 60 * 1000;
@@ -21,6 +23,7 @@ const ALLOWED_CONTENT_TYPES = [
 type PrepareBody = {
   action: "prepare";
   metadata: unknown;
+  revisionSubmissionId?: unknown;
   originalFilename?: unknown;
   fileSize?: unknown;
   contentType?: unknown;
@@ -38,6 +41,17 @@ type ContributorSession = Extract<
   NonNullable<Awaited<ReturnType<typeof getAccessSession>>>,
   { kind: "google" }
 > & { role: "contributor" | "admin" };
+
+type PendingRevision = {
+  metadata: SubmissionMetadata;
+  originalFilename: string;
+  packageType: "html" | "zip";
+  blobSize: number;
+  blobPathname: string;
+  blobContentType: string;
+  preparedAt: string;
+  revisionNumber: number;
+};
 
 function isContributorSession(
   session: Awaited<ReturnType<typeof getAccessSession>>,
@@ -78,29 +92,63 @@ export async function POST(request: Request): Promise<Response> {
         throw new Error("Simulation files must be 10 MB or smaller.");
       }
 
-      const pathname = `submissions/${metadata.submissionId}/${originalFilename}`;
+      const revisionSubmissionId = String(body.revisionSubmissionId ?? "").trim();
       const now = new Date().toISOString();
+      let pathname: string;
 
-      try {
-        await adminDb.collection("submissions").doc(metadata.submissionId).create({
-          ...metadata,
-          contributorEmail: session.email.toLowerCase(),
-          contributorName: session.name ?? "",
-          status: "uploading",
+      if (revisionSubmissionId) {
+        if (revisionSubmissionId !== metadata.submissionId) throw new Error("Revision submission ID does not match.");
+        const ref = adminDb.collection("submissions").doc(revisionSubmissionId);
+        const snapshot = await ref.get();
+        if (!snapshot.exists) throw new Error("The submission being revised was not found.");
+        const current = snapshot.data() as SubmissionRecord;
+        if (current.contributorEmail.toLowerCase() !== session.email.toLowerCase()) {
+          return Response.json({ error: "You can only revise your own submission." }, { status: 403 });
+        }
+        if (current.status !== "needs-changes" && current.status !== "rejected") {
+          throw new Error("Only submissions marked Changes needed or Not accepted can be revised here.");
+        }
+        if (current.kind !== metadata.kind || current.existingSimulationId !== metadata.existingSimulationId) {
+          throw new Error("The submission type cannot be changed during a revision.");
+        }
+
+        const revisionNumber = (current.revisionNumber ?? 0) + 1;
+        const revisionToken = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+        pathname = `submissions/${metadata.submissionId}/revisions/${revisionToken}-${originalFilename}`;
+        const pendingRevision: PendingRevision = {
+          metadata,
           originalFilename,
           packageType,
           blobSize: fileSize,
           blobPathname: pathname,
           blobContentType: contentType,
-          createdAt: now,
-          updatedAt: now,
-        });
-      } catch (error) {
-        const code = (error as { code?: number | string } | null)?.code;
-        if (code === 6 || code === "already-exists") {
-          return Response.json({ error: "That submission ID already exists." }, { status: 409 });
+          preparedAt: now,
+          revisionNumber,
+        };
+        await ref.update({ pendingRevision, updatedAt: now });
+      } else {
+        pathname = `submissions/${metadata.submissionId}/${originalFilename}`;
+        try {
+          await adminDb.collection("submissions").doc(metadata.submissionId).create({
+            ...metadata,
+            contributorEmail: session.email.toLowerCase(),
+            contributorName: session.name ?? "",
+            status: "uploading",
+            originalFilename,
+            packageType,
+            blobSize: fileSize,
+            blobPathname: pathname,
+            blobContentType: contentType,
+            createdAt: now,
+            updatedAt: now,
+          });
+        } catch (error) {
+          const code = (error as { code?: number | string } | null)?.code;
+          if (code === 6 || code === "already-exists") {
+            return Response.json({ error: "That submission ID already exists." }, { status: 409 });
+          }
+          throw error;
         }
-        throw error;
       }
 
       const validUntil = Date.now() + UPLOAD_URL_TTL_MS;
@@ -118,12 +166,7 @@ export async function POST(request: Request): Promise<Response> {
         validUntil,
       });
 
-      return Response.json({
-        submissionId: metadata.submissionId,
-        pathname,
-        presignedUrl,
-        contentType,
-      });
+      return Response.json({ submissionId: metadata.submissionId, pathname, presignedUrl, contentType });
     }
 
     if (body.action === "complete") {
@@ -135,38 +178,73 @@ export async function POST(request: Request): Promise<Response> {
       const current = await ref.get();
       if (!current.exists) throw new Error("Submission record was not found.");
 
-      const data = current.data();
-      if (data?.contributorEmail !== session.email.toLowerCase()) {
+      const data = current.data() as SubmissionRecord & { pendingRevision?: PendingRevision };
+      if (data.contributorEmail !== session.email.toLowerCase()) {
         return Response.json({ error: "You cannot complete this submission." }, { status: 403 });
       }
-      if (data?.blobPathname !== pathname) throw new Error("Upload path does not match the submission record.");
 
-      const prefix = `submissions/${submissionId}/`;
+      const pending = data.pendingRevision;
+      const isRevision = Boolean(pending && pending.blobPathname === pathname);
+      if (!isRevision && data.blobPathname !== pathname) throw new Error("Upload path does not match the submission record.");
+
+      const prefix = pathname.includes("/") ? pathname.slice(0, pathname.lastIndexOf("/") + 1) : pathname;
       const uploaded = await list({ prefix, limit: 20 });
-      const files = uploaded.blobs.filter((blob) => !blob.pathname.endsWith("/"));
-      if (files.length === 0) {
+      const blob = uploaded.blobs.find((item) => item.pathname === pathname);
+      if (!blob) {
         throw new Error("The browser reported a successful upload, but the file was not found in private storage. Please try submitting it again.");
       }
 
-      const expectedName = String(data?.originalFilename ?? "").toLowerCase();
-      const blob =
-        files.find((item) => item.pathname.split("/").pop()?.toLowerCase() === expectedName) ??
-        (files.length === 1 ? files[0] : undefined);
+      const now = new Date().toISOString();
+      let oldBlobPathname = "";
+      if (isRevision && pending) {
+        oldBlobPathname = data.blobPathname ?? "";
+        const previousHistory = Array.isArray(data.reviewHistory) ? data.reviewHistory : [];
+        const reviewHistory = (data.status === "needs-changes" || data.status === "rejected")
+          ? [...previousHistory, {
+              status: data.status,
+              ...(data.adminNote ? { note: data.adminNote } : {}),
+              ...(data.reviewedBy ? { reviewedBy: data.reviewedBy } : {}),
+              ...(data.reviewedAt ? { reviewedAt: data.reviewedAt } : {}),
+            }]
+          : previousHistory;
 
-      if (!blob) {
-        throw new Error("More than one file was found for this submission and the uploaded file could not be identified safely.");
+        await ref.update({
+          ...pending.metadata,
+          originalFilename: pending.originalFilename,
+          packageType: pending.packageType,
+          blobPathname: blob.pathname,
+          blobUrl: blob.url,
+          blobDownloadUrl: blob.downloadUrl,
+          blobSize: blob.size,
+          blobContentType: pending.blobContentType,
+          revisionNumber: pending.revisionNumber,
+          resubmittedAt: now,
+          reviewHistory,
+          status: "uploaded",
+          validation: FieldValue.delete(),
+          adminNote: FieldValue.delete(),
+          reviewedBy: FieldValue.delete(),
+          reviewedAt: FieldValue.delete(),
+          stagingDeleteAfter: FieldValue.delete(),
+          stagingDeletedAt: FieldValue.delete(),
+          pendingRevision: FieldValue.delete(),
+          updatedAt: now,
+        });
+      } else {
+        await ref.update({
+          status: "uploaded",
+          blobPathname: blob.pathname,
+          blobUrl: blob.url,
+          blobDownloadUrl: blob.downloadUrl,
+          blobSize: blob.size,
+          updatedAt: now,
+        });
       }
 
-      await ref.update({
-        status: "uploaded",
-        blobPathname: blob.pathname,
-        blobUrl: blob.url,
-        blobDownloadUrl: blob.downloadUrl,
-        blobSize: blob.size,
-        updatedAt: new Date().toISOString(),
-      });
-
       const validation = await validateSubmissionRecord(submissionId);
+      if (oldBlobPathname && oldBlobPathname !== blob.pathname) {
+        await del(oldBlobPathname).catch((error) => console.error("Could not delete superseded submission upload", error));
+      }
       const completedRecord = await getSubmissionRecord(submissionId);
       if (completedRecord) {
         await notifySubmissionReceivedInApp(completedRecord).catch((error) => {

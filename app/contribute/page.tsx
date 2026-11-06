@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<SubmissionStatus, string> = {
 };
 
 type Props = {
-  searchParams?: Promise<{ archived?: string }>;
+  searchParams?: Promise<{ archived?: string; edit?: string }>;
 };
 
 export default async function ContributePage({ searchParams }: Props) {
@@ -29,6 +29,12 @@ export default async function ContributePage({ searchParams }: Props) {
   const simulations = await getLibrarySimulations();
   const params = searchParams ? await searchParams : {};
   const showArchived = params.archived === "1";
+  const requestedEditId = String(params.edit ?? "");
+  const editingSubmission = submissions.find((submission) =>
+    submission.submissionId === requestedEditId &&
+    !submission.archivedAt &&
+    (submission.status === "needs-changes" || submission.status === "rejected")
+  );
 
   const visibleSubmissions = submissions.filter((submission) => showArchived ? Boolean(submission.archivedAt) : !submission.archivedAt);
   const archivedCount = submissions.filter((submission) => Boolean(submission.archivedAt)).length;
@@ -45,7 +51,7 @@ export default async function ContributePage({ searchParams }: Props) {
       </div>
 
       <div className="contributor-layout">
-        <SubmissionForm topics={topics} simulations={simulations.filter((simulation) => simulation.status === "published")} contributorName={session.name || session.email} />
+        <SubmissionForm topics={topics} simulations={simulations.filter((simulation) => simulation.status === "published")} contributorName={session.name || session.email} editingSubmission={editingSubmission} />
 
         <aside className="submission-history">
           <div className="panel-heading-row">
@@ -70,6 +76,11 @@ export default async function ContributePage({ searchParams }: Props) {
                   <div><strong>{submission.title}</strong><small>{submission.kind === "update" ? "Update" : "New simulation"} · {submission.originalFilename}</small>{submission.adminNote ? <small className="submission-admin-note">Reviewer: {submission.adminNote}</small> : null}</div>
                   <div className="submission-row-actions">
                     <span className={`submission-status status-${submission.status}`}>{STATUS_LABELS[submission.status]}</span>
+                    {!showArchived && (submission.status === "needs-changes" || submission.status === "rejected") ? (
+                      <Link className="submission-resubmit-link" href={`/contribute?edit=${submission.submissionId}#submission-form`}>
+                        {submission.status === "rejected" ? "Edit & resubmit" : "Make changes"}
+                      </Link>
+                    ) : null}
                     <form action={showArchived ? restoreSubmission : archiveSubmission}>
                       <input type="hidden" name="submissionId" value={submission.submissionId} />
                       <button type="submit" className="submission-archive-button">{showArchived ? "Restore" : "Archive"}</button>
